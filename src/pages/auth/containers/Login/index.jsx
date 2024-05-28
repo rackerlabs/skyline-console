@@ -68,8 +68,8 @@ export class Login extends Component {
     const { getLocaleShortName } = i18n;
     const language = getLocaleShortName();
     const name =
-      product_name[language] || t('Cloud Platform') || 'Cloud Platform';
-    return t('Welcome, {name}', { name });
+      product_name[language] || t('Openstack Flex') || 'Openstack Flex';
+    return t('Welcome to {name}', { name });
   }
 
   get domains() {
