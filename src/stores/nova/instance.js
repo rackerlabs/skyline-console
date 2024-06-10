@@ -116,14 +116,23 @@ export class ServerStore extends Base {
           noReminder: true,
           all_projects,
         });
-        item.itemInList = result.find((it) => it.id === id);
+        if (result){
+          result.forEach(element => {
+            if (element.id == id) {
+              item.itemInList = element;
+            }
+          });
+        }
       } else {
         const store = new RecycleBinStore();
-        const result = await store.fetchList({
-          uuid: id,
-          all_projects,
-        });
-        item.itemInList = result.find((it) => it.id === id);
+        const result = await store.fetchList({ uuid: id, all_projects });
+        if (result){
+          result.forEach(element => {
+            if (element.id == id) {
+              item.itemInList = element;
+            }
+          });
+        }
       }
     } catch (e) {
       // eslint-disable-next-line no-console
