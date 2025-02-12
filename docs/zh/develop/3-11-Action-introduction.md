@@ -129,6 +129,8 @@
           UnpauseAction,
           Shelve,
           Unshelve,
+          Rescue,
+          Unrescue,
         ];
         const actionConfigs = {
           rowActions: {

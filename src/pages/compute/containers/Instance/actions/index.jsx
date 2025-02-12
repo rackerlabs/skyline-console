@@ -38,6 +38,8 @@ import Console from './Console';
 import Edit from './Edit';
 // import Rebuild from './Rebuild';
 import Rebuild from './RebuildSelect'; // Rebuild with select image
+import Rescue from './Rescue';
+import Unrescue from './Unrescue';
 import Shelve from './Shelve';
 import Unshelve from './Unshelve';
 import DisassociateFip from './DisassociateFip';
@@ -62,6 +64,8 @@ const statusActions = [
   UnpauseAction,
   Shelve,
   Unshelve,
+  Rescue,
+  Unrescue,
 ];
 
 const resourceActions = [

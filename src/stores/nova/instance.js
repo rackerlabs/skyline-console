@@ -438,6 +438,16 @@ export class ServerStore extends Base {
   }
 
   @action
+  async rescue({ id }) {
+    return this.operation({ key: 'rescue', id });
+  }
+
+  @action
+  async unrescue({ id }) {
+    return this.operation({ key: 'unrescue', id });
+  }
+
+  @action
   async migrateLive({ id, body }) {
     const newBody = {
       'os-migrateLive': body,

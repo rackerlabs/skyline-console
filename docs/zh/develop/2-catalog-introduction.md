@@ -235,6 +235,7 @@
 │   │   │   │   │   │   ├── Resize.jsx  (修改配置)
 │   │   │   │   │   │   ├── ResizeOnline.jsx    (在线修改配置)
 │   │   │   │   │   │   ├── Resume.jsx  (恢复云主机)
+│   │   │   │   │   │   ├── Rescue.jsx  (恢复云主机)
 │   │   │   │   │   │   ├── Shelve.jsx  (归档云主机)
 │   │   │   │   │   │   ├── SoftDelete.jsx  (软删除云主机)
 │   │   │   │   │   │   ├── SoftReboot.jsx  (软重启云主机)
@@ -254,6 +255,7 @@
 │   │   │   │   │   │   ├── Suspend.jsx (挂起云主机)
 │   │   │   │   │   │   ├── Unlock.jsx  (解锁云主机)
 │   │   │   │   │   │   ├── Unpause.jsx (恢复暂停的云主机)
+│   │   │   │   │   │   ├── Unrescue.jsx  (取消恢复云主机)
 │   │   │   │   │   │   ├── Unshelve.jsx    (恢复归档的云主机)
 │   │   │   │   │   │   ├── index.jsx
 │   │   │   │   │   │   └── index.less

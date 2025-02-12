@@ -157,6 +157,18 @@ describe('The Instance Page', () => {
       .waitStatusActiveByRefresh();
   });
 
+  it('successfully rescue', () => {
+    cy.tableSearchText(name)
+      .clickConfirmActionInMoreSub('Rescue', 'Instance Status')
+      .waitStatusTextByFresh('Rescued');
+  });
+
+  it('successfully unrescue', () => {
+    cy.tableSearchText(name)
+      .clickConfirmActionInMoreSub('Unrescue', 'Instance Status')
+      .waitStatusActiveByRefresh();
+  });
+
   // it('successfully reboot', () => {
   //   cy.tableSearchText(name)
   //     .clickConfirmActionInMoreSub('Reboot', 'Instance Status')

@@ -202,6 +202,7 @@ Catalog Introduction-Image Version
     │   │   │   │   │   │   ├── Resize.jsx  (Change configuration)
     │   │   │   │   │   │   ├── ResizeOnline.jsx    (Modify configuration online)
     │   │   │   │   │   │   ├── Resume.jsx  (Resume instance)
+    │   │   │   │   │   │   ├── Rescue.jsx  (Rescue instance)   
     │   │   │   │   │   │   ├── Shelve.jsx  (Shelve instance)
     │   │   │   │   │   │   ├── SoftDelete.jsx  (Soft delete instance)
     │   │   │   │   │   │   ├── SoftReboot.jsx  (Soft reboot instance)
@@ -221,6 +222,7 @@ Catalog Introduction-Image Version
     │   │   │   │   │   │   ├── Suspend.jsx (Suspend instance)
     │   │   │   │   │   │   ├── Unlock.jsx  (Unlock instance)
     │   │   │   │   │   │   ├── Unpause.jsx (Unpause instance)
+    │   │   │   │   │   │   ├── Unrescue.jsx (Unrescue instance)   
     │   │   │   │   │   │   ├── Unshelve.jsx    (Unshelve instance)
     │   │   │   │   │   │   ├── index.jsx
     │   │   │   │   │   │   └── index.less

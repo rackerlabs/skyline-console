@@ -20,7 +20,7 @@ Compute tab
 * :guilabel:`Instances`: View, launch, delete, create a snapshot from,
   attach or detach interface to, attach or detach volume to,
   associate floating ip to, manage security group of, stop, pause,
-  lock, shelve, suspend, reboot or soft reboot instances, modify
+  lock, shelve, suspend, rescue, reboot or soft reboot instances, modify
   instance tags, or connect to them through VNC.
 
 * :guilabel:`Instance snapshots`: View, edit, delete instance snapshots,

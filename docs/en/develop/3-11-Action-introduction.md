@@ -129,6 +129,8 @@ English | [简体中文](../../zh/develop/3-11-Action-introduction.md)
           UnpauseAction,
           Shelve,
           Unshelve,
+          Rescue,
+          Unrescue,
         ];
         const actionConfigs = {
           rowActions: {
