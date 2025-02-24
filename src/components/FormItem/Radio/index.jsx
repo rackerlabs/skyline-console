@@ -63,6 +63,7 @@ export default class index extends Component {
       isWrappedValue,
       ...rest
     } = this.props;
+
     const items = options.map((it) =>
       optionType === 'default' ? (
         <Radio value={it.value} key={it.value} disabled={it.disabled}>

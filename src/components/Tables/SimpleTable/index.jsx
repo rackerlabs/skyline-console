@@ -292,6 +292,12 @@ export default class SimpleTable extends React.Component {
 
     const currentColumns = this.getColumns();
     const dataSource = this.getDataSource();
+
+    const updatedRowSelection = rowSelection || {};
+    if (dataSource.length === 1 && !updatedRowSelection.selectedRowKeys) {
+      updatedRowSelection.selectedRowKeys = [dataSource[0].key];
+    }
+
     return (
       <Table
         className={classnames(
@@ -304,7 +310,7 @@ export default class SimpleTable extends React.Component {
         loading={isLoading}
         onChange={this.handleChange}
         pagination={this.getPagination(dataSource)}
-        rowSelection={rowSelection}
+        rowSelection={updatedRowSelection}
         sortDirections={['ascend', 'descend', 'ascend']}
         showSorterTooltip={false}
         footer={footer}
