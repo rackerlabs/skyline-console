@@ -209,7 +209,7 @@ export class Allocate extends ModalAction {
   }) => {
     const data = rest;
     if (subnet_id) {
-      data.subnet_id = subnet_id.value;
+      data.subnet_id = subnet_id?.value;
     }
     if (qos_policy_id && qos_policy_id.selectedRowKeys.length > 0) {
       data.qos_policy_id = qos_policy_id.selectedRowKeys[0];
@@ -269,6 +269,7 @@ export class Allocate extends ModalAction {
         options: networkItems,
         onChange: this.handleNetworkChange,
         required: true,
+        defaultValue: networks.length > 0 ? networks[0].id : null,
       },
       {
         name: 'project_id',
