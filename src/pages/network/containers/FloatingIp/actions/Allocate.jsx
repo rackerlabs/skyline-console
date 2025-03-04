@@ -269,6 +269,7 @@ export class Allocate extends ModalAction {
         options: networkItems,
         onChange: this.handleNetworkChange,
         required: true,
+        defaultValue: networkItems[0]?.value,
       },
       {
         name: 'project_id',
