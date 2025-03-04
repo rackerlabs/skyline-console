@@ -269,6 +269,7 @@ export class Allocate extends ModalAction {
         options: networkItems,
         onChange: this.handleNetworkChange,
         required: true,
+        defaultValue: networkItems[0].value,
       },
       {
         name: 'project_id',
@@ -298,8 +299,9 @@ export class Allocate extends ModalAction {
             ))}
           </>
         ),
-        hidden: !selectedNetwork,
+        hidden: !selectedNetwork || subnets.length === 0,
         required: false,
+        defaultValue: subnets[0].value,
       },
       {
         name: 'batch_allocate',
