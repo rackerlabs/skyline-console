@@ -193,9 +193,10 @@ export class Allocate extends ModalAction {
         label: item.name,
       })),
       selectedNetwork: networkId,
+      selectedSubnet: subnets.length > 0 ? subnets[0].id : null,
     });
     this.formRef.current.setFieldsValue({
-      subnet_id: null,
+      subnet_id: subnets.length > 0 ? subnets[0].id : null,
     });
   };
 
@@ -294,6 +295,7 @@ export class Allocate extends ModalAction {
         type: 'select',
         options: subnets,
         isWrappedValue: true,
+        value: selectedSubnet || (subnets.length > 0 ? subnets[0].id : ''),
         onChange: (option) => this.handleSubnetChange(option),
         extra: selectedSubnet && (
           <>
