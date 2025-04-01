@@ -66,7 +66,14 @@ export class NetworkStep extends Base {
       const result = await this.subnetStore.fetchList({
         network_id: networkId,
       });
-      this.subnetMap[networkId] = result;
+      const filteredResult = result.filter((subnet) => {
+        const serviceTypes = subnet?.service_types || [];
+        return (
+          !serviceTypes.includes('network:floatingip') &&
+          !serviceTypes.includes('network:router_gateway')
+        );
+      });
+      this.subnetMap[networkId] = filteredResult;
     }
     return this.subnetMap[networkId];
   };
@@ -139,7 +146,17 @@ export class NetworkStep extends Base {
     return true;
   };
 
-  disabledNetwork = (it) => !it.subnets || it.subnets.length === 0;
+  disabledNetwork = (network) => {
+    const subnets = network.subnets || [];
+    const validSubnets = subnets.filter((subnet) => {
+      const serviceTypes = subnet?.service_types || [];
+      return (
+        !serviceTypes.includes('network:floatingip') &&
+        !serviceTypes.includes('network:router_gateway')
+      );
+    });
+    return validSubnets.length === 0;
+  };
 
   onNetworkChange = (value) => {
     const { selectedRows } = value;

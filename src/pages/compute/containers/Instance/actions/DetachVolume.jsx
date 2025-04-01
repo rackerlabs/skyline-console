@@ -57,6 +57,12 @@ export class DetachVolume extends ModalAction {
     const value = {
       instance: name,
     };
+
+    const { volumes } = this.volumes;
+    if (volumes.length === 1) {
+      value.volumes = [volumes[0].id];
+    }
+
     return value;
   }
 
@@ -117,6 +123,7 @@ export class DetachVolume extends ModalAction {
             valueRender: 'sinceTime',
           },
         ],
+        initialValue: this.defaultValue || [],
       },
     ];
   }
