@@ -136,7 +136,13 @@ export default class SelectTable extends React.Component {
   constructor(props) {
     super(props);
     const { data = [], pageSize, initValue = {} } = props;
-    const { selectedRowKeys, selectedRows } = this.getInitValue(props);
+    let { selectedRowKeys, selectedRows } = this.getInitValue(props);
+    if (selectedRowKeys.length === 0 && data && data.length > 0) {
+      const firstRow = data[0];
+      const firstRowKey = getItemKey(firstRow);
+      selectedRowKeys = [firstRowKey];
+      selectedRows = [firstRow];
+    }
     this.state = {
       data,
       filters: null,
@@ -154,6 +160,11 @@ export default class SelectTable extends React.Component {
 
   componentDidMount() {
     this.getData();
+    if (this.state.selectedRowKeys && this.state.selectedRowKeys.length > 0) {
+      this.onChange({
+        selectedRowKeys: this.state.selectedRowKeys,
+      });
+    }
   }
 
   componentDidUpdate(prevProps, prevState) {

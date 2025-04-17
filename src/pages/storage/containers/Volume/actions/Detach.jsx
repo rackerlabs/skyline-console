@@ -78,8 +78,17 @@ export class Detach extends ModalAction {
   disabledInstance = (ins) => !allowAttachVolumeInstance(ins);
 
   get formItems() {
-    if (!this.instances || this.instances.length === 0) {
+    if (this.instanceStore.list.isLoading) {
       return [];
+    }
+    if (!this.instances || this.instances.length === 0) {
+      return [
+        {
+          type: 'label',
+          name: 'no-instances',
+          content: t('No instances are attached to this volume.'),
+        },
+      ];
     }
     return [
       {
@@ -94,10 +103,6 @@ export class Detach extends ModalAction {
         type: 'select-table',
         required: true,
         data: this.instances,
-        initValue: {
-          selectedRowKeys: [this.instances[0].id],
-          selectedRows: [this.instances[0]],
-        },
         filterParams: [
           {
             label: t('Name'),
