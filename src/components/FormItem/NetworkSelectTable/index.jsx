@@ -203,13 +203,8 @@ export class NetworkSelectTable extends Component {
   }
 
   fetchSubnets = async () => {
-    try {
-      const subnets = await this.subnetStore.fetchList();
-      return subnets;
-    } catch (error) {
-      console.error('Error fetching subnets:', error);
-      return [];
-    }
+    const subnets = await this.subnetStore.fetchList();
+    return subnets;
   };
 
   filterNetworks = (networks) => {
