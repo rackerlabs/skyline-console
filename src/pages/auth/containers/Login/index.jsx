@@ -31,7 +31,7 @@ export class Login extends Component {
       error: false,
       message: '',
       loading: false,
-      loginTypeOption: this.passwordOption,
+      loginTypeOption: null,
     };
   }
 
@@ -47,9 +47,16 @@ export class Login extends Component {
 
   async getSSO() {
     try {
-      this.store.fetchSSO();
+      await this.store.fetchSSO();
+      const options = this.SSOOptions;
+      if (options.length > 0) {
+        this.setState({ loginTypeOption: options[0] });
+      } else {
+        this.setState({ loginTypeOption: this.passwordOption });
+      }
     } catch (e) {
       console.log(e);
+      this.setState({ loginTypeOption: this.passwordOption });
     }
   }
 
@@ -122,6 +129,9 @@ export class Login extends Component {
         ...it,
       };
     });
+    // if (SSOoptions.length > 0) {
+    //   this.setState({ loginTypeOption: SSOoptions[0] });
+    // }
   }
 
   get passwordOption() {
@@ -133,9 +143,9 @@ export class Login extends Component {
 
   get loginTypeOptions() {
     if (!this.enableSSO) {
-      return [];
+      return [this.passwordOption];
     }
-    return [this.passwordOption, ...this.SSOOptions];
+    return [...this.SSOOptions, this.passwordOption];
   }
 
   onLoginTypeChange = (value, option) => {
@@ -156,13 +166,13 @@ export class Login extends Component {
   }
 
   get defaultValue() {
-    const data = {
-      loginType: 'password',
+    const defaultLoginType = this.state.loginTypeOption?.value || 'password';
+    const defaultRegion =
+      this.regions.length === 1 ? this.regions[0].value : undefined;
+    return {
+      loginType: defaultLoginType,
+      ...(defaultRegion && { region: defaultRegion }),
     };
-    if (this.regions.length === 1) {
-      data.region = this.regions[0].value;
-    }
-    return data;
   }
 
   get formItems() {
@@ -426,6 +436,10 @@ export class Login extends Component {
   }
 
   render() {
+    const { loginTypeOption } = this.state;
+    if (!loginTypeOption) {
+      return null;
+    }
     return (
       <>
         <h1 className={styles.welcome}>{this.productName}</h1>

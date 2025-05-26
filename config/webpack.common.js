@@ -126,12 +126,18 @@ module.exports = {
       resources: root('src/resources'),
       client: root('src/client'),
     },
+    fallback: {
+      querystring: require.resolve('querystring-es3'),
+    },
   },
   plugins: [
     new webpack.DefinePlugin({
       GLOBAL_VARIABLES: getGlobalVariables(),
     }),
-    new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+    new webpack.IgnorePlugin({
+      resourceRegExp: /^\.\/locale$/,
+      contextRegExp: /moment$/,
+    }),
   ],
 };
 

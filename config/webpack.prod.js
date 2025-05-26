@@ -126,6 +126,7 @@ module.exports = (env) => {
       ],
     },
     plugins: [
+      // new BundleAnalyzerPlugin(),
       new webpack.DefinePlugin({
         // Inject environment variables for the project
         'process.env.API': JSON.stringify(API),
