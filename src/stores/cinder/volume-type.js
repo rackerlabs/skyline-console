@@ -59,7 +59,8 @@ export class VolumeTypeStore extends Base {
   }
 
   async listDidFetch(items, allProjects, filters) {
-    const { showEncryption, showQoS } = filters;
+    const { showEncryption } = filters;
+    const showQoS = true;
     if (items.length === 0) {
       return items;
     }
@@ -75,23 +76,7 @@ export class VolumeTypeStore extends Base {
           if (it.qos_specs_id) {
             it.qos_specs = qosItems.find((qos) => qos.id === it.qos_specs_id);
             it.qos_specs_name = it.qos_specs?.name;
-            it.qos_props = it.qos_specs?.properties || {};
-          }
-        });
-      }
-    }
-    if (showQoS) {
-      const qosIds = uniq(
-        items.filter((it) => !!it.qos_specs_id).map((it) => it.qos_specs_id)
-      );
-      if (qosIds.length) {
-        const qosReqs = qosIds.map((id) => this.qosClient.show(id));
-        const qosResults = await Promise.all(qosReqs);
-        const qosItems = qosResults.map((it) => it.qos_specs);
-        items.forEach((it) => {
-          if (it.qos_specs_id) {
-            it.qos_specs = qosItems.find((qos) => qos.id === it.qos_specs_id);
-            it.qos_specs_name = (it.qos_specs || {}).name;
+            it.qos_props = it.qos_specs?.specs || {};
           }
         });
       }
