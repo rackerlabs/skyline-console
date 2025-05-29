@@ -75,15 +75,6 @@ export class DetachVolume extends ModalAction {
     if (this.volumeStore.list.isLoading) {
       return [];
     }
-    // if (!this.volumes || this.volumes.length === 0) {
-    //   return [
-    //     {
-    //       type: 'label',
-    //       name: 'no-volumes',
-    //       content: t('No volumes are attached to this instance.'),
-    //     },
-    //   ];
-    // }
     return [
       {
         name: 'instance',

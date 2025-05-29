@@ -157,6 +157,7 @@ export class AttachInterface extends ModalAction {
         name: 'network',
         label: t('Network'),
         type: 'network-select-table',
+        filterPublicNetworks: true,
         showExternal: true,
         required: true,
         disabledFunc: this.disabledNetwork,
