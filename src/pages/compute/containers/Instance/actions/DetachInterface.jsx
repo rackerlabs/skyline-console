@@ -88,15 +88,6 @@ export class DetachInterface extends ModalAction {
     if (portLoading) {
       return [];
     }
-    // if (!this.ports || this.ports.length === 0) {
-    //   return [
-    //     {
-    //       type: 'label',
-    //       name: 'no-ports',
-    //       content: t('No interfaces are attached to this instance.'),
-    //     },
-    //   ];
-    // }
     return [
       {
         name: 'instance',

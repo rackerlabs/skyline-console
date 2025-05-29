@@ -98,7 +98,7 @@ export class NetworkSelectTable extends Component {
     if (this.filterPublicNetworks) {
       store.listDidFetch = (items) => this.filterNetworks(items);
     } else {
-      store.listDidFetch = null;
+      store.listDidFetch = (items) => items;
     }
     return {
       columns: this.getColumns(tab),

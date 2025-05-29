@@ -43,12 +43,12 @@ export const volumeTypeColumns = [
     valueRender: 'noValue',
   },
   {
-    title: t('Read IOPS/GB'),
+    title: t('Read IOPS/sec per GB'),
     dataIndex: ['qos_props', 'read_iops_sec_per_gb'],
     render: (value) => value || '-',
   },
   {
-    title: t('Write IOPS/GB'),
+    title: t('Write IOPS/sec per GB'),
     dataIndex: ['qos_props', 'write_iops_sec_per_gb'],
     render: (value) => value || '-',
   },
