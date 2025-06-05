@@ -660,7 +660,7 @@ export class BaseStep extends Base {
   }
 
   getFlavorComponent() {
-    return <FlavorSelectTable onChange={this.onFlavorChange} />;
+    return <FlavorSelectTable onChange={this.onFlavorChange} {...extraProps} />;
   }
 
   get formItems() {
@@ -692,21 +692,6 @@ export class BaseStep extends Base {
       },
       {
         type: 'divider',
-      },
-      {
-        name: 'flavor',
-        label: t('Specification'),
-        type: 'select-table',
-        component: this.getFlavorComponent(),
-        required: true,
-        wrapperCol: {
-          xs: {
-            span: 24,
-          },
-          sm: {
-            span: 18,
-          },
-        },
       },
       {
         name: 'source',
@@ -744,6 +729,27 @@ export class BaseStep extends Base {
         defaultTabValue: this.locationParams.os_distro || filteredTabs[0].value,
         selectedLabel: t('Image'),
         onTabChange: this.onImageTabChange,
+      },
+      {
+        type: 'divider',
+      },
+      {
+        name: 'flavor',
+        label: t('Specification'),
+        type: 'select-table',
+        component: this.getFlavorComponent({ image: this.state.image }),
+        required: true,
+        wrapperCol: {
+          xs: {
+            span: 24,
+          },
+          sm: {
+            span: 18,
+          },
+        },
+      },
+      {
+        type: 'divider',
       },
       {
         name: 'instanceSnapshot',
