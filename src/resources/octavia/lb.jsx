@@ -41,6 +41,7 @@ export const certificateMode = {
 export const certificateStatus = {
   ACTIVE: t('Active'),
   ERROR: t('Error'),
+  EXPIRED: t('Expired'),
 };
 
 export const getCertificateColumns = (self) => [
