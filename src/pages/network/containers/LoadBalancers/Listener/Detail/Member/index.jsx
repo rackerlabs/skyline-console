@@ -14,7 +14,7 @@
 
 import { observer, inject } from 'mobx-react';
 import Base from 'containers/List';
-import { provisioningStatusCodes } from 'resources/octavia/lb';
+import { operatingStatusCodes } from 'resources/octavia/lb';
 import globalPoolMemberStore from 'stores/octavia/pool-member';
 import { idNameColumn } from 'utils/table';
 import { actionConfigs, adminActions } from './Actions';
@@ -64,8 +64,8 @@ export class Members extends Base {
     idNameColumn,
     {
       title: t('Status'),
-      dataIndex: 'provisioning_status',
-      valueMap: provisioningStatusCodes,
+      dataIndex: 'operating_status',
+      valueMap: operatingStatusCodes,
       isHideable: true,
     },
     {

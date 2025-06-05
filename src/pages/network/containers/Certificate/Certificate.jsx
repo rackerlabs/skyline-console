@@ -135,6 +135,16 @@ export class Certificate extends Base {
         title: t('Status'),
         dataIndex: 'status',
         valueMap: certificateStatus,
+        render: (value, record) => {
+          if (record.expiration) {
+            const expirationDate = new Date(record.expiration);
+            const now = new Date();
+            if (expirationDate < now) {
+              return certificateStatus.EXPIRED;
+            }
+          }
+          return certificateStatus[value] || '-';
+        },
       },
       {
         title: t('Created At'),
