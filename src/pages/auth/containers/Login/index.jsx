@@ -38,6 +38,7 @@ export class Login extends Component {
   componentDidMount() {
     this.getRegions();
     this.getSSO();
+    this.getUserDefaultDomain();
   }
 
   async getRegions() {
@@ -58,6 +59,10 @@ export class Login extends Component {
       console.log(e);
       this.setState({ loginTypeOption: this.passwordOption });
     }
+  }
+
+  async getUserDefaultDomain() {
+    await this.store.fetchUserDefaultDomain();
   }
 
   get rootStore() {
@@ -214,7 +219,9 @@ export class Login extends Component {
       render: () => (
         <Input placeholder={t('<username> or <username>@<domain>')} />
       ),
-      extra: t('Tips: without domain means "Default" domain.'),
+      extra: t(
+        'Tips: If no domain is provided, the configured default domain will be used.'
+      ),
       rules: [{ required: true, validator: this.usernameDomainValidator }],
     };
     const usernameItem = {
@@ -386,7 +393,7 @@ export class Login extends Component {
     const domain =
       lastAtIndex > 0
         ? trimmedUsernameDomain.slice(lastAtIndex + 1)
-        : 'Default';
+        : this.store.userDefaultDomain || 'Default';
     return {
       username,
       domain,
