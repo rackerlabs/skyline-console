@@ -53,15 +53,8 @@ export class SkylineStore extends Base {
 
   @action
   async fetchUserDefaultDomain() {
-    try {
-      const result = await client.skyline.config.getUserDefaultDomain();
-      console.log('Fetched from API:', result);
-      this.userDefaultDomain = result.default_domain;
-      console.log('Saved to store:', this.userDefaultDomain);
-    } catch (e) {
-      console.error('Failed to fetch user_default_domain:', e);
-      this.userDefaultDomain = '';
-    }
+    const result = await client.skyline.config.getUserDefaultDomain();
+    this.userDefaultDomain = result.default_domain;
   }
 }
 
