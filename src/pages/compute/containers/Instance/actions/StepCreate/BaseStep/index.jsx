@@ -731,27 +731,6 @@ export class BaseStep extends Base {
         onTabChange: this.onImageTabChange,
       },
       {
-        type: 'divider',
-      },
-      {
-        name: 'flavor',
-        label: t('Specification'),
-        type: 'select-table',
-        component: this.getFlavorComponent({ image: this.state.image }),
-        required: true,
-        wrapperCol: {
-          xs: {
-            span: 24,
-          },
-          sm: {
-            span: 18,
-          },
-        },
-      },
-      {
-        type: 'divider',
-      },
-      {
         name: 'instanceSnapshot',
         label: t('Instance Snapshot'),
         type: 'select-table',
@@ -788,6 +767,24 @@ export class BaseStep extends Base {
           },
         ],
         columns: this.volumeColumns,
+      },
+      {
+        type: 'divider',
+      },
+      {
+        name: 'flavor',
+        label: t('Specification'),
+        type: 'select-table',
+        component: this.getFlavorComponent({ image: this.state.image }),
+        required: true,
+        wrapperCol: {
+          xs: {
+            span: 24,
+          },
+          sm: {
+            span: 18,
+          },
+        },
       },
       {
         type: 'divider',
