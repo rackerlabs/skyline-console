@@ -659,7 +659,7 @@ export class BaseStep extends Base {
     return !bootFromVolume;
   }
 
-  getFlavorComponent() {
+  getFlavorComponent(extraProps) {
     return <FlavorSelectTable onChange={this.onFlavorChange} {...extraProps} />;
   }
 
