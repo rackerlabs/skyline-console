@@ -26,6 +26,9 @@ export class SkylineStore extends Base {
   @observable
   sso = {};
 
+  @observable
+  userDefaultDomain = '';
+
   get client() {
     return client.skyline.contrib;
   }
@@ -46,6 +49,12 @@ export class SkylineStore extends Base {
   async fetchSSO() {
     const result = await client.skyline.sso.list();
     this.sso = result;
+  }
+
+  @action
+  async fetchUserDefaultDomain() {
+    const result = await client.skyline.config.getUserDefaultDomain();
+    this.userDefaultDomain = result.default_domain;
   }
 }
 
