@@ -222,8 +222,8 @@ export class Login extends Component {
 
       extra: (
         <span>
-          Tips: If no domain is provided, the configured domain{' '}
-          {this.store.userDefaultDomain || 'Default'} will be used.
+          Tips: If no domain is specified, the configured domain{' '}
+          {`'${this.store.userDefaultDomain || 'Default'}'`} will be used.
         </span>
       ),
       rules: [{ required: true, validator: this.usernameDomainValidator }],
