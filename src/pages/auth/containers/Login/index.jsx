@@ -212,8 +212,12 @@ export class Login extends Component {
       render: () => (
         <Input placeholder={t('<username> or <username>@<domain>')} />
       ),
-      extra: t(
-        'Tips: If no domain is provided, the configured default domain will be used.'
+
+      extra: (
+        <span>
+          Tips: If no domain is provided, the configured domain{' '}
+          {this.store.userDefaultDomain || 'Default'} will be used.
+        </span>
       ),
       rules: [{ required: true, validator: this.usernameDomainValidator }],
     };
@@ -376,17 +380,26 @@ export class Login extends Component {
   }
 
   getUsernameAndDomain = (values) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const { usernameDomain } = values;
     const trimmedUsernameDomain = usernameDomain.trim();
-    const lastAtIndex = trimmedUsernameDomain.lastIndexOf('@');
-    const username =
-      lastAtIndex > 0
-        ? trimmedUsernameDomain.slice(0, lastAtIndex)
-        : trimmedUsernameDomain;
-    const domain =
-      lastAtIndex > 0
-        ? trimmedUsernameDomain.slice(lastAtIndex + 1)
-        : this.store.userDefaultDomain || 'Default';
+    let username;
+    let domain;
+
+    if (emailRegex.test(trimmedUsernameDomain)) {
+      username = trimmedUsernameDomain;
+      domain = this.store.userDefaultDomain || 'Default';
+    } else {
+      const lastAtIndex = trimmedUsernameDomain.lastIndexOf('@');
+      username =
+        lastAtIndex > 0
+          ? trimmedUsernameDomain.slice(0, lastAtIndex)
+          : trimmedUsernameDomain;
+      domain =
+        lastAtIndex > 0
+          ? trimmedUsernameDomain.slice(lastAtIndex + 1)
+          : this.store.userDefaultDomain || 'Default';
+    }
     return {
       username,
       domain,
