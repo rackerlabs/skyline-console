@@ -15,14 +15,23 @@
 import Base from 'components/Form';
 import { inject, observer } from 'mobx-react';
 import { NetworkStore } from 'stores/neutron/network';
+import { observable } from 'mobx';
 import { SubnetStore } from 'stores/neutron/subnet';
 import { LbaasStore } from 'stores/octavia/loadbalancer';
 
 export class BaseStep extends Base {
+  @observable
+  loadBalancerFlavors = [];
+
   init() {
     this.store = new LbaasStore();
     this.networkStore = new NetworkStore();
     this.subnetStore = new SubnetStore();
+    this.state = {
+      loading: true,
+      flavorList: [],
+    };
+    this.getFlavors();
   }
 
   get title() {
@@ -79,6 +88,11 @@ export class BaseStep extends Base {
     });
   };
 
+  async getFlavors() {
+    const flavorList = await this.store.fetchListAndProfiles();
+    this.setState({ flavorList, loading: false });
+  }
+
   get formItems() {
     const { network_id, subnetDetails = [] } = this.state;
     return [
@@ -93,6 +107,36 @@ export class BaseStep extends Base {
         name: 'description',
         label: t('Description'),
         type: 'textarea',
+      },
+      {
+        name: 'LoadBalancerflavor',
+        label: t('Flavor'),
+        type: 'select-table',
+        data: this.state.flavorList,
+        required: true,
+        columns: [
+          {
+            title: t('Name'),
+            dataIndex: 'name',
+          },
+          {
+            title: t('Flavor Profile ID'),
+            dataIndex: 'flavor_profile_id',
+          },
+          {
+            title: t('Enabled'),
+            dataIndex: 'enabled',
+            valueRender: 'yesNo',
+          },
+        ],
+        wrapperCol: {
+          xs: {
+            span: 24,
+          },
+          sm: {
+            span: 18,
+          },
+        },
       },
       {
         name: 'vip_network_id',
@@ -120,5 +164,4 @@ export class BaseStep extends Base {
     ];
   }
 }
-
 export default inject('rootStore')(observer(BaseStep));
