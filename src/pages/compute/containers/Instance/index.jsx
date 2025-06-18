@@ -16,6 +16,7 @@ import React from 'react';
 import { observer, inject } from 'mobx-react';
 import ImageType from 'components/ImageType';
 import Base from 'containers/List';
+import Notify from 'components/Notify';
 import {
   instanceStatus,
   transitionStatus,
@@ -29,6 +30,8 @@ import { ServerGroupInstanceStore } from 'stores/skyline/server-group-instance';
 import actionConfigs from './actions';
 
 export class Instance extends Base {
+  notifiedInstances = new Set();
+
   init() {
     if (!this.inDetailPage) {
       this.store = globalServerStore;
@@ -112,6 +115,26 @@ export class Instance extends Base {
     return {
       name: record.name,
     };
+  }
+
+  componentDidUpdate() {
+    const { data = [] } = this.store.list;
+
+    // Show notification for any instance with verify_resize status that hasn't been notified yet
+    data.forEach((instance) => {
+      if (
+        instance.status === 'verify_resize' &&
+        !this.notifiedInstances.has(instance.id)
+      ) {
+        Notify.warn(t('Waiting for user to Confirm/Revert the Resize'));
+        this.notifiedInstances.add(instance.id);
+      }
+    });
+  }
+
+  // Clear notified instances when component unmounts
+  componentWillUnmount() {
+    this.notifiedInstances.clear();
   }
 
   getColumns() {
