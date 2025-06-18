@@ -14,6 +14,7 @@
 
 import React from 'react';
 import { observer, inject } from 'mobx-react';
+import { reaction } from 'mobx';
 import ImageType from 'components/ImageType';
 import Base from 'containers/List';
 import Notify from 'components/Notify';
@@ -117,23 +118,34 @@ export class Instance extends Base {
     };
   }
 
-  componentDidUpdate() {
-    const { data = [] } = this.store.list;
-
-    // Show notification for any instance with verify_resize status that hasn't been notified yet
-    data.forEach((instance) => {
-      if (
-        instance.status === 'verify_resize' &&
-        !this.notifiedInstances.has(instance.id)
-      ) {
-        Notify.warn(t('Waiting for user to Confirm/Revert the Resize'));
-        this.notifiedInstances.add(instance.id);
+  componentDidMount() {
+    // Set up reaction to watch for status changes
+    this.dispose = reaction(
+      () => this.store.list.data.map((instance) => instance.status),
+      (statuses) => {
+        statuses.forEach((status, index) => {
+          const instance = this.store.list.data[index];
+          if (
+            status === 'verify_resize' &&
+            !this.notifiedInstances.has(instance.id)
+          ) {
+            Notify.warn(
+              t(
+                `Waiting for user to Confirm/Revert the Resize for\n ${instance.name}`
+              )
+            );
+            this.notifiedInstances.add(instance.id);
+          }
+        });
       }
-    });
+    );
   }
 
-  // Clear notified instances when component unmounts
   componentWillUnmount() {
+    // Running the cleanup function on unmount
+    if (this.dispose) {
+      this.dispose();
+    }
     this.notifiedInstances.clear();
   }
 
