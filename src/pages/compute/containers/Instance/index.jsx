@@ -131,7 +131,7 @@ export class Instance extends Base {
           ) {
             Notify.warn(
               t(
-                `Waiting for user to Confirm/Revert the Resize for\n ${instance.name}`
+                `Waiting for user to Confirm/Revert the Resize for\n ${instance.id}`
               )
             );
             this.notifiedInstances.add(instance.id);
