@@ -14,7 +14,7 @@
 
 import { ConfirmAction } from 'containers/Action';
 import globalServerStore from 'stores/nova/instance';
-import { isActive, isIronicInstance } from 'resources/nova/instance';
+import { checkStatus, isIronicInstance } from 'resources/nova/instance';
 import i18n from 'core/i18n';
 
 const { getLocale } = i18n;
@@ -47,7 +47,7 @@ export default class Console extends ConfirmAction {
     if (!item) {
       return true;
     }
-    return isActive(item) && !isIronicInstance(item);
+    return checkStatus(['active', 'rescue'], item) && !isIronicInstance(item);
   };
 
   performErrorMsg = () => {
