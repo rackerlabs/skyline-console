@@ -21,7 +21,7 @@ export default class UnRescueInstanceAction extends ConfirmAction {
     return true;
   }
 
-  policy = 'os_compute_api:servers:unrescue';
+  policy = 'os_compute_api:os-unrescue';
 
   allowedCheckFunc = (item) => {
     if (!item) {

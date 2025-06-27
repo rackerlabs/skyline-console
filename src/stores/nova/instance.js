@@ -492,11 +492,11 @@ export class ServerStore extends Base {
   }
 
   @action
-  async rescue({ id }) {
-    const body = {
+  async rescue({ id, body }) {
+    const rescueBody = body || {
       rescue: {},
     };
-    return this.operation({ body, id });
+    return this.operation({ body: rescueBody, id });
   }
 
   @action

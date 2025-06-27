@@ -1,14 +1,30 @@
 import React from 'react';
 import { ConfirmAction } from 'src/containers/Action';
 import globalServerStore from 'src/stores/nova/instance';
+import globalImageStore from 'src/stores/glance/image';
 import {
   isNotLockedOrAdmin,
   checkStatus,
   hasRootVolume,
 } from 'resources/nova/instance';
 import { isArray } from 'lodash';
+import { Form, Input, Select } from 'antd';
 
 export default class RescueInstanceAction extends ConfirmAction {
+  constructor(props) {
+    super(props);
+    this.init();
+  }
+
+  init() {
+    this.imageStore = globalImageStore;
+    this.getImages();
+  }
+
+  getImages() {
+    this.imageStore.fetchList({ all_projects: this.hasAdminRole });
+  }
+
   get id() {
     return 'rescue';
   }
@@ -25,7 +41,7 @@ export default class RescueInstanceAction extends ConfirmAction {
     return true;
   }
 
-  policy = 'os_compute_api:servers:rescue';
+  policy = 'os_compute_api:os-rescue';
 
   allowedCheckFunc = (item) => {
     if (!item) {
@@ -67,9 +83,72 @@ export default class RescueInstanceAction extends ConfirmAction {
     return msgs.map((it) => <p>{it}</p>);
   };
 
+  confirmContext = (data) => {
+    const name = this.getName(data);
+    const images = this.imageStore?.list?.data || [];
+
+    return (
+      <div>
+        <p>{t('Are you sure to rescue instance: {name}?', { name })}</p>
+        <Form
+          layout="vertical"
+          ref={(form) => {
+            this.form = form;
+          }}
+        >
+          <Form.Item
+            label={t('Admin Password (Optional)')}
+            name="adminPass"
+            extra={t('Leave empty to generate a random password')}
+          >
+            <Input.Password placeholder={t('Enter admin password')} />
+          </Form.Item>
+          <Form.Item
+            label={t('Rescue Image (Optional)')}
+            name="rescue_image_ref"
+            extra={t('Leave empty to use base image')}
+          >
+            <Select
+              placeholder={t('Select rescue image')}
+              allowClear
+              showSearch
+              optionFilterProp="children"
+              loading={this.imageStore?.list?.isLoading}
+            >
+              {images.map((image) => (
+                <Select.Option key={image.id} value={image.id}>
+                  {image.name} ({image.id})
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+        </Form>
+      </div>
+    );
+  };
+
   onSubmit = async (item) => {
     const { id } = item || this.item;
-    const response = await globalServerStore.rescue({ id });
+
+    // Get form values
+    const formValues = this.form ? await this.form.validateFields() : {};
+    const { adminPass, rescue_image_ref } = formValues;
+
+    const body = {
+      rescue: {},
+    };
+
+    // Add adminPass if provided
+    if (adminPass && adminPass.trim()) {
+      body.rescue.adminPass = adminPass.trim();
+    }
+
+    // Add rescue_image_ref if provided
+    if (rescue_image_ref) {
+      body.rescue.rescue_image_ref = rescue_image_ref;
+    }
+
+    const response = await globalServerStore.rescue({ id, body });
 
     // Store the admin password for use in success message
     if (response && response.adminPass) {
