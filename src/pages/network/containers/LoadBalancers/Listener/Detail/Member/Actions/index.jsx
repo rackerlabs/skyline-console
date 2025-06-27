@@ -15,6 +15,7 @@
 import DeleteAction from './DeleteMember';
 import CreateAction from './CreateMember';
 import Edit from './EditMember';
+import DisableAction from './DisableMember';
 
 export const actionConfigs = {
   rowActions: {
@@ -22,6 +23,9 @@ export const actionConfigs = {
     moreActions: [
       {
         action: DeleteAction,
+      },
+      {
+        action: DisableAction,
       },
     ],
   },
@@ -36,6 +40,9 @@ export const adminActions = {
     moreActions: [
       {
         action: DeleteAction,
+      },
+      {
+        action: DisableAction,
       },
     ],
   },
