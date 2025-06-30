@@ -499,6 +499,22 @@ export class ServerStore extends Base {
   setVolumesForSnapshot(volumes) {
     this.volumesForSnapshot = volumes;
   }
+
+  @action
+  async rescue({ id, body }) {
+    const rescueBody = body || {
+      rescue: {},
+    };
+    return this.operation({ body: rescueBody, id });
+  }
+
+  @action
+  async unrescue({ id }) {
+    const body = {
+      unrescue: null,
+    };
+    return this.operation({ body, id });
+  }
 }
 
 const globalServerStore = new ServerStore();
