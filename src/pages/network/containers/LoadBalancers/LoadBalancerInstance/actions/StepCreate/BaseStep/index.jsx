@@ -112,6 +112,28 @@ export class BaseStep extends Base {
         type: 'select-table',
         data: this.state.flavorList || [],
         required: false,
+        filterParams: [
+          {
+            name: 'name',
+            label: t('Name'),
+          },
+          {
+            name: 'id',
+            label: t('Flavor Id'),
+          },
+          {
+            name: 'flavor_profile_id',
+            label: t('Flavor Profile ID'),
+          },
+          {
+            name: 'enabled',
+            label: t('Enabled'),
+            options: [
+              { key: true, label: t('Yes') },
+              { key: false, label: t('No') },
+            ],
+          },
+        ],
         columns: [
           {
             title: t('Flavor Id'),
