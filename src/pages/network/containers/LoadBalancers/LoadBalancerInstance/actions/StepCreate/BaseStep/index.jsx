@@ -122,8 +122,8 @@ export class BaseStep extends Base {
             label: t('Flavor Id'),
           },
           {
-            name: 'flavor_profile_id',
-            label: t('Flavor Profile ID'),
+            name: 'description',
+            label: t('Description'),
           },
           {
             name: 'enabled',
@@ -136,16 +136,16 @@ export class BaseStep extends Base {
         ],
         columns: [
           {
-            title: t('Flavor Id'),
-            dataIndex: 'id',
-          },
-          {
             title: t('Name'),
             dataIndex: 'name',
           },
           {
-            title: t('Flavor Profile ID'),
-            dataIndex: 'flavor_profile_id',
+            title: t('Flavor Id'),
+            dataIndex: 'id',
+          },
+          {
+            title: t('Description'),
+            dataIndex: 'description',
           },
           {
             title: t('Enabled'),
