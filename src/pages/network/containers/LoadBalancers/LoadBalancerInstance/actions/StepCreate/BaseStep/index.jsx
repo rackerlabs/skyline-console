@@ -15,16 +15,14 @@
 import Base from 'components/Form';
 import { inject, observer } from 'mobx-react';
 import { NetworkStore } from 'stores/neutron/network';
-import { observable } from 'mobx';
 import { SubnetStore } from 'stores/neutron/subnet';
+import globalLoadBalancerFlavorStore from 'stores/octavia/flavor';
 import { LbaasStore } from 'stores/octavia/loadbalancer';
 
 export class BaseStep extends Base {
-  @observable
-  loadBalancerFlavors = [];
-
   init() {
     this.store = new LbaasStore();
+    this.flavorStore = globalLoadBalancerFlavorStore;
     this.networkStore = new NetworkStore();
     this.subnetStore = new SubnetStore();
     this.state = {
@@ -89,8 +87,8 @@ export class BaseStep extends Base {
   };
 
   async getFlavors() {
-    const flavorList = await this.store.fetchListAndProfiles();
-    this.setState({ flavorList, loading: false });
+    const flavorList = await this.flavorStore.fetchListOnly();
+    this.setState({ flavorList: flavorList?.flavors, loading: false });
   }
 
   get formItems() {
@@ -109,19 +107,45 @@ export class BaseStep extends Base {
         type: 'textarea',
       },
       {
-        name: 'LoadBalancerflavor',
-        label: t('Flavor'),
+        name: 'flavor_id',
+        label: t('Flavors'),
         type: 'select-table',
-        data: this.state.flavorList,
-        required: true,
+        data: this.state.flavorList || [],
+        required: false,
+        filterParams: [
+          {
+            name: 'name',
+            label: t('Name'),
+          },
+          {
+            name: 'id',
+            label: t('Flavor Id'),
+          },
+          {
+            name: 'description',
+            label: t('Description'),
+          },
+          {
+            name: 'enabled',
+            label: t('Enabled'),
+            options: [
+              { key: true, label: t('Yes') },
+              { key: false, label: t('No') },
+            ],
+          },
+        ],
         columns: [
           {
             title: t('Name'),
             dataIndex: 'name',
           },
           {
-            title: t('Flavor Profile ID'),
-            dataIndex: 'flavor_profile_id',
+            title: t('Flavor Id'),
+            dataIndex: 'id',
+          },
+          {
+            title: t('Description'),
+            dataIndex: 'description',
           },
           {
             title: t('Enabled'),
