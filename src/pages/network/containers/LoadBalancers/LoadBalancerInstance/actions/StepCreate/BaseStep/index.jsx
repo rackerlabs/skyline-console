@@ -87,8 +87,8 @@ export class BaseStep extends Base {
   };
 
   async getFlavors() {
-    const flavorList = await this.flavorStore.fetchListOnly();
-    this.setState({ flavorList: flavorList?.flavors, loading: false });
+    const flavorList = await this.flavorStore.fetchList();
+    this.setState({ flavorList, loading: false });
   }
 
   get formItems() {
@@ -133,6 +133,14 @@ export class BaseStep extends Base {
               { key: false, label: t('No') },
             ],
           },
+          {
+            name: 'loadbalancer_topology',
+            label: t('Topology'),
+          },
+          {
+            name: 'compute_flavor',
+            label: t('Compute Flavor'),
+          },
         ],
         columns: [
           {
@@ -151,6 +159,14 @@ export class BaseStep extends Base {
             title: t('Enabled'),
             dataIndex: 'enabled',
             valueRender: 'yesNo',
+          },
+          {
+            title: t('Topology'),
+            dataIndex: 'loadbalancer_topology',
+          },
+          {
+            title: t('Compute Flavor'),
+            dataIndex: 'compute_flavor',
           },
         ],
         wrapperCol: {

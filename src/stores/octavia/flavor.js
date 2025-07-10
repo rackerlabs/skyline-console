@@ -12,9 +12,28 @@ export class LoadBalancerFlavorStore extends Base {
   }
 
   @action
-  async fetchListOnly() {
-    const result = await this.client.list();
-    return result;
+  async fetchList(params) {
+    // Fetch both flavors and flavorprofiles
+    const [flavors, flavorProfiles] = await Promise.all([
+      this.client.list(params),
+      octaviaClient.flavorprofiles.list(),
+    ]);
+    // Create a map for quick lookup
+    const profileMap = {};
+    flavorProfiles?.flavorprofiles.forEach((profile) => {
+      profileMap[profile.id] = profile;
+    });
+    // Merge needed fields into each flavor
+    const merged = flavors?.flavors.map((flavor) => {
+      const profile = profileMap[flavor.flavor_profile_id] || {};
+      const flavorData = JSON.parse(profile?.flavor_data);
+      return {
+        ...flavor,
+        loadbalancer_topology: flavorData?.loadbalancer_topology,
+        compute_flavor: flavorData?.compute_flavor,
+      };
+    });
+    return merged;
   }
 }
 
