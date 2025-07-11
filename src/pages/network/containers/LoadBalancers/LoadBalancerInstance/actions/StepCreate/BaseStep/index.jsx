@@ -121,44 +121,15 @@ export class BaseStep extends Base {
             name: 'id',
             label: t('Flavor Id'),
           },
-          {
-            name: 'description',
-            label: t('Description'),
-          },
-          {
-            name: 'enabled',
-            label: t('Enabled'),
-            options: [
-              { key: true, label: t('Yes') },
-              { key: false, label: t('No') },
-            ],
-          },
-          {
-            name: 'loadbalancer_topology',
-            label: t('Topology'),
-          },
-          {
-            name: 'compute_flavor',
-            label: t('Compute Flavor'),
-          },
         ],
         columns: [
-          {
-            title: t('Name'),
-            dataIndex: 'name',
-          },
           {
             title: t('Flavor Id'),
             dataIndex: 'id',
           },
           {
-            title: t('Description'),
-            dataIndex: 'description',
-          },
-          {
-            title: t('Enabled'),
-            dataIndex: 'enabled',
-            valueRender: 'yesNo',
+            title: t('Name'),
+            dataIndex: 'name',
           },
           {
             title: t('Topology'),
@@ -167,6 +138,11 @@ export class BaseStep extends Base {
           {
             title: t('Compute Flavor'),
             dataIndex: 'compute_flavor',
+          },
+          {
+            title: t('Enabled'),
+            dataIndex: 'enabled',
+            valueRender: 'yesNo',
           },
         ],
         wrapperCol: {
