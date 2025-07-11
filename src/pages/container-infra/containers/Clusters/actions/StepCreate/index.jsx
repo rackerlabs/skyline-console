@@ -274,7 +274,7 @@ export class StepCreate extends StepAction {
       return '';
     }
     const { newNodes } = this.getNodesInput();
-    const { volumes } = toJS(this.projectStore.cinderQuota) || {};
+    const { volumes = {} } = toJS(this.projectStore.cinderQuota) || {};
     const { left = 0 } = volumes;
     if (left !== -1 && left < newNodes) {
       return this.getQuotaMessage(newNodes, volumes, t('Volume'));

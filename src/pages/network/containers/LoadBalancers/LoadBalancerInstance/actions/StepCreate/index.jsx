@@ -95,6 +95,7 @@ export class StepCreate extends StepAction {
       pool_admin_state_up,
       monitor_admin_state_up,
       insert_headers,
+      flavor_id,
       health_url_path,
       ...rest
     } = values;
@@ -109,6 +110,13 @@ export class StepCreate extends StepAction {
       data.vip_address = ip_address.ip;
     }
     data.admin_state_up = admin_state_enabled;
+    if (
+      flavor_id &&
+      flavor_id.selectedRowKeys &&
+      flavor_id.selectedRowKeys.length > 0
+    ) {
+      data.flavor_id = flavor_id.selectedRowKeys[0];
+    }
 
     const listenerData = {
       admin_state_up: listener_admin_state_up,

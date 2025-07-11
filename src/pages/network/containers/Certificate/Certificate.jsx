@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import React from 'react';
+import { Badge } from 'antd';
 import { observer, inject } from 'mobx-react';
 import Base from 'containers/List';
 import globalContainersStore, {
@@ -20,7 +21,7 @@ import globalContainersStore, {
 } from 'stores/barbican/containers';
 import { checkPolicyRule } from 'resources/skyline/policy';
 import globalSecretsStore, { SecretsStore } from 'stores/barbican/secrets';
-import { certificateMode, certificateStatus } from 'resources/octavia/lb';
+import { certificateMode } from 'resources/octavia/lb';
 import { parse } from 'qs';
 import actionConfigs from './actions';
 
@@ -133,8 +134,17 @@ export class Certificate extends Base {
       },
       {
         title: t('Status'),
-        dataIndex: 'status',
-        valueMap: certificateStatus,
+        dataIndex: 'expiration',
+        valueRender: 'toLocalTime',
+        render: (value) => {
+          if (value) {
+            const isExpired = value && new Date(value) < new Date();
+            const statusText = t(isExpired ? 'Expired' : 'Active');
+            const statusColor = isExpired ? '#D32F45' : '#3C9E6C';
+            return <Badge color={statusColor} text={statusText} />;
+          }
+          return <Badge color="#3C9E6C" text="Active" />;
+        },
       },
       {
         title: t('Created At'),

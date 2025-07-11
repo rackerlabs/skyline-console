@@ -86,8 +86,15 @@ export const getCertificateColumns = (self) => [
   },
   {
     title: t('Status'),
-    dataIndex: 'status',
-    valueMap: certificateStatus,
+    dataIndex: 'expiration',
+    valueRender: 'toLocalTime',
+    render: (value) => {
+      if (value) {
+        const isExpired = new Date(value) < new Date();
+        return t(isExpired ? 'Expired' : 'Active');
+      }
+      return t('Active');
+    },
   },
   {
     title: t('Created At'),
