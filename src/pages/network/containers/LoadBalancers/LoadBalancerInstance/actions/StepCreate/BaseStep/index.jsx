@@ -95,6 +95,36 @@ export class BaseStep extends Base {
         type: 'textarea',
       },
       {
+        name: 'LoadBalancerflavor',
+        label: t('Flavor'),
+        type: 'select-table',
+        data: this.state.flavorList,
+        required: false,
+        columns: [
+          {
+            title: t('Name'),
+            dataIndex: 'name',
+          },
+          {
+            title: t('Flavor Profile ID'),
+            dataIndex: 'flavor_profile_id',
+          },
+          {
+            title: t('Enabled'),
+            dataIndex: 'enabled',
+            valueRender: 'yesNo',
+          },
+        ],
+        wrapperCol: {
+          xs: {
+            span: 24,
+          },
+          sm: {
+            span: 18,
+          },
+        },
+      },
+      {
         name: 'vip_network_id',
         label: t('Owned Network'),
         type: 'network-select-table',
