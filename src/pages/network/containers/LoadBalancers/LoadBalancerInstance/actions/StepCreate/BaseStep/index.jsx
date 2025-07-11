@@ -113,7 +113,7 @@ export class BaseStep extends Base {
         label: t('Flavor'),
         type: 'select-table',
         data: this.state.flavorList,
-        required: true,
+        required: false,
         columns: [
           {
             title: t('Name'),

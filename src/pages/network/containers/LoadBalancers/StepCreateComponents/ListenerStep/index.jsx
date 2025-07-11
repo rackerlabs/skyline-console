@@ -128,7 +128,12 @@ export class ListenerStep extends Base {
         label: t('Server Certificate'),
         type: 'select-table',
         required: true,
-        data: this.SERVERSecrets,
+        data: this.SERVERSecrets.filter((cert) => {
+          if (!cert.expiration) return true;
+          const expirationDate = new Date(cert.expiration);
+          const now = new Date();
+          return expirationDate.getTime() > now.getTime();
+        }),
         isLoading: false,
         isMulti: false,
         filterParams: [
@@ -145,7 +150,12 @@ export class ListenerStep extends Base {
         label: t('CA Certificate'),
         type: 'select-table',
         required: true,
-        data: this.CASecrets,
+        data: this.CASecrets.filter((cert) => {
+          if (!cert.expiration) return true;
+          const expirationDate = new Date(cert.expiration);
+          const now = new Date();
+          return expirationDate.getTime() > now.getTime();
+        }),
         isLoading: false,
         isMulti: false,
         filterParams: [
