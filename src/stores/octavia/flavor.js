@@ -1,43 +1,39 @@
-import { action, observable } from 'mobx';
-import client from 'client';
+import { action } from 'mobx';
+import octaviaClient from 'client/octavia';
 import Base from 'stores/base';
 
 export class LoadBalancerFlavorStore extends Base {
-  @observable
-  flavorProfiles = [];
-
   get client() {
-    return client.octavia.flavors;
+    return octaviaClient.flavors;
   }
 
   get listWithDetail() {
     return false;
   }
 
-  get mapper() {
-    return (data) => {
-      const profile =
-        this.flavorProfiles.find((p) => p.id === data.flavor_profile_id) || {};
+  @action
+  async fetchList(params) {
+    // Fetch both flavors and flavorprofiles
+    const [flavors, flavorProfiles] = await Promise.all([
+      this.client.list(params),
+      octaviaClient.flavorprofiles.list(),
+    ]);
+    // Create a map for quick lookup
+    const profileMap = {};
+    flavorProfiles?.flavorprofiles.forEach((profile) => {
+      profileMap[profile.id] = profile;
+    });
+    // Merge needed fields into each flavor
+    const merged = flavors?.flavors.map((flavor) => {
+      const profile = profileMap[flavor.flavor_profile_id] || {};
+      const flavorData = JSON.parse(profile?.flavor_data);
       return {
-        ...data,
-        flavor_profile_name: profile.name || '',
-        provider: profile.provider_name || '',
-        originData: data,
+        ...flavor,
+        loadbalancer_topology: flavorData?.loadbalancer_topology,
+        compute_flavor: flavorData?.compute_flavor,
       };
-    };
-  }
-
-  @action
-  async fetchFlavorProfiles() {
-    const result = await client.octavia.flavorprofiles.list();
-    this.flavorProfiles = result || [];
-  }
-
-  @action
-  async fetchListAndProfiles() {
-    await this.fetchFlavorProfiles();
-    const result = await this.client.list();
-    return result.map(this.mapper);
+    });
+    return merged;
   }
 }
 
