@@ -36,6 +36,8 @@ import Resize from './Resize';
 import MigrateAction from './Migrate';
 import Console from './Console';
 import Edit from './Edit';
+import RescueInstance from './RescueInstance';
+import UnRescueInstance from './UnRescueInstance';
 // import Rebuild from './Rebuild';
 import Rebuild from './RebuildSelect'; // Rebuild with select image
 import Shelve from './Shelve';
@@ -62,6 +64,8 @@ const statusActions = [
   UnpauseAction,
   Shelve,
   Unshelve,
+  RescueInstance,
+  UnRescueInstance,
 ];
 
 const resourceActions = [

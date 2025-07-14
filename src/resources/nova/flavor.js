@@ -182,14 +182,15 @@ export const getBaseColumns = (self) => [
     isHideable: true,
   },
   {
-    title: t('Storage IOPS'),
-    dataIndex: 'quota:disk_total_iops_sec',
+    title: t('Cost per Hour'),
+    dataIndex: ':price',
     isHideable: true,
     render: (value) => {
-      if (!value) {
+      const num = parseFloat(value);
+      if (Number.isNaN(num)) {
         return '-';
       }
-      return value;
+      return `$${num.toFixed(3)}`;
     },
   },
 ];
