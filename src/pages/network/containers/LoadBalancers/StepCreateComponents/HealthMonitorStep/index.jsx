@@ -143,7 +143,7 @@ export class HealthMonitorStep extends Base {
         initialValue: '/',
         placeholder: t('e.g., /status.html or /healthcheck.html'),
         extra: t(
-          'Optional; defaults to / if left empty. Recommended: use a status page like /status.html.'
+          'Defaults to "/" if left blank. Recommended: use a dedicated status page like "/status.html".'
         ),
         hidden: !enableHealthMonitor,
       },
