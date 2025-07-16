@@ -109,17 +109,17 @@ export class BaseStep extends Base {
         required: false,
         filterParams: [
           {
-            name: 'name',
-            label: t('Name'),
+            name: 'id',
+            label: t('ID'),
           },
           {
-            name: 'id',
-            label: t('Flavor Id'),
+            name: 'name',
+            label: t('Name'),
           },
         ],
         columns: [
           {
-            title: t('Flavor Id'),
+            title: t('ID'),
             dataIndex: 'id',
           },
           {
