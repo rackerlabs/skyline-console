@@ -53,13 +53,14 @@ export class ObjectStore extends Base {
   }
 
   async listFetchByClient(params, originParams) {
-    const { folder, container } = originParams;
+    const { folder, container, prefix } = originParams;
     const { path } = params;
     const result = await this.client.list(container, params);
     this.container = {
       name: container,
       folder,
       path,
+      prefix,
       hasCopy: this.copiedFiles.length > 0,
     };
     return result;
@@ -67,17 +68,25 @@ export class ObjectStore extends Base {
 
   get paramsFunc() {
     return (params) => {
-      const { current, container, folder, search = '', path, ...rest } = params;
-      const realPath = path || (folder || search ? `${folder}${search}` : '');
+      const {
+        current,
+        container,
+        folder,
+        search = '',
+        prefix,
+        ...rest
+      } = params;
+      const realPath = prefix || (folder || search ? `${folder}${search}` : '');
       const newParams = {
         format: 'json',
+        delimiter: '/',
         ...rest,
       };
+
       if (realPath) {
-        newParams.path = realPath;
-      } else {
-        newParams.delimiter = '/';
+        newParams.prefix = realPath;
       }
+
       return newParams;
     };
   }
@@ -85,6 +94,7 @@ export class ObjectStore extends Base {
   getShortName = (item, folder) => {
     const { name, subdir } = item;
     const lName = subdir || name;
+    folder = decodeURIComponent(folder);
     return lName.substring((folder || '').length) || lName;
   };
 
@@ -120,7 +130,7 @@ export class ObjectStore extends Base {
 
   @action
   updateData = (items) => {
-    const { name, path, folder, hasCopy } = this.container || {};
+    const { name, path, folder, prefix, hasCopy } = this.container || {};
     return items.map((it) => {
       return {
         ...it,
@@ -129,7 +139,7 @@ export class ObjectStore extends Base {
         folder,
         type: this.getItemType(it),
         hasCopy,
-        shortName: this.getShortName(it, folder),
+        shortName: this.getShortName(it, prefix),
         name: it.subdir || it.name,
       };
     });
