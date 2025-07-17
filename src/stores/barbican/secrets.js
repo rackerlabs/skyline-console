@@ -45,7 +45,18 @@ export class SecretsStore extends Base {
     return (data) => {
       const { secret_ref, algorithm } = data;
       const [, uuid] = secret_ref.split('/secrets/');
-      const { domain, expiration } = algorithm ? JSON.parse(algorithm) : {};
+      let domain;
+      let expiration;
+      if (algorithm && algorithm.startsWith('{')) {
+        try {
+          const parsed = JSON.parse(algorithm);
+          domain = parsed.domain;
+          expiration = parsed.expiration;
+        } catch {
+          domain = undefined;
+          expiration = undefined;
+        }
+      }
       return {
         ...data,
         id: uuid,

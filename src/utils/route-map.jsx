@@ -3,7 +3,10 @@ import qs from 'qs';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const routeMap = {};
+const routeMap = {
+  barbicanSecret: { path: '/barbican/secret', key: 'barbicanSecret' },
+  secretDetail: { path: '/barbican/secret/detail/:id', key: 'secretDetail' },
+};
 
 const normalizeRoute = (record) => {
   return {

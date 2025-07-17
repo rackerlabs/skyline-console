@@ -618,6 +618,29 @@ const renderMenu = (t) => {
         },
       ],
     },
+    {
+      path: '/barbican',
+      name: t('Barbican'),
+      key: 'barbican',
+      icon: <ContainerOutlined />,
+      children: [
+        {
+          path: '/barbican/secret',
+          name: t('Secrets'),
+          key: 'barbicanSecret',
+          level: 1,
+          children: [
+            {
+              path: /^\/barbican\/secret\/detail\/.[^/]+$/,
+              name: t('Secret Detail'),
+              key: 'secretDetail',
+              level: 2,
+              routePath: '/barbican/secret/detail/:id',
+            },
+          ],
+        },
+      ],
+    },
     // {
     //   path: '/management',
     //   name: t('Maintenance'),
