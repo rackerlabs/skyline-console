@@ -154,7 +154,7 @@ export class AvatarDropdown extends React.Component {
         {this.renderLanguageMenuItem()}
         <Menu.Divider className={styles['menu-divider']} />
         <Menu.Item key="userCenter" className={styles['menu-item']}>
-          <Button href="/user/center" type="link" style={{ textAlign: 'left' }}>
+          <Button href="/user/center" type="link" style={{ textAlign: 'left', paddingLeft: '0px' }}>
             {t('User Center')}
           </Button>
         </Menu.Item>
