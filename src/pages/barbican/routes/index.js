@@ -16,6 +16,9 @@ import BaseLayout from 'layouts/Basic';
 import E404 from 'pages/base/containers/404';
 import SecretList from '../containers/Secret';
 import SecretDetail from '../containers/Secret/Detail';
+import Certificate from '../../network/containers/Certificate';
+import CertificateDetailContainer from '../../network/containers/Certificate/Detail/Container';
+import CertificateDetailSecret from '../../network/containers/Certificate/Detail/Secret';
 
 const PATH = '/barbican';
 export default [
@@ -27,6 +30,17 @@ export default [
       {
         path: `${PATH}/secret/detail/:id`,
         component: SecretDetail,
+        exact: true,
+      },
+      { path: `${PATH}/certificate`, component: Certificate, exact: true },
+      {
+        path: `${PATH}/certificate-container/detail/:id`,
+        component: CertificateDetailContainer,
+        exact: true,
+      },
+      {
+        path: `${PATH}/certificate-secret/detail/:id`,
+        component: CertificateDetailSecret,
         exact: true,
       },
       { path: '*', component: E404 },

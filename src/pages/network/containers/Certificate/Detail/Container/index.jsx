@@ -37,7 +37,7 @@ export class Detail extends Base {
   }
 
   get listUrl() {
-    return this.getRoutePath('certificate', null, { tab: 'SERVER' });
+    return this.getRoutePath('barbicanCertificate', null, { tab: 'SERVER' });
   }
 
   get actionConfigs() {

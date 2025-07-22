@@ -394,29 +394,7 @@ const renderMenu = (t) => {
             },
           ],
         },
-        {
-          path: '/network/certificate',
-          name: t('Certificates'),
-          key: 'certificate',
-          endpoints: 'barbican',
-          level: 1,
-          children: [
-            {
-              path: /^\/network\/certificate-container\/detail\/.[^/]+$/,
-              name: t('Certificate Detail'),
-              key: 'certificateContainerDetail',
-              level: 2,
-              routePath: '/network/certificate-container/detail/:id',
-            },
-            {
-              path: /^\/network\/certificate-secret\/detail\/.[^/]+$/,
-              name: t('Certificate Detail'),
-              key: 'certificateSecretDetail',
-              level: 2,
-              routePath: '/network/certificate-secret/detail/:id',
-            },
-          ],
-        },
+
         {
           path: '/network/vpn',
           name: t('VPNs'),
@@ -636,6 +614,29 @@ const renderMenu = (t) => {
               key: 'secretDetail',
               level: 2,
               routePath: '/barbican/secret/detail/:id',
+            },
+          ],
+        },
+        {
+          path: '/barbican/certificate',
+          name: t('Certificates'),
+          key: 'barbicanCertificate',
+          endpoints: 'barbican',
+          level: 1,
+          children: [
+            {
+              path: /^\/barbican\/certificate-container\/detail\/.[^/]+$/,
+              name: t('Certificate Detail'),
+              key: 'barbicanCertificateContainerDetail',
+              level: 2,
+              routePath: '/barbican/certificate-container/detail/:id',
+            },
+            {
+              path: /^\/barbican\/certificate-secret\/detail\/.[^/]+$/,
+              name: t('Certificate Detail'),
+              key: 'barbicanCertificateSecretDetail',
+              level: 2,
+              routePath: '/barbican/certificate-secret/detail/:id',
             },
           ],
         },

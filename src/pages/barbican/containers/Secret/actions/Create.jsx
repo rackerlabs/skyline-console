@@ -49,16 +49,32 @@ export class CreateSecret extends ModalAction {
   }
 
   onSecretTypeChange = (value) => {
-    // Update bit length when secret type changes
+    const { creationType } = this.state;
+
+    // For direct creation, don't auto-set algorithm since it's more flexible
+    if (creationType === 'direct') {
+      if (this.formRef.current) {
+        this.formRef.current.setFieldsValue({
+          secret_type: value,
+        });
+      }
+      return;
+    }
+
+    // For order creation, update bit length and algorithm when secret type changes
     let newBitLength;
     let newAlgorithm;
 
-    if (value === 'symmetric') {
+    if (value === 'key') {
       newBitLength = 256;
-      newAlgorithm = 'aes'; // Default symmetric algorithm
+      newAlgorithm = 'aes'; // Default key algorithm
     } else if (value === 'asymmetric') {
       newBitLength = 2048;
       newAlgorithm = 'rsa'; // Default asymmetric algorithm
+    } else {
+      // For empty value and other types, clear bit_length and algorithm
+      newBitLength = undefined;
+      newAlgorithm = undefined;
     }
 
     // Update the form field value using the form's setFieldsValue method
@@ -77,10 +93,10 @@ export class CreateSecret extends ModalAction {
       name: '',
       payload: '',
       payload_content_type: 'text/plain',
-      algorithm: 'aes', // Default algorithm for symmetric keys
+      algorithm: '', // No default value since it's optional
       expiration: '',
       domain: '',
-      secret_type: 'symmetric',
+      secret_type: '', // No default value since it's optional
       bit_length: 256, // Default for symmetric keys
     };
   }
@@ -105,12 +121,14 @@ export class CreateSecret extends ModalAction {
   get secretTypeOptions() {
     return [
       {
-        label: t('Symmetric Key'),
-        value: 'symmetric',
+        label: t('Key'),
+        value: 'key',
+        tip: t('Symmetric keys, private keys, and passphrases'),
       },
       {
         label: t('Asymmetric Key'),
         value: 'asymmetric',
+        tip: t('Asymmetric key pairs (public/private)'),
       },
     ];
   }
@@ -118,7 +136,7 @@ export class CreateSecret extends ModalAction {
   get algorithmOptions() {
     const { secret_type } = this.state;
 
-    if (secret_type === 'symmetric') {
+    if (secret_type === 'key') {
       return [
         {
           label: 'AES',
@@ -131,6 +149,18 @@ export class CreateSecret extends ModalAction {
         {
           label: '3DES',
           value: '3des',
+        },
+        {
+          label: 'RSA',
+          value: 'rsa',
+        },
+        {
+          label: 'DSA',
+          value: 'dsa',
+        },
+        {
+          label: 'EC',
+          value: 'ec',
         },
       ];
     }
@@ -154,11 +184,14 @@ export class CreateSecret extends ModalAction {
   get bitLengthOptions() {
     const { secret_type } = this.state;
 
-    if (secret_type === 'symmetric') {
+    if (secret_type === 'key') {
       return [
         { label: '128', value: 128 },
         { label: '192', value: 192 },
         { label: '256', value: 256 },
+        { label: '1024', value: 1024 },
+        { label: '2048', value: 2048 },
+        { label: '4096', value: 4096 },
       ];
     }
 
@@ -220,11 +253,33 @@ export class CreateSecret extends ModalAction {
           ),
         },
         {
+          name: 'secret_type',
+          label: t('Secret Type'),
+          type: 'select',
+          options: [
+            {
+              label: t('Select Secret Type'),
+              value: '',
+            },
+            ...this.secretTypeOptions,
+          ],
+          required: false,
+          onChange: this.onSecretTypeChange,
+          tip: t('Optional. Type of secret being stored'),
+        },
+        {
           name: 'algorithm',
           label: t('Algorithm'),
-          type: 'input',
+          type: 'select',
+          options: [
+            {
+              label: t('Select Algorithm'),
+              value: '',
+            },
+            ...this.algorithmOptions,
+          ],
           required: false,
-          tip: t('Optional. e.g. AES, RSA, DSA'),
+          tip: t('Optional. Algorithm used by the secret'),
         },
         {
           name: 'expiration',
@@ -268,7 +323,7 @@ export class CreateSecret extends ModalAction {
           type: 'select',
           options: this.bitLengthOptions,
           required: true,
-          display: secret_type === 'symmetric' || secret_type === 'asymmetric',
+          display: secret_type === 'key' || secret_type === 'asymmetric',
         },
         {
           name: 'expiration',

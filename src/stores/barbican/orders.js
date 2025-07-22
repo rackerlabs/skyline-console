@@ -29,6 +29,7 @@ export class OrdersStore extends Base {
   async create(data) {
     const { expiration, domain, secret_type, algorithm, bit_length, name } =
       data;
+
     const body = {
       type: secret_type,
       meta: {
