@@ -126,7 +126,7 @@ export class LoadBalancerInstance extends Base {
             </Col>
             <Col>
               {t(
-                'DEGRADED: One or more of the entity’s components are in ERROR'
+                "DEGRADED: One or more of the entity's components are in ERROR"
               )}
             </Col>
           </Row>
