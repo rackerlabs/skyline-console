@@ -3,10 +3,7 @@ import qs from 'qs';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const routeMap = {
-  keyManagerSecret: { path: '/key-manager/secret', key: 'keyManagerSecret' },
-  secretDetail: { path: '/key-manager/secret/detail/:id', key: 'secretDetail' },
-};
+const routeMap = {};
 
 const normalizeRoute = (record) => {
   return {
