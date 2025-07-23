@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import React from 'react';
 import { inject, observer } from 'mobx-react';
 import Base from 'containers/TabDetail';
 import { SecretsStore } from 'stores/barbican/secrets';
+import { Badge } from 'antd';
 import actionConfigs from '../actions';
 import BaseDetail from './BaseDetail';
 
@@ -50,12 +52,30 @@ export class SecretDetail extends Base {
         dataIndex: 'name',
       },
       {
+        title: t('Status'),
+        dataIndex: 'expiration',
+        valueRender: 'toLocalTime',
+        render: (value) => {
+          if (value) {
+            const isExpired = value && new Date(value) < new Date();
+            const statusText = t(isExpired ? 'Expired' : 'Active');
+            const statusColor = isExpired ? '#D32F45' : '#3C9E6C';
+            return <Badge color={statusColor} text={statusText} />;
+          }
+          return <Badge color="#3C9E6C" text="Active" />;
+        },
+      },
+      {
+        title: t('Secret Type'),
+        dataIndex: 'secret_type',
+      },
+      {
         title: t('Algorithm'),
         dataIndex: 'algorithm',
       },
       {
-        title: t('Domain'),
-        dataIndex: 'domain',
+        title: t('Mode'),
+        dataIndex: 'mode',
       },
       {
         title: t('Expiration'),

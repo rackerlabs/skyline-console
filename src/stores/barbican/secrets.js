@@ -43,25 +43,24 @@ export class SecretsStore extends Base {
 
   get mapper() {
     return (data) => {
-      const { secret_ref, algorithm } = data;
+      const { secret_ref, algorithm, expiration } = data;
       const [, uuid] = secret_ref.split('/secrets/');
-      let domain;
-      let expiration;
+
+      // Extract expiration from algorithm JSON if it exists
+      let extractedExpiration = expiration;
       if (algorithm && algorithm.startsWith('{')) {
         try {
           const parsed = JSON.parse(algorithm);
-          domain = parsed.domain;
-          expiration = parsed.expiration;
+          extractedExpiration = parsed.expiration || expiration;
         } catch {
-          domain = undefined;
-          expiration = undefined;
+          // Keep original expiration if parsing fails
         }
       }
+
       return {
         ...data,
         id: uuid,
-        domain,
-        expiration,
+        expiration: extractedExpiration,
       };
     };
   }
@@ -132,9 +131,6 @@ export class SecretsStore extends Base {
           const bytes = new Uint8Array(payload);
           const contentType = item.payload_content_type || 'text/plain';
 
-          console.log('Payload content-type:', contentType);
-          console.log('Payload byte length:', bytes.byteLength);
-
           // Check if it's actually text by trying to decode it
           const textDecoder = new TextDecoder('utf-8', { fatal: false });
           const decodedText = textDecoder.decode(bytes);
@@ -194,17 +190,27 @@ export class SecretsStore extends Base {
 
   @action
   async create(data) {
-    const { expiration, domain, algorithm, secret_type, ...rest } = data;
+    const {
+      expiration,
+      secret_type,
+      algorithm,
+      bit_length,
+      mode,
+      payload_content_encoding,
+      ...rest
+    } = data;
+
     const body = {
       ...rest,
-      algorithm:
-        algorithm ||
-        JSON.stringify({
-          domain,
-          expiration,
-        }),
       ...(secret_type && secret_type.trim() !== '' && { secret_type }),
+      ...(algorithm && algorithm.trim() !== '' && { algorithm }),
+      ...(bit_length && { bit_length }),
+      ...(mode && mode.trim() !== '' && { mode }),
+      ...(payload_content_encoding &&
+        payload_content_encoding.trim() !== '' && { payload_content_encoding }),
+      ...(expiration && { expiration }),
     };
+
     return this.client.create(body);
   }
 }

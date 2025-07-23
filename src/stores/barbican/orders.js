@@ -27,18 +27,26 @@ export class OrdersStore extends Base {
 
   @action
   async create(data) {
-    const { expiration, domain, secret_type, algorithm, bit_length, name } =
-      data;
+    const {
+      expiration,
+      request_type,
+      algorithm,
+      bit_length,
+      name,
+      payload_content_type,
+      mode,
+    } = data;
 
     const body = {
-      type: secret_type,
+      type: request_type,
       meta: {
-        algorithm,
-        bit_length,
+        ...(algorithm && { algorithm }),
+        ...(bit_length && { bit_length }),
+        ...(mode && { mode }),
+        ...(payload_content_type && { payload_content_type }),
+        ...(name && { name }),
         ...(expiration && { expiration }),
-        ...(domain && { domain }),
       },
-      ...(name && { name }), // Only include name if provided
     };
     return this.client.create(body);
   }

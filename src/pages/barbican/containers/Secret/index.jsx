@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import React from 'react';
 import { observer, inject } from 'mobx-react';
 import BaseList from 'containers/List';
 import globalSecretsStore from 'stores/barbican/secrets';
+import { Badge } from 'antd';
 import actionConfigs from './actions';
 
 export class SecretList extends BaseList {
@@ -38,12 +40,22 @@ export class SecretList extends BaseList {
         routeName: this.getRouteName('secretDetail'),
       },
       {
-        title: t('Algorithm'),
-        dataIndex: 'algorithm',
+        title: t('Status'),
+        dataIndex: 'expiration',
+        valueRender: 'toLocalTime',
+        render: (value) => {
+          if (value) {
+            const isExpired = value && new Date(value) < new Date();
+            const statusText = t(isExpired ? 'Expired' : 'Active');
+            const statusColor = isExpired ? '#D32F45' : '#3C9E6C';
+            return <Badge color={statusColor} text={statusText} />;
+          }
+          return <Badge color="#3C9E6C" text="Active" />;
+        },
       },
       {
-        title: t('Domain'),
-        dataIndex: 'domain',
+        title: t('Algorithm'),
+        dataIndex: 'algorithm',
       },
       {
         title: t('Expiration'),
@@ -71,10 +83,6 @@ export class SecretList extends BaseList {
       {
         label: t('Algorithm'),
         name: 'algorithm',
-      },
-      {
-        label: t('Domain'),
-        name: 'domain',
       },
     ];
   }
