@@ -113,9 +113,7 @@ export class CreateSecret extends ModalAction {
       {
         label: t('Create Secret via Order'),
         value: 'order',
-        tip: t(
-          'Create a secret through barbican order (for certificates, keys, etc.)'
-        ),
+        tip: t('Create a secret through order (for certificates, keys, etc.)'),
       },
     ];
   }

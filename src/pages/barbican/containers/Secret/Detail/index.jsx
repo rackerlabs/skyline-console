@@ -34,7 +34,7 @@ export class SecretDetail extends Base {
   }
 
   get listUrl() {
-    return this.getRoutePath('barbicanSecret');
+    return this.getRoutePath('keyManagerSecret');
   }
 
   get actionConfigs() {

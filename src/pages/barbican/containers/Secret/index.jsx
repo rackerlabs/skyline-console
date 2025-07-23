@@ -37,7 +37,7 @@ export class SecretList extends BaseList {
       {
         title: t('ID/Name'),
         dataIndex: 'name',
-        routeName: this.getRouteName('secretDetail'),
+        routeName: this.getRouteName('keyManagerSecret'),
       },
       {
         title: t('Status'),

@@ -70,8 +70,8 @@ export class Certificate extends Base {
 
   get routeLinkPath() {
     return this.currentMode === 'SERVER'
-      ? 'barbicanCertificateContainerDetail'
-      : 'barbicanCertificateSecretDetail';
+      ? 'keyManagerCertificateContainerDetail'
+      : 'keyManagerCertificateSecretDetail';
   }
 
   updateFetchParams = (params) => {

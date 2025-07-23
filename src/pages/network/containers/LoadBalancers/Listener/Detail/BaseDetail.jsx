@@ -132,7 +132,7 @@ export class BaseDetail extends Base {
         render: (value) => {
           return value
             ? this.getLinkRender(
-                'barbicanCertificateContainerDetail',
+                'keyManagerCertificateSecretDetail',
                 value,
                 {
                   id: value,
@@ -166,7 +166,7 @@ export class BaseDetail extends Base {
             ? value.map(
                 (it, index) =>
                   this.getLinkRender(
-                    'barbicanCertificateContainerDetail',
+                    'keyManagerCertificateContainerDetail',
                     `${it}${index === value.length - 1 ? '' : ' , '}`,
                     {
                       id: it,

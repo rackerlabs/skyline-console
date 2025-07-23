@@ -4,8 +4,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 const routeMap = {
-  barbicanSecret: { path: '/barbican/secret', key: 'barbicanSecret' },
-  secretDetail: { path: '/barbican/secret/detail/:id', key: 'secretDetail' },
+  keyManagerSecret: { path: '/key-manager/secret', key: 'keyManagerSecret' },
+  secretDetail: { path: '/key-manager/secret/detail/:id', key: 'secretDetail' },
 };
 
 const normalizeRoute = (record) => {

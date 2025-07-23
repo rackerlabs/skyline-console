@@ -115,7 +115,7 @@ export default [
         component: Share,
       },
       {
-        path: `/barbican`,
+        path: `/key-manager`,
         component: Barbican,
       },
       {

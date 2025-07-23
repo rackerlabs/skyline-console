@@ -20,7 +20,7 @@ import Certificate from '../../network/containers/Certificate';
 import CertificateDetailContainer from '../../network/containers/Certificate/Detail/Container';
 import CertificateDetailSecret from '../../network/containers/Certificate/Detail/Secret';
 
-const PATH = '/barbican';
+const PATH = '/key-manager';
 export default [
   {
     path: PATH,
