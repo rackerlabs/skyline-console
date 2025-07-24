@@ -306,19 +306,38 @@ export class BaseStep extends Base {
   }
 
   getSystemDiskMinSize() {
-    const flavorSize = (this.state.flavor || {}).disk || 0;
-    let imageSize = 0;
+    const { systemDisk } = this.props.context;
+    const selectedVolumeTypeSpecs =
+      systemDisk?.typeOption?.originData?.extra_specs;
+    const minVolumeSize =
+      selectedVolumeTypeSpecs?.['provisioning:min_vol_size'];
+
+    // Start with default minimum of 1GB
+    let minSize = 1;
+
+    // Get provisioning:min_vol_size from selected volume type
+    if (minVolumeSize) {
+      const volTypeMinSize = parseInt(minVolumeSize, 10);
+      if (!Number.isNaN(volTypeMinSize)) {
+        minSize = Math.max(minSize, volTypeMinSize);
+      }
+    }
+
+    // Compare with image min_disk if image source is selected
     if (this.sourceTypeIsImage) {
       const { min_disk = 0, size = 0 } = this.state.image || {};
       const sizeGiB = Math.ceil(size / 1024 / 1024 / 1024);
-      imageSize = Math.max(min_disk, sizeGiB, 1);
-      return Math.max(flavorSize, imageSize, 1);
+      const imageMinSize = Math.max(min_disk, sizeGiB, 1);
+      minSize = Math.max(minSize, imageMinSize);
     }
+
+    // For snapshot source, use snapshot minimum size
     if (this.sourceTypeIsSnapshot) {
       const { instanceSnapshotMinSize = 0 } = this.state;
-      return Math.max(flavorSize, instanceSnapshotMinSize, 1);
+      minSize = Math.max(minSize, instanceSnapshotMinSize, 1);
     }
-    return Math.max(flavorSize, 1);
+
+    return minSize;
   }
 
   get sourceTypeIsImage() {
