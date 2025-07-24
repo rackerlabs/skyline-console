@@ -394,29 +394,7 @@ const renderMenu = (t) => {
             },
           ],
         },
-        {
-          path: '/network/certificate',
-          name: t('Certificates'),
-          key: 'certificate',
-          endpoints: 'barbican',
-          level: 1,
-          children: [
-            {
-              path: /^\/network\/certificate-container\/detail\/.[^/]+$/,
-              name: t('Certificate Detail'),
-              key: 'certificateContainerDetail',
-              level: 2,
-              routePath: '/network/certificate-container/detail/:id',
-            },
-            {
-              path: /^\/network\/certificate-secret\/detail\/.[^/]+$/,
-              name: t('Certificate Detail'),
-              key: 'certificateSecretDetail',
-              level: 2,
-              routePath: '/network/certificate-secret/detail/:id',
-            },
-          ],
-        },
+
         {
           path: '/network/vpn',
           name: t('VPNs'),
@@ -613,6 +591,52 @@ const renderMenu = (t) => {
               key: 'shareGroupDetail',
               level: 2,
               routePath: '/share/share-group/detail/:id',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      path: '/key-manager',
+      name: t('Key Manager'),
+      key: 'keyManager',
+      icon: <ContainerOutlined />,
+      children: [
+        {
+          path: '/key-manager/secret',
+          name: t('Secrets'),
+          key: 'keyManagerSecret',
+          level: 1,
+          children: [
+            {
+              path: /^\/key-manager\/secret\/detail\/.[^/]+$/,
+              name: t('Secret Detail'),
+              key: 'secretDetail',
+              level: 2,
+              routePath: '/key-manager/secret/detail/:id',
+            },
+          ],
+        },
+        {
+          path: '/key-manager/certificate',
+          name: t('Certificates'),
+          key: 'keyManagerCertificate',
+          endpoints: 'barbican',
+          level: 1,
+          children: [
+            {
+              path: /^\/key-manager\/certificate-container\/detail\/.[^/]+$/,
+              name: t('Certificate Detail'),
+              key: 'keyManagerCertificateContainerDetail',
+              level: 2,
+              routePath: '/key-manager/certificate-container/detail/:id',
+            },
+            {
+              path: /^\/key-manager\/certificate-secret\/detail\/.[^/]+$/,
+              name: t('Certificate Detail'),
+              key: 'keyManagerCertificateSecretDetail',
+              level: 2,
+              routePath: '/key-manager/certificate-secret/detail/:id',
             },
           ],
         },

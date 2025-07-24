@@ -70,8 +70,8 @@ export class Certificate extends Base {
 
   get routeLinkPath() {
     return this.currentMode === 'SERVER'
-      ? 'certificateContainerDetail'
-      : 'certificateSecretDetail';
+      ? 'keyManagerCertificateContainerDetail'
+      : 'keyManagerCertificateSecretDetail';
   }
 
   updateFetchParams = (params) => {
