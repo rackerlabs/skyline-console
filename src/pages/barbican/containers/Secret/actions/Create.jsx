@@ -175,7 +175,7 @@ export class CreateSecret extends ModalAction {
     if (currentType === 'key') {
       return [
         {
-          label: 'AES (default)',
+          label: 'AES',
           value: 'aes',
         },
         {
@@ -217,7 +217,7 @@ export class CreateSecret extends ModalAction {
     // Default options for direct creation and other request types
     return [
       {
-        label: 'AES (default)',
+        label: 'AES',
         value: 'aes',
       },
       {
@@ -247,7 +247,7 @@ export class CreateSecret extends ModalAction {
     return [
       { label: '128', value: 128 },
       { label: '192', value: 192 },
-      { label: '256 (default)', value: 256 },
+      { label: '256', value: 256 },
       { label: '1024', value: 1024 },
       { label: '2048', value: 2048 },
       { label: '4096', value: 4096 },
@@ -256,7 +256,7 @@ export class CreateSecret extends ModalAction {
 
   get modeOptions() {
     return [
-      { label: 'CBC (default)', value: 'cbc' },
+      { label: 'CBC', value: 'cbc' },
       { label: 'CTR', value: 'ctr' },
     ];
   }
@@ -311,7 +311,7 @@ export class CreateSecret extends ModalAction {
           label: t('Payload Content Type'),
           type: 'select',
           options: [
-            { label: 'text/plain (default)', value: 'text/plain' },
+            { label: 'text/plain', value: 'text/plain' },
             {
               label: 'application/octet-stream',
               value: 'application/octet-stream',
@@ -450,7 +450,7 @@ export class CreateSecret extends ModalAction {
           type: 'select',
           options: [
             {
-              label: 'application/octet-stream (default)',
+              label: 'application/octet-stream',
               value: 'application/octet-stream',
             },
             { label: 'text/plain', value: 'text/plain' },
