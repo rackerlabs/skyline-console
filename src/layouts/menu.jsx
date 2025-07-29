@@ -23,6 +23,7 @@ import {
   AppstoreOutlined,
   SwitcherOutlined,
   ContainerOutlined,
+  LockOutlined,
 } from '@ant-design/icons';
 
 const renderMenu = (t) => {
@@ -600,7 +601,7 @@ const renderMenu = (t) => {
       path: '/key-manager',
       name: t('Key Manager'),
       key: 'keyManager',
-      icon: <ContainerOutlined />,
+      icon: <LockOutlined />,
       children: [
         {
           path: '/key-manager/secret',
