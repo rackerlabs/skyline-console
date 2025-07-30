@@ -29,6 +29,10 @@ export class ListenerStep extends Base {
     this.secretsStore = new SecretsStore();
     this.fetchContainers();
     this.fetchSecrets();
+    this.state = {
+      ...this.state,
+      l7policies: [],
+    };
   }
 
   get title() {
@@ -69,6 +73,7 @@ export class ListenerStep extends Base {
       listener_sni_enabled: false,
       listener_connection_limit: -1,
       listener_admin_state_up: true,
+      l7_policies: [],
     };
   }
 
@@ -77,6 +82,7 @@ export class ListenerStep extends Base {
       'listener_protocol',
       'listener_ssl_parsing_method',
       'listener_sni_enabled',
+      'l7policies',
     ];
   }
 
@@ -214,6 +220,12 @@ export class ListenerStep extends Base {
         label: t('Admin State Up'),
         type: 'switch',
         tip: t('Defines the admin state of the listener.'),
+      },
+      {
+        name: 'l7policies',
+        label: t('Layer 7 Policies'),
+        type: 'l7policy-allocator',
+        required: false,
       },
       insertHeadersFormItem,
     ];

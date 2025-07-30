@@ -29,6 +29,7 @@ import { QuestionCircleOutlined } from '@ant-design/icons';
 import AceEditor from 'react-ace';
 import MemberAllocator from 'components/FormItem/MemberAllocator';
 import JsonInput from 'components/FormItem/JsonInput';
+import L7PolicyAllocator from 'components/FormItem/L7PolicyAllocator';
 import Select from './Select';
 import Label from './Label';
 import SelectTable from './SelectTable';
@@ -107,6 +108,7 @@ export const type2component = {
   'tree-select': TreeSelect,
   'select-input': SelectWithInput,
   phone: InternationalPhoneNumberInput,
+  'l7policy-allocator': L7PolicyAllocator,
 };
 
 export default class FormItem extends React.Component {

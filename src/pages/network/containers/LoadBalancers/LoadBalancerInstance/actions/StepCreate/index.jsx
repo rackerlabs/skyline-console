@@ -97,6 +97,7 @@ export class StepCreate extends StepAction {
       insert_headers,
       flavor_id,
       health_url_path,
+      l7policies,
       ...rest
     } = values;
     const data = {
@@ -121,6 +122,25 @@ export class StepCreate extends StepAction {
     const listenerData = {
       admin_state_up: listener_admin_state_up,
       protocol: listener_protocol,
+      l7policies:
+        Array.isArray(values.l7policies) && values.l7policies.length > 0
+          ? values.l7policies.map((policy) => ({
+              action: policy.action,
+              rules: policy.rules.map((rule) => ({
+                type: rule.type,
+                compare_type: rule.compareType,
+                value: rule.value,
+                key: rule.key || null,
+                invert: rule.invert,
+              })),
+              ...(policy.action === 'REDIRECT_TO_URL' && {
+                redirect_url: policy.redirect_url,
+              }),
+              ...(policy.action === 'REDIRECT_TO_POOL' && {
+                redirect_pool_id: policy.redirect_pool_id,
+              }),
+            }))
+          : undefined,
     };
 
     const insertHeaders = getInsertHeadersValueFromForm(insert_headers);
