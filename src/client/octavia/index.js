@@ -98,6 +98,11 @@ export class OctaviaClient extends Base {
         key: 'lbaas/flavorprofiles',
         responseKey: 'flavorprofile',
       },
+      {
+        name: 'l7policies',
+        key: 'lbaas/l7policies',
+        responseKey: 'l7ypolicy',
+      },
     ];
   }
 }
