@@ -27,7 +27,7 @@ export class Edit extends ModalAction {
 
   init() {
     this.store = new ObjectStore();
-    this.maxSize = 1;
+    this.maxSize = 5;
   }
 
   static allowed = (item, containerProps) => {

@@ -26,7 +26,7 @@ export class UploadFile extends ModalAction {
 
   init() {
     this.store = new ObjectStore();
-    this.maxSize = 1;
+    this.maxSize = 5;
   }
 
   static allowed = (_, containerProps) => {
