@@ -1,90 +1,324 @@
+// Layout styling
 .container {
   position: relative;
   display: flex;
-  flex-flow: row;
   height: 100vh;
   overflow: hidden;
-  background-color: #fff;
-
-  .left {
-    position: relative;
-    width: 576px;
-    overflow-y: auto;
-
-    /* TODO wait for RGB
-    // background: rgb(253, 249, 252) no-repeat fixed left bottom;
-    // background-size: 556px; */
-
-    .lang {
-      position: absolute;
-      top: 20px;
-      right: 24px;
-      width: 20px;
-      height: 20px;
-      text-align: right;
-    }
-
-    .main {
-      margin-top: 10vh;
-      padding: 0 130px;
-
-      .top {
-        text-align: center;
-
-        .header {
-          height: 56px;
-          line-height: 56px;
-          text-align: left;
-
-          a {
-            text-decoration: none;
-          }
-
-          .logo {
-            //width: 87px;
-            height: 56px;
-            margin-right: 16px;
-            vertical-align: top;
-          }
-        }
-      }
-    }
-  }
-
-  .right {
-    position: relative;
-    flex: 1 1;
-    text-align: center;
-    background-color: #21242a;
-  }
+  background-color: #21242a;
+  // Performance optimizations for parallax
+  transform-style: preserve-3d;
+  perspective: 1000px;
 }
 
-.login-image {
-  margin-top: calc(100vh - 668px);
-}
-
-.login-full-image {
-  width: 100%;
-  height: 100%;
-}
-
-.full-image-front {
-  position: absolute;
+// Full-screen background using original image and overlay
+.background {
+  position: fixed;
   top: 0;
+  left: 0;
   right: 0;
   bottom: 0;
-  left: 0;
-  background-color: rgba(14, 34, 181, 15%);
+  z-index: 1;
+  overflow: hidden; // Prevent parallax overflow
+  
+  .backgroundImage {
+    width: 105%; // Slightly larger to accommodate parallax movement
+    height: 105%; // Slightly larger to accommodate parallax movement
+    object-fit: cover;
+    position: absolute;
+    top: -2.5%; // Center the oversized image
+    left: -2.5%; // Center the oversized image
+    will-change: transform; // Optimize for animations
+    transform-style: preserve-3d; // Enable hardware acceleration
+    backface-visibility: hidden; // Prevent flickering
+  }
+  
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(14, 34, 181, 15%); // Original overlay color
+  }
 }
 
-.genestack-logo {
+// Left column - Login content
+.leftColumn {
   position: relative;
-  top: -160px;
-  left: 70px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50%;
+  min-width: 320px; // Reduced minimum width for better mobile support
+  padding: 0 60px;
+  height: 100vh; // Full height to center the card
 }
 
-.login-right-logo {
+// Right column - Logo and branding
+.rightColumn {
   position: relative;
-  top: -90px;
-  right: 60px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50%;
+  padding: 0 60px;
+}
+
+// Branding container
+.brandingContainer {
+  text-align: center;
+  color: white;
+  
+  .logo {
+    height: 80px;
+    max-width: 250px;
+    margin-bottom: 32px;
+    filter: brightness(1.1) contrast(1.1); // Make logo brighter and more visible
+  }
+  
+  .brandTitle {
+    font-size: 32px;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0 0 8px 0;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5); // Stronger shadow for better contrast
+  }
+  
+  .brandSubtitle {
+    font-size: 16px;
+    font-weight: 500; // Slightly bolder
+    color: #ffffff; // Full white instead of 80% opacity
+    margin: 0;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4); // Stronger shadow for better visibility
+  }
+}
+
+// Card container for login form (updated for left positioning)
+.cardContainer {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  box-shadow: 
+    0 32px 64px rgba(0, 0, 0, 0.4),
+    0 16px 32px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 24px 24px 20px 24px; // Reduced padding significantly
+  overflow: hidden; // Prevent outer scrolling
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex; // Make it a flex container
+  flex-direction: column; // Stack children vertically
+  
+  // Desktop: Auto height for compact forms, max height constraint for expanded forms
+  @media (min-width: 769px) {
+    height: auto; // Let content determine height on desktop
+    min-height: 400px; // Minimum height for good proportions
+    max-height: calc(100vh - 20px); // Never exceed screen height
+  }
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+      0 40px 80px rgba(0, 0, 0, 0.5),
+      0 20px 40px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  }
+}
+
+// Responsive design - Tablet view (769px to 1024px stays desktop, below 768px goes mobile)
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+  }
+  
+  .leftColumn,
+  .rightColumn {
+    width: 100%;
+    min-width: auto;
+  }
+  
+  .leftColumn {
+    order: 2;
+    padding: 20px 16px;
+    height: auto; // Allow natural height
+    min-height: 60vh; // Minimum height
+  }
+  
+  .rightColumn {
+    order: 1;
+    padding: 40px 16px 20px 16px;
+  }
+
+  .brandingContainer {
+    .logo {
+      height: 60px;
+      margin-bottom: 16px;
+      filter: brightness(1.15) contrast(1.15); // Even brighter on tablet
+    }
+    
+    .brandTitle {
+      font-size: 24px;
+      margin-bottom: 4px;
+      color: #ffffff;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+    }
+    
+    .brandSubtitle {
+      font-size: 14px;
+      color: #ffffff;
+      font-weight: 500;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    }
+  }
+}
+
+// Mobile view refinements
+@media (max-width: 768px) {
+  .container {
+    padding: 10px; // Add container padding for margins
+    min-height: 100vh; // Ensure container takes full height
+  }
+  
+  .leftColumn {
+    padding: 0;
+    margin-top: 20px; // Add gap between branding and login panel
+    flex: 1; // Take remaining space
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .rightColumn {
+    display: flex; // Show branding on mobile at top
+    width: 100%;
+    padding: 20px 0 15px 0; // Increased bottom padding for more space
+    justify-content: center;
+    margin-bottom: 10px; // Additional margin below branding
+    flex-shrink: 0; // Prevent shrinking
+  }
+  
+  .cardContainer {
+    padding: 20px 20px 16px 20px; // Reduced mobile padding
+    border-radius: 20px;
+    height: auto; // Let content determine height
+    max-height: calc(100vh - 180px); // Never exceed available space
+    min-height: 300px; // Minimum height for usability
+    flex: 1; // Take available space
+    display: flex;
+    flex-direction: column;
+    
+    // Ensure scrolling works when content is too tall
+    overflow: hidden;
+  }
+}
+
+// Medium mobile range - ensure good spacing
+@media (max-width: 640px) and (min-width: 481px) {
+  .rightColumn {
+    padding: 24px 0 20px 0; // Extra padding for medium screens
+    margin-bottom: 15px; // More separation
+  }
+  
+  .leftColumn {
+    margin-top: 25px; // Extra gap for medium mobile screens
+  }
+  
+  .cardContainer {
+    max-height: calc(100vh - 220px); // Conservative height accounting for all spacing
+    min-height: 280px; // Smaller minimum for medium screens
+  }
+}
+
+// Short screen height adjustments for mobile
+@media (max-width: 768px) and (max-height: 600px) {
+  .rightColumn {
+    padding: 16px 0 10px 0; // Reduce branding padding on short screens
+    margin-bottom: 5px;
+  }
+  
+  .leftColumn {
+    margin-top: 15px; // Reduce gap on short screens
+  }
+  
+  .cardContainer {
+    max-height: calc(100vh - 120px); // More space for content on short screens
+    min-height: 250px; // Lower minimum for very short screens
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 8px; // Smaller container padding on small screens
+    min-height: 100vh; // Ensure full height
+  }
+  
+  .leftColumn {
+    padding: 0; // No additional padding
+    margin-top: 16px; // Smaller but adequate gap on small screens
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .rightColumn {
+    padding: 16px 0 12px 0; // Increased bottom padding for small screens
+    margin-bottom: 8px; // Additional margin for separation
+    flex-shrink: 0;
+  }
+  
+  .cardContainer {
+    padding: 16px 16px 12px 16px; // Further reduced padding
+    border-radius: 16px;
+    height: auto; // Let content determine height
+    max-height: calc(100vh - 160px); // Conservative for small screens
+    min-height: 280px; // Reasonable minimum for small screens
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+}
+
+// Very short screens on small devices
+@media (max-width: 480px) and (max-height: 500px) {
+  .rightColumn {
+    padding: 12px 0 8px 0; // Minimal branding padding
+    margin-bottom: 4px;
+  }
+  
+  .leftColumn {
+    margin-top: 12px; // Minimal gap
+  }
+  
+  .cardContainer {
+    max-height: calc(100vh - 100px); // Maximum space for content
+    min-height: 200px; // Very low minimum for tiny screens
+  }
+  
+  .brandingContainer {
+    .logo {
+      height: 48px;
+      margin-bottom: 12px; // Reduced margin for mobile
+      filter: brightness(1.2) contrast(1.2); // Maximum brightness on mobile
+    }
+    
+    .brandTitle {
+      font-size: 20px;
+      margin-bottom: 4px; // Reduced margin
+      color: #ffffff;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6); // Strong shadow for mobile visibility
+    }
+    
+    .brandSubtitle {
+      font-size: 13px;
+      margin-bottom: 0; // No bottom margin
+      color: #ffffff;
+      font-weight: 500;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5); // Strong shadow for mobile
+    }
+  }
 }
