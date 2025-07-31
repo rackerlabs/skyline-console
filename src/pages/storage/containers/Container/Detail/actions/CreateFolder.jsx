@@ -67,9 +67,9 @@ export class CreateFolder extends ModalAction {
         name: 'folder_name',
         label: t('Folder Name'),
         type: 'input-name',
+        withoutChinese: true,
         required: true,
         isSwiftFile: true,
-        maxLength: 63,
         validator: (rule, value) => {
           if (value.length < 2) {
             return Promise.reject(
