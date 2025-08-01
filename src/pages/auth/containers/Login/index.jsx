@@ -18,9 +18,11 @@ import { inject, observer } from 'mobx-react';
 import { Link } from 'react-router-dom';
 import { InfoCircleFilled } from '@ant-design/icons';
 import SimpleForm from 'components/SimpleForm';
+import SelectLang from 'components/SelectLang';
 import globalSkylineStore from 'stores/skyline/skyline';
 import i18n from 'core/i18n';
 import { isEmpty } from 'lodash';
+import logo from 'asset/image/logo.png';
 import styles from './index.less';
 
 export class Login extends Component {
@@ -406,6 +408,32 @@ export class Login extends Component {
     };
   };
 
+
+
+
+
+
+
+  init() {
+    this.store = globalSkylineStore;
+    this.formRef = React.createRef();
+  }
+
+  renderExtra() {
+    return null;
+  }
+
+  handleSubmit = () => {
+    if (this.formRef.current) {
+      this.formRef.current.submit();
+    }
+  };
+
+  get formItemsWithoutSubmit() {
+    const items = this.formItems;
+    return items.filter(item => item.name !== 'submit');
+  }
+
   usernameDomainValidator = (rule, value) => {
     if (!value || !value.trim()) {
       return Promise.reject(
@@ -440,40 +468,66 @@ export class Login extends Component {
   };
 
   updateDefaultValue = () => {
-    this.formRef.current.resetFields();
     if (this.formRef.current && this.formRef.current.resetFields) {
       this.formRef.current.resetFields();
     }
   };
 
-  init() {
-    this.store = globalSkylineStore;
-    this.formRef = React.createRef();
-  }
-
-  renderExtra() {
-    return null;
-  }
-
   render() {
-    const { loginTypeOption } = this.state;
+    const { loginTypeOption, loading } = this.state;
     if (!loginTypeOption) {
       return null;
     }
+
+    // Determine if form is expanded (has many fields)
+    const formItems = this.formItemsWithoutSubmit;
+    const isExpanded = formItems.length > 3; // More than 3 fields = expanded
+    const scrollableClass = `${styles.scrollableContent} ${isExpanded ? styles.expanded : ''}`;
+
     return (
-      <>
-        <h1 className={styles.welcome}>{this.productName}</h1>
-        <SimpleForm
-          formItems={this.formItems}
-          name="normal_login"
-          className={styles['login-form']}
-          initialValues={this.defaultValue}
-          onFinish={this.onFinish}
-          formref={this.formRef}
-          size="large"
-        />
-        {this.renderExtra()}
-      </>
+      <div className={styles.loginContainer}>
+        {/* Fixed header section - Logo only */}
+        <div className={styles.headerSection}>
+          <img alt="logo" className={styles.headerLogo} src={logo} />
+        </div>
+
+        {/* Language selector */}
+        <div className={styles.langSelector}>
+          <SelectLang />
+        </div>
+
+        {/* Scrollable content area */}
+        <div className={scrollableClass}>
+          <h1 className={styles.welcomeMessage}>{this.productName}</h1>
+
+          <SimpleForm
+            formItems={this.formItemsWithoutSubmit}
+            name="normal_login"
+            className={styles.loginForm}
+            initialValues={this.defaultValue}
+            onFinish={this.onFinish}
+            formref={this.formRef}
+            size="large"
+          />
+
+          {this.renderExtra()}
+        </div>
+
+        {/* Fixed bottom section */}
+        <div className={styles.bottomSection}>
+          <Button
+            loading={loading}
+            type="primary"
+            htmlType="submit"
+            className={styles.loginButton}
+            size="large"
+            block
+            onClick={this.handleSubmit}
+          >
+            {window.t('Log in')}
+          </Button>
+        </div>
+      </div>
     );
   }
 }
