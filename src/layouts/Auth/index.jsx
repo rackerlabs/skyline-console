@@ -17,7 +17,8 @@ import { inject, observer } from 'mobx-react';
 import renderRoutes from 'utils/RouterConfig';
 
 import loginFullImage from 'asset/image/login-full.png';
-import genestackLogo from 'asset/image/genestackLogo.png';
+// import genestackLogo from 'asset/image/genestackLogo.png';
+import openstackLogo from 'asset/image/openstack-new-logo.png';
 import styles from './index.less';
 
 export class AuthLayout extends Component {
@@ -180,9 +181,9 @@ export class AuthLayout extends Component {
         {/* Right column - Logo and branding */}
         <div className={styles.rightColumn}>
           <div className={styles.brandingContainer}>
-            <img alt="logo" className={styles.logo} src={genestackLogo} />
+            <img alt="logo" className={styles.logo} src={openstackLogo} />
             <h2 className={styles.brandTitle}>Rackspace OpenStack</h2>
-            <p className={styles.brandSubtitle}>Powered by OpenCenter</p>
+            <p className={styles.brandSubtitle}>Powered by openCenter</p>
           </div>
         </div>
       </div>
