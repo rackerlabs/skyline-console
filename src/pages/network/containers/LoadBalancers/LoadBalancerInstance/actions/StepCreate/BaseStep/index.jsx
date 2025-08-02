@@ -132,12 +132,8 @@ export class BaseStep extends Base {
             dataIndex: 'name',
           },
           {
-            title: t('Topology'),
-            dataIndex: 'loadbalancer_topology',
-          },
-          {
-            title: t('Compute Flavor'),
-            dataIndex: 'compute_flavor',
+            title: t('Description'),
+            dataIndex: 'description',
           },
           {
             title: t('Enabled'),
