@@ -92,6 +92,7 @@ export class Detach extends ModalAction {
         name: 'instance',
         label: t('Instance'),
         type: 'select-table',
+        marksFirstAsDefault: true,
         required: true,
         data: this.instances,
         filterParams: [

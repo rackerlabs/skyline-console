@@ -2724,7 +2724,7 @@
   "United States": "Amerika Birleşik Devletleri",
   "Unknown": "Bilinmeyen",
   "Unless Stopped": "Durdurulmadığı sürece",
-  "Unless you know clearly which AZ to create the volume in, you don not need to fill in here.": "Diski oluşturmak için hangi AZ'yi açıkça bildiğinizden emin değilseniz, burayı doldurmanıza gerek yok.",
+  "Unless you know clearly which AZ to create the volume in, you do not need to fill in here.": "Diski oluşturmak için hangi AZ'yi açıkça bildiğinizden emin değilseniz, burayı doldurmanıza gerek yok.",
   "Unlimit": "Sınırsız",
   "Unlock": "Kilidi aç",
   "Unlock Instance": "Sanal Makinenin Kilidini Aç",

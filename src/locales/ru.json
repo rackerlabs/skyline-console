@@ -2724,7 +2724,7 @@
   "United States": "Соединенные Штаты Америки",
   "Unknown": "Неизвестно",
   "Unless Stopped": "Кроме случаев остановки",
-  "Unless you know clearly which AZ to create the volume in, you don not need to fill in here.": "Если вы точно не знаете, в какой доступной зоне создать диск, вам не нужно заполнять это поле.",
+  "Unless you know clearly which AZ to create the volume in, you do not need to fill in here.": "Если вы точно не знаете, в какой доступной зоне создать диск, вам не нужно заполнять это поле.",
   "Unlimit": "Без ограничений",
   "Unlock": "Разблокировать",
   "Unlock Instance": "Разблокировать инстанс",
