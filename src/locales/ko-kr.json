@@ -2724,7 +2724,7 @@
   "United States": "United States",
   "Unknown": "알 수 없음",
   "Unless Stopped": "중지되지 않음",
-  "Unless you know clearly which AZ to create the volume in, you don not need to fill in here.": "만약 볼륨을 생성할 Availability Zone을 명확히 알고 있다면, 여기에 입력하셔야 합니다.",
+  "Unless you know clearly which AZ to create the volume in, you do not need to fill in here.": "만약 볼륨을 생성할 Availability Zone을 명확히 알고 있다면, 여기에 입력하셔야 합니다.",
   "Unlimit": "무제한",
   "Unlock": "잠금 해제",
   "Unlock Instance": "인스턴스 잠금 해제",

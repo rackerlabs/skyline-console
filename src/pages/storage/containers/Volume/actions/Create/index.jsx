@@ -418,7 +418,7 @@ export class Create extends FormAction {
         placeholder: t('Please select'),
         options: this.availableZones,
         tip: t(
-          'Unless you know clearly which AZ to create the volume in, you don not need to fill in here.'
+          'Unless you know clearly which AZ to create the volume in, you do not need to fill in here.'
         ),
       },
       {
@@ -437,7 +437,6 @@ export class Create extends FormAction {
         label: t('Operating System'),
         type: 'select-table',
         data: this.images,
-        marksFirstAsDefault: false,
         isLoading: this.imageStore.list.isLoading,
         required: this.sourceTypeIsImage,
         isMulti: false,
@@ -458,7 +457,6 @@ export class Create extends FormAction {
         name: 'snapshot',
         label: t('Volume Snapshot'),
         type: 'select-table',
-        marksFirstAsDefault: false,
         backendPageStore: this.snapshotStore,
         required: this.sourceTypeIsSnapshot,
         isMulti: false,

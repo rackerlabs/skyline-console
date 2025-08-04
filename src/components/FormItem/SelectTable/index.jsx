@@ -132,7 +132,7 @@ export default class SelectTable extends React.Component {
     imageTabAuto: false,
     refreshFunc: null,
     hideRefresh: false,
-    marksFirstAsDefault: true,
+    marksFirstAsDefault: false,
   };
 
   constructor(props) {

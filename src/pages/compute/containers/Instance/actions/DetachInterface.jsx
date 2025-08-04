@@ -99,6 +99,7 @@ export class DetachInterface extends ModalAction {
         name: 'interfaces',
         label: t('Network Interface'),
         type: 'select-table',
+        marksFirstAsDefault: true,
         required: true,
         data: this.ports,
         isLoading: portLoading,
