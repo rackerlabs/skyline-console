@@ -1259,6 +1259,7 @@
   "If this parameter is specified, Zun will create a security group with a set of rules to open the ports that should be exposed, and associate the security group to the container.": "이 매개 변수가 지정된 경우 Zun은 노출되어야 하는 포트를 허용하는 rule을 포함한 Security Group을 생성하고, 해당 Security Group을 컨테이너에 연결합니다.",
   "If you are not authorized to access any project, or if the project you are involved in has been deleted or disabled, contact the platform administrator to reassign the project": "프로젝트에 엑세스할 권한이 없거나 기존의 프로젝트가 삭제 또는 비활성화된 경우, 플랫폼 관리자에게 프로젝트 재할당을 문의하세요.",
   "If you are not sure which authentication method to use, please contact your administrator.": "사용할 인증 방법을 잘 모르는 경우 관리자에게 문의하십시오.",
+  "Tips: If no domain is provided, the configured domain {domain} will be used.": "팁: 도메인이 제공되지 않은 경우, 설정된 도메인 {domain}이(가) 사용됩니다.",
   "If you choose a port which subnet is different from the subnet of LB, please ensure connectivity between the two.": "LB의 Subnet과 다른 Subnet의 포트를 선택할 경우, 두 서브넷 간의 연결 여부를 확인하세요.",
   "If you do not fill in parameters such as cpus, memory_mb, local_gb, cpu_arch, etc., you can automatically inject the configuration and Mac address of the physical machine by performing the \"Auto Inspect\" operation.": "CPU, memory, local_gb, cpu_arch 등의 매개 변수를 입력하지 않으면 \"자동 검사\" 작업을 수행하여 물리적 시스템의 구성 및 MAC 주소를 자동으로 넣을 수 있습니다.",
   "If you still want to keep the disk data, it is recommended that you create a backup for the disk before deleting.": "디스크의 데이터를 보존하려면 디스크를 제거하기 전에 디스크를 백업하는 것이 좋습니다.",

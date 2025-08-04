@@ -221,11 +221,12 @@ export class Login extends Component {
       render: () => (
         <Input placeholder={t('<username> or <username>@<domain>')} />
       ),
-
       extra: (
         <span>
-          Tips: If no domain is specified, the configured domain{' '}
-          {`'${this.store.userDefaultDomain || 'Default'}'`} will be used.
+          {t(
+            'Tips: If no domain is provided, the configured domain {domain} will be used.',
+            { domain: this.store.userDefaultDomain || 'Default' }
+          )}
         </span>
       ),
       rules: [{ required: true, validator: this.usernameDomainValidator }],
@@ -415,19 +416,9 @@ export class Login extends Component {
     };
   };
 
-
-
-
-
-
-
-  init() {
-    this.store = globalSkylineStore;
-    this.formRef = React.createRef();
-  }
-
-  renderExtra() {
-    return null;
+  get formItemsWithoutSubmit() {
+    const items = this.formItems;
+    return items.filter((item) => item.name !== 'submit');
   }
 
   handleSubmit = () => {
@@ -435,11 +426,6 @@ export class Login extends Component {
       this.formRef.current.submit();
     }
   };
-
-  get formItemsWithoutSubmit() {
-    const items = this.formItems;
-    return items.filter(item => item.name !== 'submit');
-  }
 
   usernameDomainValidator = (rule, value) => {
     if (!value || !value.trim()) {
@@ -480,6 +466,15 @@ export class Login extends Component {
     }
   };
 
+  init() {
+    this.store = globalSkylineStore;
+    this.formRef = React.createRef();
+  }
+
+  renderExtra() {
+    return null;
+  }
+
   render() {
     const { loginTypeOption, loading } = this.state;
     if (!loginTypeOption) {
@@ -489,7 +484,9 @@ export class Login extends Component {
     // Determine if form is expanded (has many fields)
     const formItems = this.formItemsWithoutSubmit;
     const isExpanded = formItems.length > 3; // More than 3 fields = expanded
-    const scrollableClass = `${styles.scrollableContent} ${isExpanded ? styles.expanded : ''}`;
+    const scrollableClass = `${styles.scrollableContent} ${
+      isExpanded ? styles.expanded : ''
+    }`;
 
     return (
       <div className={styles.loginContainer}>
