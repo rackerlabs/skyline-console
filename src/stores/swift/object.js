@@ -14,7 +14,6 @@
 
 import { action, observable } from 'mobx';
 import client from 'client';
-import { getArrayBuffer } from 'utils/file';
 import Base from '../base';
 
 export class ObjectStore extends Base {
@@ -163,10 +162,10 @@ export class ObjectStore extends Base {
       'X-Object-Meta-Orig-Filename': encodeURIComponent(file.name),
       'Content-Length': file.size,
       'Content-Type': file.type,
+      ...config.headers,
     };
-    const content = await getArrayBuffer(file);
     return this.submitting(
-      this.containerClient.uploadFile(container, name, content, {
+      this.containerClient.uploadFile(container, name, file, {
         headers,
         ...config,
       })
@@ -180,9 +179,8 @@ export class ObjectStore extends Base {
       'Content-Length': file.size,
       'Content-Type': file.type,
     };
-    const content = await getArrayBuffer(file);
     return this.submitting(
-      this.containerClient.uploadFile(container, name, content, {
+      this.containerClient.uploadFile(container, name, file, {
         headers,
         ...config,
       })
