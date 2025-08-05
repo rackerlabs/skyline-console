@@ -201,9 +201,17 @@ export class Login extends Component {
       name: 'error',
       hidden: !error,
       render: () => (
-        <div className={styles['login-error']}>
-          <InfoCircleFilled />
-          {this.getErrorMessage()}
+        <div 
+          className={styles.loginError}
+          role="alert"
+          aria-live="polite"
+          aria-atomic="true"
+          id="login-error"
+        >
+          <InfoCircleFilled aria-hidden="true" />
+          <span aria-label="Login error message">
+            {this.getErrorMessage()}
+          </span>
         </div>
       ),
     };
@@ -212,21 +220,31 @@ export class Login extends Component {
       required: true,
       message: t('Please select your Region!'),
       render: () => (
-        <Select placeholder={t('Select a region')} options={this.regions} />
+        <Select 
+          placeholder={t('Select a region')} 
+          options={this.regions}
+          aria-label={t('Select your region')}
+          aria-required="true"
+          aria-describedby={error ? "login-error" : undefined}
+        />
       ),
     };
     const domainItem = {
       name: 'domain',
       required: true,
       render: () => (
-        <Input placeholder={t('<username> or <username>@<domain>')} />
+        <Input 
+          placeholder={t('<username> or <username>@<domain>')}
+          aria-label={t('Username or username@domain')}
+          aria-required="true"
+          aria-describedby="domain-help login-error"
+          autoComplete="username"
+        />
       ),
       extra: (
-        <span>
-          {t(
-            'Tips: If no domain is provided, the configured domain {domain} will be used.',
-            { domain: this.store.userDefaultDomain || 'Default' }
-          )}
+        <span id="domain-help" role="note">
+          Tips: If no domain is specified, the configured domain{' '}
+          {`'${this.store.userDefaultDomain || 'Default'}'`} will be used.
         </span>
       ),
       rules: [{ required: true, validator: this.usernameDomainValidator }],
@@ -242,18 +260,35 @@ export class Login extends Component {
       name: 'password',
       required: true,
       message: t('Please input your Password!'),
-      render: () => <Input.Password placeholder={t('Password')} />,
+      render: () => (
+        <Input.Password 
+          placeholder={t('Password')}
+          aria-label={t('Password')}
+          aria-required="true"
+          aria-describedby={error ? "login-error" : undefined}
+          autoComplete="current-password"
+        />
+      ),
     };
     const extraItem = {
       name: 'extra',
       hidden: true,
       render: () => (
-        <Row gutter={8}>
+        <Row gutter={8} role="navigation" aria-label="Additional authentication options">
           <Col span={12}>
-            <Link to="password">{t('Forgot your password?')}</Link>
+            <Link 
+              to="password"
+              aria-label={t('Reset your password if you forgot it')}
+            >
+              {t('Forgot your password?')}
+            </Link>
           </Col>
           <Col span={12}>
-            <Link to="register" className={styles.register}>
+            <Link 
+              to="register" 
+              className={styles.register}
+              aria-label={t('Create a new account')}
+            >
               {t('Sign up')}
             </Link>
           </Col>
@@ -489,20 +524,47 @@ export class Login extends Component {
     }`;
 
     return (
-      <div className={styles.loginContainer}>
+      <div 
+        className={styles.loginContainer}
+        role="article"
+        aria-label="Login form container"
+      >
         {/* Fixed header section - Logo only */}
-        <div className={styles.headerSection}>
-          <img alt="logo" className={styles.headerLogo} src={logo} />
+        <div 
+          className={styles.headerSection}
+          role="banner"
+          aria-label="Application header"
+        >
+          <img 
+            alt="Application logo" 
+            className={styles.headerLogo} 
+            src={logo}
+            role="img"
+          />
         </div>
 
         {/* Language selector */}
-        <div className={styles.langSelector}>
+        <div 
+          className={styles.langSelector}
+          role="region"
+          aria-label="Language selection"
+        >
           <SelectLang />
         </div>
 
         {/* Scrollable content area */}
-        <div className={scrollableClass}>
-          <h1 className={styles.welcomeMessage}>{this.productName}</h1>
+        <div 
+          className={scrollableClass}
+          role="main"
+          aria-label="Login form content"
+        >
+          <h1 
+            className={styles.welcomeMessage}
+            id="login-title"
+            aria-level="1"
+          >
+            {this.productName}
+          </h1>
 
           <SimpleForm
             formItems={this.formItemsWithoutSubmit}
@@ -512,13 +574,19 @@ export class Login extends Component {
             onFinish={this.onFinish}
             formref={this.formRef}
             size="large"
+            aria-labelledby="login-title"
+            aria-describedby="login-description"
           />
 
           {this.renderExtra()}
         </div>
 
         {/* Fixed bottom section */}
-        <div className={styles.bottomSection}>
+        <div 
+          className={styles.bottomSection}
+          role="region"
+          aria-label="Form submission section"
+        >
           <Button
             loading={loading}
             type="primary"
@@ -527,6 +595,8 @@ export class Login extends Component {
             size="large"
             block
             onClick={this.handleSubmit}
+            aria-label={loading ? window.t('Logging in...') : window.t('Log in')}
+            aria-describedby="login-title"
           >
             {window.t('Log in')}
           </Button>
