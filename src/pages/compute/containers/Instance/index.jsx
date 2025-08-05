@@ -119,16 +119,24 @@ export class Instance extends Base {
   }
 
   componentDidMount() {
-    // Set up reaction to watch for status changes
+    // Call parent's componentDidMount first to ensure API call happens immediately
+    super.componentDidMount();
+
+    // Set up optimized MobX reaction to watch for verify_resize instances
     this.dispose = reaction(
-      () => this.store.list.data.map((instance) => instance.status),
-      (statuses) => {
-        statuses.forEach((status, index) => {
-          const instance = this.store.list.data[index];
-          if (
-            status === 'verify_resize' &&
-            !this.notifiedInstances.has(instance.id)
-          ) {
+      () => {
+        const { data } = this.store.list;
+        // Only track instances that are in verify_resize status
+        return data && data.length > 0
+          ? data.filter((instance) => instance.status === 'verify_resize')
+          : [];
+      },
+      (verifyResizeInstances) => {
+        // Only process if we have instances in verify_resize status
+        if (verifyResizeInstances.length === 0) return;
+
+        verifyResizeInstances.forEach((instance) => {
+          if (!this.notifiedInstances.has(instance.id)) {
             Notify.warn(
               t(
                 `Waiting for user to Confirm/Revert the Resize for\n ${instance.id}`
@@ -137,15 +145,24 @@ export class Instance extends Base {
             this.notifiedInstances.add(instance.id);
           }
         });
+      },
+      {
+        fireImmediately: false,
+        delay: 100, // Small delay to batch updates
       }
     );
   }
 
   componentWillUnmount() {
-    // Running the cleanup function on unmount
+    // Call parent's componentWillUnmount first
+    super.componentWillUnmount();
+
+    // Clean up the MobX reaction
     if (this.dispose) {
       this.dispose();
     }
+
+    // Clean up notifications
     this.notifiedInstances.clear();
   }
 
