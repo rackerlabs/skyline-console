@@ -171,10 +171,21 @@
       }
     }
     
+    // Password input focus styling - match other inputs exactly
+    .ant-input-password {
+      &:focus-within,
+      &.ant-input-password-focused {
+        border-color: #a33e3e !important;
+        background: #ffffff !important;
+        box-shadow: 0 0 0 3px rgba(163, 62, 62, 0.1) !important;
+      }
+    }
+    
     // Fix password input specific styling
     .ant-input-password {
       .ant-input {
         border: none !important;
+        border-radius: 0 !important;
         padding: 0 !important;
         background: transparent !important;
         box-shadow: none !important;
@@ -231,6 +242,7 @@
       .ant-input-password .ant-input {
         border: none !important;
         background: transparent !important;
+        border-radius: 0 !important;
         
         &:focus {
           box-shadow: none !important;
@@ -397,6 +409,7 @@
       // Fix mobile password input
       .ant-input-password .ant-input {
         padding: 0 !important;
+        border-radius: 0 !important;
       }
       
       .ant-select-selector {
