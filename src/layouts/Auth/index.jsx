@@ -16,9 +16,11 @@ import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
 import renderRoutes from 'utils/RouterConfig';
 
-import loginFullImage from 'asset/image/login-full.png';
+import loginFullImageWebp from 'asset/image/login-full.webp';
+import loginFullImagePng from 'asset/image/login-full.png';
 // import genestackLogo from 'asset/image/genestackLogo.png';
-import openstackLogo from 'asset/image/openstack-new-logo.png';
+import openstackLogoWebp from 'asset/image/openstack-new-logo.webp';
+import openstackLogoPng from 'asset/image/openstack-new-logo.png';
 import styles from './index.less';
 
 export class AuthLayout extends Component {
@@ -28,37 +30,38 @@ export class AuthLayout extends Component {
     this.routes = props.route.routes;
   }
 
-
-
   render() {
     return (
-      <div 
+      <div
         className={styles.container}
         role="main"
         aria-label="Authentication page"
       >
         {/* Full-screen background */}
-        <div 
+        <div
           className={styles.background}
           role="presentation"
           aria-hidden="true"
         >
-          <img
-            alt=""
-            className={styles.backgroundImage}
-            src={loginFullImage}
-            aria-hidden="true"
-          />
+          <picture>
+            <source srcSet={loginFullImageWebp} type="image/webp" />
+            <img
+              alt=""
+              className={styles.backgroundImage}
+              src={loginFullImagePng}
+              aria-hidden="true"
+            />
+          </picture>
           <div className={styles.overlay} aria-hidden="true" />
         </div>
 
         {/* Left column - Login content */}
-        <div 
+        <div
           className={styles.leftColumn}
           role="region"
           aria-label="Login form section"
         >
-          <div 
+          <div
             className={styles.cardContainer}
             role="form"
             aria-label="User authentication form"
@@ -68,33 +71,32 @@ export class AuthLayout extends Component {
         </div>
 
         {/* Right column - Logo and branding */}
-        <div 
+        <div
           className={styles.rightColumn}
           role="region"
           aria-label="Branding section"
         >
-          <div 
+          <div
             className={styles.brandingContainer}
             role="banner"
             aria-labelledby="brand-title"
           >
-            <img 
-              alt="Rackspace OpenStack logo" 
-              className={styles.logo} 
-              src={openstackLogo}
-              role="img"
-            />
-            <h2 
+            <picture>
+              <source srcSet={openstackLogoWebp} type="image/webp" />
+              <img
+                alt="Rackspace OpenStack logo"
+                className={styles.logo}
+                src={openstackLogoPng}
+              />
+            </picture>
+            <h2
               id="brand-title"
               className={styles.brandTitle}
               aria-label="Rackspace OpenStack platform"
             >
               Rackspace OpenStack
             </h2>
-            <p 
-              className={styles.brandSubtitle}
-              aria-describedby="brand-title"
-            >
+            <p className={styles.brandSubtitle} aria-describedby="brand-title">
               Powered by openCenter
             </p>
           </div>
