@@ -39,24 +39,45 @@ module.exports = (env) => {
 
   console.log('API %s', API);
 
+  // const devServer = {
+  //   host,
+  //   port,
+  //   contentBase: root('dist'),
+  //   historyApiFallback: true,
+  //   compress: true,
+  //   hot: true,
+  //   inline: true,
+  //   disableHostCheck: true,
+  //   progress: true,
+  //   // WARNING: disable the following attribute when debug webpack.
+  //   stats: {
+  //     children: false,
+  //     chunks: false,
+  //     chunkModules: false,
+  //     modules: false,
+  //     reasons: false,
+  //     useExports: false,
+  //   },
+  // };
+
   const devServer = {
     host,
     port,
-    contentBase: root('dist'),
+    static: {
+      directory: root('dist'),
+    },
     historyApiFallback: true,
     compress: true,
     hot: true,
-    inline: true,
-    disableHostCheck: true,
-    progress: true,
-    // WARNING: disable the following attribute when debug webpack.
-    stats: {
-      children: false,
-      chunks: false,
-      chunkModules: false,
-      modules: false,
-      reasons: false,
-      useExports: false,
+    devMiddleware: {
+      stats: {
+        children: false,
+        chunks: false,
+        chunkModules: false,
+        modules: false,
+        reasons: false,
+        usedExports: false,
+      },
     },
   };
 
@@ -76,7 +97,7 @@ module.exports = (env) => {
       publicPath: '/',
     },
     mode: 'development',
-    devtool: 'cheap-module-eval-source-map',
+    devtool: 'eval-cheap-module-source-map',
     devServer,
     module: {
       rules: [

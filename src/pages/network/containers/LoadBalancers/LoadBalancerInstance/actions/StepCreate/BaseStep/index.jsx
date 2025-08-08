@@ -25,6 +25,11 @@ export class BaseStep extends Base {
     this.flavorStore = globalLoadBalancerFlavorStore;
     this.networkStore = new NetworkStore();
     this.subnetStore = new SubnetStore();
+    this.state = {
+      loading: true,
+      flavorList: [],
+    };
+    this.getFlavors();
   }
 
   get title() {
