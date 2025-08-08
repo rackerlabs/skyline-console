@@ -40,7 +40,7 @@ module.exports = {
         use: ['thread-loader', 'cache-loader'],
       },
       {
-        test: /\.(png|gif|jpg)$/,
+        test: /\.(png|gif|jpg|webp)$/,
         use: [
           {
             loader: 'url-loader',
@@ -57,7 +57,7 @@ module.exports = {
         ],
       },
       {
-        test: /\.(png|gif|jpg)$/,
+        test: /\.(png|gif|jpg|webp)$/,
         use: [
           {
             loader: 'url-loader',
