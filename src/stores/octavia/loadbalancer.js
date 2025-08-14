@@ -19,6 +19,7 @@ import Base from 'stores/base';
 
 export class LbaasStore extends Base {
   get client() {
+    console.log('LB client', client.octavia.loadbalancers);
     return client.octavia.loadbalancers;
   }
 
@@ -60,6 +61,8 @@ export class LbaasStore extends Base {
     const allData = this.listResponseKey
       ? get(result, this.listResponseKey, [])
       : result;
+    console.log('LB list raw result', result);
+    console.log('LB list items', allData);
     this.updateMarker(allData, page, result);
     const allDataNew = allData.map(this.mapperBeforeFetchProject);
     let newData = await this.listDidFetchProject(allDataNew, all_projects);

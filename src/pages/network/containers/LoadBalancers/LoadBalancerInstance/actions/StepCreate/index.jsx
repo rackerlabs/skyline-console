@@ -96,6 +96,8 @@ export class StepCreate extends StepAction {
       monitor_admin_state_up,
       insert_headers,
       flavor_id,
+      provider,
+      availability_zone,
       health_url_path,
       l7policies,
       ...rest
@@ -111,7 +113,14 @@ export class StepCreate extends StepAction {
       data.vip_address = ip_address.ip;
     }
     data.admin_state_up = admin_state_enabled;
+    if (provider) {
+      data.provider = provider;
+    }
+    if (provider !== 'ovn' && availability_zone) {
+      data.availability_zone = availability_zone;
+    }
     if (
+      provider !== 'ovn' &&
       flavor_id &&
       flavor_id.selectedRowKeys &&
       flavor_id.selectedRowKeys.length > 0
@@ -123,7 +132,9 @@ export class StepCreate extends StepAction {
       admin_state_up: listener_admin_state_up,
       protocol: listener_protocol,
       l7policies:
-        Array.isArray(values.l7policies) && values.l7policies.length > 0
+        provider !== 'ovn' &&
+        Array.isArray(values.l7policies) &&
+        values.l7policies.length > 0
           ? values.l7policies.map((policy) => ({
               action: policy.action,
               rules: policy.rules.map((rule) => ({
@@ -144,7 +155,7 @@ export class StepCreate extends StepAction {
     };
 
     const insertHeaders = getInsertHeadersValueFromForm(insert_headers);
-    if (insertHeaders) {
+    if (provider !== 'ovn' && insertHeaders) {
       listenerData.insert_headers = insertHeaders;
     }
 
@@ -172,13 +183,21 @@ export class StepCreate extends StepAction {
     const poolData = { admin_state_up: pool_admin_state_up };
     const healthMonitorData = {
       admin_state_up: monitor_admin_state_up,
-      url_path: health_url_path,
     };
+    if (provider !== 'ovn') {
+      healthMonitorData.url_path = health_url_path;
+    }
     Object.keys(rest).forEach((i) => {
       if (i.indexOf('listener') === 0) {
         listenerData[i.replace('listener_', '')] = values[i];
       } else if (i.indexOf('pool') === 0) {
-        poolData[i.replace('pool_', '')] = values[i];
+        const key = i.replace('pool_', '');
+        // Force algorithm for OVN
+        if (provider === 'ovn' && key === 'lb_algorithm') {
+          poolData[key] = 'SOURCE_IP_PORT';
+        } else {
+          poolData[key] = values[i];
+        }
       } else if (i.indexOf('health') === 0) {
         healthMonitorData[i.replace('health_', '')] = values[i];
       }
@@ -187,11 +206,15 @@ export class StepCreate extends StepAction {
     if (enableHealthMonitor) {
       poolData.healthmonitor = {
         ...healthMonitorData,
-        url_path:
-          healthMonitorData.url_path === '' ||
-          healthMonitorData.url_path == null
-            ? '/'
-            : healthMonitorData.url_path,
+        ...(provider !== 'ovn'
+          ? {
+              url_path:
+                healthMonitorData.url_path === '' ||
+                healthMonitorData.url_path == null
+                  ? '/'
+                  : healthMonitorData.url_path,
+            }
+          : {}),
       };
     }
     const {

@@ -30,6 +30,11 @@ export class PoolStep extends Base {
     return true;
   }
 
+  get isOVN() {
+    const { context: { provider } = {} } = this.props;
+    return provider === 'ovn';
+  }
+
   get filterOptions() {
     const { context: { listener_protocol = '' } = {} } = this.props;
     return poolProtocols.filter((it) => listener_protocol.includes(it.label));
@@ -38,8 +43,10 @@ export class PoolStep extends Base {
   allowed = () => Promise.resolve();
 
   init() {
+    const { context: { provider } = {} } = this.props;
+    const defaultAlgo = provider === 'ovn' ? 'SOURCE_IP_PORT' : undefined;
     this.state = {
-      pool_lb_algorithm: undefined,
+      pool_lb_algorithm: defaultAlgo,
     };
   }
 
@@ -73,16 +80,21 @@ export class PoolStep extends Base {
         name: 'pool_lb_algorithm',
         label: t('Pool Algorithm'),
         type: 'select',
-        options: Algorithm,
+        options: this.isOVN
+          ? Algorithm.filter((it) => it.value === 'SOURCE_IP_PORT')
+          : Algorithm,
         onChange: this.handleAlgorithmChange,
         extra: pool_lb_algorithm && algorithmTip[pool_lb_algorithm],
         required: true,
+        disabled: this.isOVN,
       },
       {
         name: 'pool_protocol',
         label: t('Pool Protocol'),
         type: 'select',
-        options: this.filterOptions,
+        options: this.isOVN
+          ? this.filterOptions.filter((it) => ['TCP', 'UDP'].includes(it.value))
+          : this.filterOptions,
         onChange: () => {
           this.updateContext({
             health_type: '',

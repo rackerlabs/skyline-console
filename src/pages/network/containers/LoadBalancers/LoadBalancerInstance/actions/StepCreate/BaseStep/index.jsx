@@ -18,6 +18,7 @@ import { NetworkStore } from 'stores/neutron/network';
 import { SubnetStore } from 'stores/neutron/subnet';
 import globalLoadBalancerFlavorStore from 'stores/octavia/flavor';
 import { LbaasStore } from 'stores/octavia/loadbalancer';
+import globalAvailabilityZoneStore from 'stores/nova/zone';
 
 export class BaseStep extends Base {
   init() {
@@ -28,8 +29,10 @@ export class BaseStep extends Base {
     this.state = {
       loading: true,
       flavorList: [],
+      provider: 'amphora',
     };
     this.getFlavors();
+    this.getAvailZones();
   }
 
   get title() {
@@ -48,6 +51,7 @@ export class BaseStep extends Base {
     return {
       project_id: this.props.rootStore.user.project.id,
       admin_state_enabled: true,
+      provider: 'amphora',
     };
   }
 
@@ -107,11 +111,30 @@ export class BaseStep extends Base {
         type: 'textarea',
       },
       {
+        name: 'provider',
+        label: t('Provider'),
+        type: 'select',
+        required: true,
+        options: [
+          { label: 'amphora', value: 'amphora' },
+          { label: 'ovn', value: 'ovn' },
+        ],
+        onChange: this.onProviderChange,
+      },
+      {
+        name: 'availability_zone',
+        label: t('Availability Zone'),
+        type: 'select',
+        options: this.availableZones,
+        hidden: this.state.provider === 'ovn',
+      },
+      {
         name: 'flavor_id',
         label: t('Flavors'),
         type: 'select-table',
         data: this.state.flavorList || [],
         required: false,
+        hidden: this.state.provider === 'ovn',
         filterParams: [
           {
             name: 'id',
@@ -175,6 +198,31 @@ export class BaseStep extends Base {
       },
     ];
   }
+
+  get availableZones() {
+    return (globalAvailabilityZoneStore.list.data || [])
+      .filter((it) => it.zoneState && it.zoneState.available)
+      .map((it) => ({ label: it.zoneName, value: it.zoneName }));
+  }
+
+  async getAvailZones() {
+    await globalAvailabilityZoneStore.fetchListWithoutDetail();
+    if (this.availableZones.length && this.formRef && this.formRef.current) {
+      this.formRef.current.setFieldsValue({
+        availability_zone: this.availableZones[0].value,
+      });
+    }
+  }
+
+  onProviderChange = (value) => {
+    this.setState({ provider: value });
+    if (value === 'ovn' && this.formRef && this.formRef.current) {
+      this.formRef.current.setFieldsValue({
+        flavor_id: undefined,
+        availability_zone: undefined,
+      });
+    }
+  };
 }
 
 export default inject('rootStore')(observer(BaseStep));
