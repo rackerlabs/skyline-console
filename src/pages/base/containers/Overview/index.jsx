@@ -14,16 +14,18 @@
 
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
-import { Row, Col } from 'antd';
+import { Row, Col, Modal } from 'antd';
 import overviewInstance from 'asset/image/overview-instance.svg';
 import overviewNetwork from 'asset/image/overview-network.svg';
 import overviewRouter from 'asset/image/overview-router.svg';
 import overviewVolume from 'asset/image/overview-volume.svg';
+import quickStartNetwork from 'asset/image/quick-start-network.svg';
 import { Link } from 'react-router-dom';
 import globalRootStore from 'stores/root';
 import styles from './style.less';
 import QuotaOverview from './components/QuotaOverview';
 import ProjectInfo from './components/ProjectInfo';
+import QuickStartNetwork from './components/QuickStartNetwork';
 
 const actions = [
   {
@@ -37,6 +39,12 @@ const actions = [
     label: t('Volumes'),
     avatar: overviewVolume,
     to: '/storage/volume',
+  },
+  {
+    key: 'network-quick-start',
+    label: t('QuickNet'),
+    avatar: quickStartNetwork,
+    isQuickStart: true,
   },
   {
     key: 'network',
@@ -53,6 +61,14 @@ const actions = [
 ];
 
 export class Overview extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      showQuickStartModal: false,
+    };
+    this.submitFormCallback = null;
+  }
+
   get filterActions() {
     if (!globalRootStore.checkEndpoint('cinder')) {
       return actions.filter((it) => it.key !== 'volume');
@@ -67,23 +83,54 @@ export class Overview extends Component {
     return 6;
   }
 
+  handleQuickStart = () => {
+    this.setState({ showQuickStartModal: true });
+  };
+
+  handleModalOk = () => {
+    if (this.submitFormCallback) {
+      this.submitFormCallback();
+    }
+  };
+
+  handleModalCancel = () => {
+    this.setState({ showQuickStartModal: false });
+  };
+
+  setSubmitFormCallback = (callback) => {
+    this.submitFormCallback = callback;
+  };
+
   renderAction = (item) => (
     <Row className={styles['action-button']}>
       <Col span={8} className={styles['main-icon']}>
         <img alt="avatar" src={item.avatar} className={styles['action-icon']} />
       </Col>
-      <Col span={16} style={{ textAlign: 'center' }}>
+      <Col
+        span={16}
+        className={styles['action-label']}
+        style={{ textAlign: 'center' }}
+      >
         {item.label}
       </Col>
     </Row>
   );
 
   renderActions() {
-    return this.filterActions.map((item) => (
-      <Col span={this.span} key={item.key}>
-        <Link to={item.to}>{this.renderAction(item)}</Link>
-      </Col>
-    ));
+    return this.filterActions.map((item) => {
+      const actionContent = this.renderAction(item);
+      return (
+        <Col span={this.span} key={item.key}>
+          {item.isQuickStart ? (
+            <div onClick={this.handleQuickStart} style={{ cursor: 'pointer' }}>
+              {actionContent}
+            </div>
+          ) : (
+            <Link to={item.to}>{actionContent}</Link>
+          )}
+        </Col>
+      );
+    });
   }
 
   renderQuota() {
@@ -99,6 +146,8 @@ export class Overview extends Component {
   }
 
   render() {
+    const { showQuickStartModal } = this.state;
+
     return (
       <div className={styles.container}>
         <Row
@@ -117,6 +166,20 @@ export class Overview extends Component {
             {this.renderExtra()}
           </Col>
         </Row>
+        <Modal
+          open={showQuickStartModal}
+          onCancel={this.handleModalCancel}
+          onOk={this.handleModalOk}
+          title={t('Network Quick Start')}
+          destroyOnClose
+          centered
+          width={600}
+        >
+          <QuickStartNetwork
+            onCancel={this.handleModalCancel}
+            setSubmitFormCallback={this.setSubmitFormCallback}
+          />
+        </Modal>
       </div>
     );
   }
