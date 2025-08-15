@@ -167,14 +167,14 @@ export class QuickStartNetwork extends ModalAction {
         : defaultGatewayIp;
 
     const defaultValue = {
-      networkName: 'default-network',
-      subnetName: 'default-subnet',
+      networkName: 'network-1',
+      subnetName: 'subnet-1',
       subnetCidr: defaultCidr,
       ipVersion,
       gatewayIp,
       dns: defaultDns,
       createRouter: false,
-      routerName: 'default-router',
+      routerName: 'router-1',
       openExternalNetwork: false,
     };
 
@@ -491,7 +491,7 @@ export class QuickStartNetwork extends ModalAction {
     const { routerName, openExternalNetwork, externalNetwork } = routerConfig;
 
     const routerData = {
-      name: routerName || 'default-router',
+      name: routerName || 'router-1',
       project_id: globalNeutronStore.currentProjectId,
     };
 
@@ -577,7 +577,7 @@ export class QuickStartNetwork extends ModalAction {
       try {
         const routerConfig = this.prepareRouterData(values);
         await this.createAndConnectRouter(network, subnet, routerConfig);
-        const routerName = values.routerName || 'default-router';
+        const routerName = values.routerName || 'router-1';
         Notify.success(
           t(
             'Router created and subnet connected successfully, instance: {name}.',
@@ -585,7 +585,7 @@ export class QuickStartNetwork extends ModalAction {
           )
         );
       } catch (routerError) {
-        const routerName = values.routerName || 'default-router';
+        const routerName = values.routerName || 'router-1';
         Notify.error(
           t('Router creation failed, instance: {name}. {error}', {
             name: routerName,
