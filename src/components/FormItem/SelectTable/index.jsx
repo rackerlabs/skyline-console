@@ -725,10 +725,12 @@ export default class SelectTable extends React.Component {
     const { page, current, pageSize, total } = this.state;
     const isLoading = this.getLoading();
     const { backendPageStore, backendPageDataKey } = this.props;
-    const storeData = backendPageStore ? (backendPageStore[backendPageDataKey] || {}) : {};
-    const hasClientSideFiltering = storeData.hasClientSideFiltering || false;
-    const backendDataSize = storeData.backendDataSize || 0;
-    const filteredCumulativeTotal = storeData.filteredCumulativeTotal || 0;
+    const storeData = backendPageStore
+      ? backendPageStore[backendPageDataKey] || {}
+      : {};
+    const hasClientSideFiltering = storeData?.hasClientSideFiltering ?? false;
+    const backendDataSize = storeData?.backendDataSize ?? 0;
+    const filteredCumulativeTotal = storeData?.filteredCumulativeTotal ?? 0;
     const defaultPageSizeOptions = [10, 20, 50, 100];
     const pageSizeOptions = Array.from(
       new Set([this.props.pageSize, ...defaultPageSizeOptions])
