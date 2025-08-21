@@ -475,7 +475,9 @@ export default class BaseStore {
     this.updateMarker(allData, page, result, allData, params);
     const allDataNew = allData.map(this.mapperBeforeFetchProject);
     let newData = await this.listDidFetchProject(allDataNew, all_projects);
+    const preFilterLength = newData.length;
     newData = await this.listDidFetch(newData, all_projects, filters);
+    const postFilterLength = newData.length;
     newData = newData.map((d) => this.mapper(d, all_projects, filters));
     let count;
     let total;
@@ -493,6 +495,25 @@ export default class BaseStore {
       count = retCount;
       total = retTotal;
     }
+    // Check if client-side filtering reduced the data OR if explicitly flagged
+    const hasClientSideFiltering = (preFilterLength > postFilterLength) || this._hasNetworkFiltering;
+    
+    // For filtered pagination, we need to track cumulative filtered total
+    if (hasClientSideFiltering) {
+      // Initialize or get existing cumulative total
+      if (!this._filteredCumulativeTotal) {
+        this._filteredCumulativeTotal = 0;
+      }
+      
+      // If this is page 1 or we're going backwards, reset cumulative total
+      if (page === 1) {
+        this._filteredCumulativeTotal = postFilterLength;
+      } else {
+        // Add current page's filtered items to cumulative total
+        this._filteredCumulativeTotal += postFilterLength;
+      }
+    }
+    
     const others = this.getOtherInfo(result);
     this.list.update({
       data: newData,
@@ -503,7 +524,11 @@ export default class BaseStore {
       filters,
       timeFilter,
       isLoading: false,
-      total: count || total,
+      // When client-side filtering is applied, don't set total so pagination computes it from current data
+      total: hasClientSideFiltering ? undefined : (count || total),
+      hasClientSideFiltering,
+      backendDataSize: preFilterLength, // Track original backend data size
+      filteredCumulativeTotal: hasClientSideFiltering ? this._filteredCumulativeTotal : undefined,
       ...(this.list.silent ? {} : { selectedRowKeys: [] }),
       ...others,
     });

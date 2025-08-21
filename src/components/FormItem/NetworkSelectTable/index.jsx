@@ -97,8 +97,11 @@ export class NetworkSelectTable extends Component {
     const store = this.getStore(tab);
     if (this.filterPublicNetworks) {
       store.listDidFetch = (items) => this.filterNetworks(items);
+      // Manually set the filtering flag when we know filtering is applied
+      store._hasNetworkFiltering = true;
     } else {
       store.listDidFetch = (items) => items;
+      store._hasNetworkFiltering = false;
     }
     return {
       columns: this.getColumns(tab),
