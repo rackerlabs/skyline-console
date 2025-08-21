@@ -107,6 +107,10 @@ export class NetworkSelectTable extends Component {
       backendPageStore: store,
       disabledFunc: this.getDisabledFunc(),
       isMulti: this.props.isMulti || false,
+      onRow: (record) => ({
+        style: record.isDummyForPagination ? { display: 'none' } : {},
+      }),
+      hasDummyRowsForPagination: this.filterPublicNetworks,
       ...networkSortProps,
     };
   };
@@ -199,7 +203,15 @@ export class NetworkSelectTable extends Component {
   };
 
   getDisabledFunc() {
-    return this.props.disabledFunc;
+    const originalDisabledFunc = this.props.disabledFunc;
+
+    return (record) => {
+      // disable dummy rows
+      if (record.isDummyForPagination) {
+        return true;
+      }
+      return originalDisabledFunc ? originalDisabledFunc(record) : false;
+    };
   }
 
   fetchSubnets = async () => {
@@ -209,7 +221,7 @@ export class NetworkSelectTable extends Component {
 
   filterNetworks = (networks) => {
     const { subnets: allSubnets = [] } = this.state;
-    return networks
+    const filteredNetworks = networks
       .map((network) => {
         const networkSubnetObjs = allSubnets.filter(
           (s) => s.network_id === network.id
@@ -230,6 +242,28 @@ export class NetworkSelectTable extends Component {
         };
       })
       .filter(Boolean);
+
+    const pageSize = 5; // default page size
+    if (
+      filteredNetworks.length < pageSize &&
+      filteredNetworks.length < networks.length
+    ) {
+      const dummiesNeeded = pageSize - filteredNetworks.length;
+      for (let i = 0; i < dummiesNeeded; i++) {
+        filteredNetworks.push({
+          id: `dummy-network-${i}`,
+          name: '',
+          isDummyForPagination: true, // flag to hide in UI
+          subnets: [],
+          shared: false,
+          'router:external': false,
+          status: '',
+          created_at: '',
+        });
+      }
+    }
+
+    return filteredNetworks;
   };
 
   render() {

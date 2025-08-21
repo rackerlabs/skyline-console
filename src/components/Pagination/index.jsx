@@ -152,7 +152,12 @@ export default class index extends Component {
   }
 
   renderTotal() {
-    const { hideTotal } = this.props;
+    const {
+      hideTotal,
+      hasDummyRowsForPagination,
+      realDataCount,
+      realPageSize,
+    } = this.props;
     if (hideTotal) {
       return null;
     }
@@ -163,8 +168,20 @@ export default class index extends Component {
     if (isLoading) {
       return null;
     }
+
+    // Use real data count when dummy rows are present for display
+    const displayDataSize = hasDummyRowsForPagination
+      ? realDataCount
+      : currentDataSize;
+
     if (currentDataSize < pageSize) {
-      const totalCompute = (current - 1) * pageSize + currentDataSize;
+      if (hasDummyRowsForPagination) {
+        const effectivePageSize = realPageSize || pageSize;
+        const totalCompute =
+          (current - 1) * effectivePageSize + displayDataSize;
+        return <span>{t('Total {total} items', { total: totalCompute })}</span>;
+      }
+      const totalCompute = (current - 1) * pageSize + displayDataSize;
       return <span>{t('Total {total} items', { total: totalCompute })}</span>;
     }
     return null;

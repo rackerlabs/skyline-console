@@ -723,23 +723,39 @@ export default class SelectTable extends React.Component {
 
   renderTableFooter = (currentPageData) => {
     const { page, current, pageSize, total } = this.state;
+    const { hasDummyRowsForPagination } = this.props;
     const isLoading = this.getLoading();
     const defaultPageSizeOptions = [10, 20, 50, 100];
     const pageSizeOptions = Array.from(
       new Set([this.props.pageSize, ...defaultPageSizeOptions])
     ).sort((a, b) => a - b);
+
     return (
       <Pagination
         current={page || current || 1}
         pageSize={pageSize}
         size="small"
         onChange={this.handleFooterPaginationChange}
-        currentDataSize={currentPageData.length}
+        currentDataSize={currentPageData.length} // full count for pagination logic
         total={total}
         isLoading={isLoading}
         defaultPageSize={this.props.pageSize}
         pageSizeOptions={pageSizeOptions}
         className={styles['pagination-footer']}
+        // Pass props to customize display if needed
+        hasDummyRowsForPagination={hasDummyRowsForPagination}
+        realDataCount={
+          hasDummyRowsForPagination
+            ? currentPageData.filter((item) => !item.isDummyForPagination)
+                .length
+            : currentPageData.length
+        }
+        realPageSize={
+          hasDummyRowsForPagination
+            ? currentPageData.filter((item) => !item.isDummyForPagination)
+                .length
+            : pageSize
+        }
       />
     );
   };
