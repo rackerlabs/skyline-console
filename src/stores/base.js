@@ -495,16 +495,15 @@ export default class BaseStore {
       count = retCount;
       total = retTotal;
     }
-    // Check if client-side filtering reduced the data OR if explicitly flagged
-    const hasClientSideFiltering = (preFilterLength > postFilterLength) || this._hasNetworkFiltering;
-    
+    const hasClientSideFiltering = this._hasNetworkFiltering ?? false;
+
     // For filtered pagination, we need to track cumulative filtered total
     if (hasClientSideFiltering) {
       // Initialize or get existing cumulative total
       if (!this._filteredCumulativeTotal) {
         this._filteredCumulativeTotal = 0;
       }
-      
+
       // If this is page 1 or we're going backwards, reset cumulative total
       if (page === 1) {
         this._filteredCumulativeTotal = postFilterLength;
@@ -513,7 +512,7 @@ export default class BaseStore {
         this._filteredCumulativeTotal += postFilterLength;
       }
     }
-    
+
     const others = this.getOtherInfo(result);
     this.list.update({
       data: newData,
@@ -525,10 +524,12 @@ export default class BaseStore {
       timeFilter,
       isLoading: false,
       // When client-side filtering is applied, don't set total so pagination computes it from current data
-      total: hasClientSideFiltering ? undefined : (count || total),
+      total: hasClientSideFiltering ? undefined : count || total,
       hasClientSideFiltering,
       backendDataSize: preFilterLength, // Track original backend data size
-      filteredCumulativeTotal: hasClientSideFiltering ? this._filteredCumulativeTotal : undefined,
+      filteredCumulativeTotal: hasClientSideFiltering
+        ? this._filteredCumulativeTotal
+        : undefined,
       ...(this.list.silent ? {} : { selectedRowKeys: [] }),
       ...others,
     });

@@ -125,22 +125,15 @@ export default class index extends Component {
   onClickNext = () => {
     const { current, pageSize, currentDataSize } = this.state;
     const { hasClientSideFiltering, backendDataSize } = this.props;
-    
-    if (hasClientSideFiltering) {
-      // When client-side filtering is applied:
-      if (backendDataSize < pageSize) {
-        return; // No more data on backend
-      }
-      if (!this.checkNextByTotal()) {
-        return;
-      }
-    } else {
-      // Original logic for non-filtered pagination
-      if (currentDataSize < pageSize) {
-        return;
-      }
+
+    const dataSize = hasClientSideFiltering ? backendDataSize : currentDataSize;
+    if (dataSize < pageSize) {
+      return;
     }
-    
+    if (!this.checkNextByTotal()) {
+      return;
+    }
+
     this.setState({
       current: current + 1,
     });
@@ -177,22 +170,26 @@ export default class index extends Component {
       return null;
     }
     const { current, currentDataSize, pageSize, isLoading, total } = this.state;
-    
+
     if (total !== undefined) {
       return <span>{t('Total {total} items', { total })}</span>;
     }
     if (isLoading) {
       return null;
     }
-    
+
     if (hasClientSideFiltering) {
       if (backendDataSize < pageSize) {
         const { filteredCumulativeTotal } = this.props;
-        return <span>{t('Total {total} items', { total: filteredCumulativeTotal })}</span>;
+        return (
+          <span>
+            {t('Total {total} items', { total: filteredCumulativeTotal })}
+          </span>
+        );
       }
       return null; // Don't show total on intermediate pages when filtering
     }
-    
+
     if (currentDataSize < pageSize) {
       const totalCompute = (current - 1) * pageSize + currentDataSize;
       return <span>{t('Total {total} items', { total: totalCompute })}</span>;
@@ -226,15 +223,11 @@ export default class index extends Component {
     const { className } = this.props;
 
     const { hasClientSideFiltering, backendDataSize } = this.props;
-    
+
     const preDisabled = isLoading || current === 1;
-    let nextDisabled;
-    
-    if (hasClientSideFiltering) {
-      nextDisabled = isLoading || backendDataSize < pageSize || !this.checkNextByTotal();
-    } else {
-      nextDisabled = isLoading || currentDataSize < pageSize || !this.checkNextByTotal();
-    }
+    const dataSize = hasClientSideFiltering ? backendDataSize : currentDataSize;
+    const nextDisabled =
+      isLoading || dataSize < pageSize || !this.checkNextByTotal();
     return (
       <div
         className={classnames(styles.wrapper, className, 'backend-pagination')}
