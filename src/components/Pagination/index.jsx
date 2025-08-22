@@ -32,6 +32,9 @@ export default class index extends Component {
       onChange: PropTypes.func,
       isLoading: PropTypes.bool,
       className: PropTypes.object,
+      hasClientSideFiltering: PropTypes.bool,
+      backendDataSize: PropTypes.number,
+      filteredCumulativeTotal: PropTypes.number,
     };
   }
 
@@ -45,6 +48,9 @@ export default class index extends Component {
       // eslint-disable-next-line no-console
       console.log(page, pageSize);
     },
+    hasClientSideFiltering: false,
+    backendDataSize: 0,
+    filteredCumulativeTotal: 0,
   };
 
   constructor(props) {
@@ -118,9 +124,16 @@ export default class index extends Component {
 
   onClickNext = () => {
     const { current, pageSize, currentDataSize } = this.state;
-    if (currentDataSize < pageSize) {
+    const { hasClientSideFiltering, backendDataSize } = this.props;
+
+    const dataSize = hasClientSideFiltering ? backendDataSize : currentDataSize;
+    if (dataSize < pageSize) {
       return;
     }
+    if (!this.checkNextByTotal()) {
+      return;
+    }
+
     this.setState({
       current: current + 1,
     });
@@ -152,17 +165,31 @@ export default class index extends Component {
   }
 
   renderTotal() {
-    const { hideTotal } = this.props;
+    const { hideTotal, hasClientSideFiltering, backendDataSize } = this.props;
     if (hideTotal) {
       return null;
     }
     const { current, currentDataSize, pageSize, isLoading, total } = this.state;
+
     if (total !== undefined) {
       return <span>{t('Total {total} items', { total })}</span>;
     }
     if (isLoading) {
       return null;
     }
+
+    if (hasClientSideFiltering) {
+      if (backendDataSize < pageSize) {
+        const { filteredCumulativeTotal } = this.props;
+        return (
+          <span>
+            {t('Total {total} items', { total: filteredCumulativeTotal })}
+          </span>
+        );
+      }
+      return null; // Don't show total on intermediate pages when filtering
+    }
+
     if (currentDataSize < pageSize) {
       const totalCompute = (current - 1) * pageSize + currentDataSize;
       return <span>{t('Total {total} items', { total: totalCompute })}</span>;
@@ -195,9 +222,12 @@ export default class index extends Component {
     const { current, currentDataSize, pageSize, isLoading } = this.state;
     const { className } = this.props;
 
+    const { hasClientSideFiltering, backendDataSize } = this.props;
+
     const preDisabled = isLoading || current === 1;
+    const dataSize = hasClientSideFiltering ? backendDataSize : currentDataSize;
     const nextDisabled =
-      isLoading || currentDataSize < pageSize || !this.checkNextByTotal();
+      isLoading || dataSize < pageSize || !this.checkNextByTotal();
     return (
       <div
         className={classnames(styles.wrapper, className, 'backend-pagination')}

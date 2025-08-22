@@ -95,6 +95,7 @@ export class NetworkSelectTable extends Component {
 
   getSelectTableProps = (tab) => {
     const store = this.getStore(tab);
+    store._hasNetworkFiltering = this.filterPublicNetworks;
     if (this.filterPublicNetworks) {
       store.listDidFetch = (items) => this.filterNetworks(items);
     } else {
