@@ -103,6 +103,11 @@ export class OctaviaClient extends Base {
         key: 'lbaas/l7policies',
         responseKey: 'l7ypolicy',
       },
+      {
+        name: 'providers',
+        key: 'lbaas/providers',
+        responseKey: 'provider',
+      },
     ];
   }
 }

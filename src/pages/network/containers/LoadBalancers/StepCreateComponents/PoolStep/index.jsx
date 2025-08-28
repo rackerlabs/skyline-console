@@ -14,7 +14,11 @@
 
 import { inject, observer } from 'mobx-react';
 import Base from 'components/Form';
-import { Algorithm, algorithmTip } from 'resources/octavia/pool';
+import {
+  Algorithm,
+  algorithmTip,
+  getLbAlgorithmOptions,
+} from 'resources/octavia/pool';
 import { poolProtocols } from 'resources/octavia/lb';
 
 export class PoolStep extends Base {
@@ -40,7 +44,16 @@ export class PoolStep extends Base {
   init() {
     this.state = {
       pool_lb_algorithm: undefined,
+      algorithmOptions: Algorithm, // default list
     };
+
+    getLbAlgorithmOptions()
+      .then((result) => {
+        this.setState({ algorithmOptions: result });
+      })
+      .catch((err) => {
+        console.error('Async error: ', err);
+      });
   }
 
   handleAlgorithmChange = (e) => {
@@ -56,7 +69,7 @@ export class PoolStep extends Base {
   }
 
   get formItems() {
-    const { pool_lb_algorithm } = this.state;
+    const { pool_lb_algorithm, algorithmOptions } = this.state;
     return [
       {
         name: 'pool_name',
@@ -73,7 +86,7 @@ export class PoolStep extends Base {
         name: 'pool_lb_algorithm',
         label: t('Pool Algorithm'),
         type: 'select',
-        options: Algorithm,
+        options: algorithmOptions,
         onChange: this.handleAlgorithmChange,
         extra: pool_lb_algorithm && algorithmTip[pool_lb_algorithm],
         required: true,

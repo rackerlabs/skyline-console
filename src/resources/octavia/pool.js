@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import globalLoadBalancerProviderStore from 'stores/octavia/providers';
+
 export const BackendProtocol = [
   {
     label: t('TCP'),
@@ -21,6 +23,13 @@ export const BackendProtocol = [
     label: t('PING'),
     value: 'PING',
   },
+];
+
+export const lbAlgorithmOptionsOvn = [
+  { label: t('ROUND_ROBIN'), value: 'ROUND_ROBIN' },
+  { label: t('LEAST_CONNECTIONS'), value: 'LEAST_CONNECTIONS' },
+  { label: t('SOURCE_IP'), value: 'SOURCE_IP' },
+  { label: t('SOURCE_IP_PORT'), value: 'SOURCE_IP_PORT' },
 ];
 
 export const algorithmDict = {
@@ -39,9 +48,46 @@ export const algorithmTip = {
   SOURCE_IP: t(
     'Perform a consistent hash operation on the source IP address of the request to obtain a specific value. At the same time, the back-end server is numbered, and the request is distributed to the server with the corresponding number according to the calculation result. This can enable load distribution of visits from different source IPs, and at the same time enable requests from the same client IP to always be dispatched to a specific server. This method is suitable for load balancing TCP protocol without cookie function.'
   ),
+  SOURCE_IP_PORT: t(
+    'Requests from the same source IP and port are sent to the same member (OVN only).'
+  ),
 };
 
 export const Algorithm = Object.keys(algorithmDict).map((key) => ({
   label: algorithmDict[key],
   value: key,
 }));
+
+// Cache so we only fetch providers once per page load
+let _lbAlgorithmOptionsPromise = null;
+
+export const getLbAlgorithmOptions = () => {
+  if (_lbAlgorithmOptionsPromise) {
+    return _lbAlgorithmOptionsPromise;
+  }
+
+  _lbAlgorithmOptionsPromise = (async () => {
+    const defaults = [...Algorithm];
+
+    try {
+      const providers =
+        await globalLoadBalancerProviderStore.listFetchByClient();
+      console.log('providers: ', providers);
+      const providerNames = providers.providers.map(
+        (p) => p.name && p.name.toLowerCase()
+      );
+      console.log('getLbAlgorithmOptions: providerNames: ', providerNames);
+      if (providerNames.includes('ovn')) {
+        return [
+          ...defaults,
+          { label: 'SOURCE_IP_PORT', value: 'SOURCE_IP_PORT' },
+        ];
+      }
+    } catch (err) {
+      console.warn('Failed to fetch load balancer providers:', err);
+    }
+    return defaults;
+  })();
+
+  return _lbAlgorithmOptionsPromise;
+};

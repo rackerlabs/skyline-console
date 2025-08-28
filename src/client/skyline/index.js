@@ -63,6 +63,10 @@ export class SkylineClient extends Base {
             name: 'computeServices',
             key: 'compute-services',
           },
+          {
+            name: 'loadBalancerProviders',
+            key: 'load-balancer-providers',
+          },
         ],
       },
       {

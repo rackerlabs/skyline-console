@@ -18,6 +18,7 @@ import { NetworkStore } from 'stores/neutron/network';
 import { SubnetStore } from 'stores/neutron/subnet';
 import globalLoadBalancerFlavorStore from 'stores/octavia/flavor';
 import { LbaasStore } from 'stores/octavia/loadbalancer';
+import { LoadBalancerProviderStore } from 'stores/octavia/providers';
 
 export class BaseStep extends Base {
   init() {
@@ -25,6 +26,8 @@ export class BaseStep extends Base {
     this.flavorStore = globalLoadBalancerFlavorStore;
     this.networkStore = new NetworkStore();
     this.subnetStore = new SubnetStore();
+    this.loadBalancerProviderStore = new LoadBalancerProviderStore();
+
     this.state = {
       loading: true,
       flavorList: [],
@@ -52,6 +55,17 @@ export class BaseStep extends Base {
   }
 
   allowed = () => Promise.resolve();
+
+  async getProviders() {
+    await this.fetchProviders();
+  }
+
+  fetchProviders = async () => {
+    const ret = await this.loadBalancerProviderStore.listFetchByClient();
+    this.setState({
+      providers: ret || [],
+    });
+  };
 
   handleOwnedNetworkChange = (value) => {
     const { network_id: old_network_id } = this.state;
