@@ -269,10 +269,12 @@ export class Create extends FormAction {
 
   get systemTabs() {
     const data = this.imageStore.list.data || [];
-    const availableImages = data.map((it) => ({
-      ...it,
-      key: it.id,
-    }));
+    const availableImages = data
+      .filter((it) => it.status === 'active')
+      .map((it) => ({
+        ...it,
+        key: it.id,
+      }));
     const tabs = getImageSystemTabs() || [];
     return tabs.filter((tab) => {
       return availableImages.some((image) => getImageOS(image) === tab.value);
