@@ -314,6 +314,28 @@ export class BaseStep extends Base {
     ];
   }
 
+  getSystemDiskMinSizeForFlavor() {
+    let minSize = 0;
+    if (this.sourceTypeIsImage) {
+      const {
+        min_disk = 0,
+        size = 0,
+        virtual_size = 0,
+      } = this.state.image || {};
+      const sizeGiB = Math.ceil(size / 1024 / 1024 / 1024);
+      const virtualSize = Math.ceil(virtual_size / 1024 / 1024 / 1024);
+      const imageMinSize = Math.max(min_disk, sizeGiB, virtualSize, 1);
+      minSize = Math.max(minSize, imageMinSize);
+    }
+
+    if (this.sourceTypeIsSnapshot) {
+      const { instanceSnapshotMinSize = 0 } = this.state;
+      minSize = Math.max(minSize, instanceSnapshotMinSize, 1);
+    }
+
+    return minSize;
+  }
+
   getSystemDiskMinSize() {
     const { systemDisk } = this.props.context;
     const selectedVolumeTypeSpecs =
@@ -332,11 +354,16 @@ export class BaseStep extends Base {
       }
     }
 
-    // Compare with image min_disk if image source is selected
+    // Compare with image min_disk and virtual_size if image source is selected
     if (this.sourceTypeIsImage) {
-      const { min_disk = 0, size = 0 } = this.state.image || {};
+      const {
+        min_disk = 0,
+        size = 0,
+        virtual_size = 0,
+      } = this.state.image || {};
       const sizeGiB = Math.ceil(size / 1024 / 1024 / 1024);
-      const imageMinSize = Math.max(min_disk, sizeGiB, 1);
+      const virtualSize = Math.ceil(virtual_size / 1024 / 1024 / 1024);
+      const imageMinSize = Math.max(min_disk, sizeGiB, virtualSize, 1);
       minSize = Math.max(minSize, imageMinSize);
     }
 
@@ -416,48 +443,69 @@ export class BaseStep extends Base {
       });
       return;
     }
-    const detail =
-      await this.instanceSnapshotStore.fetchInstanceSnapshotVolumeData({ id });
-    const {
-      snapshotDetail: { size: snapshotSize = 0 } = {},
-      block_device_mapping = '',
-      volumeDetail,
-      snapshotDetail,
-      instanceSnapshotDataVolumes = [],
-    } = detail;
-    if (!volumeDetail) {
-      this.updateFormValue('bootFromVolume', true);
+
+    // IMMEDIATE UPDATE: Use basic snapshot data for instant flavor filtering
+    const immediateMinSize = Math.max(min_disk, size, 1);
+    this.setState({
+      instanceSnapshotMinSize: immediateMinSize,
+    });
+
+    // ASYNC UPDATE: Fetch detailed volume data in the background
+    this.fetchSnapshotVolumeDataAsync(id, min_disk, size);
+  };
+
+  fetchSnapshotVolumeDataAsync = async (id, min_disk, size) => {
+    try {
+      const detail =
+        await this.instanceSnapshotStore.fetchInstanceSnapshotVolumeData({
+          id,
+        });
+      const {
+        snapshotDetail: { size: snapshotSize = 0 } = {},
+        block_device_mapping = '',
+        volumeDetail,
+        snapshotDetail,
+        instanceSnapshotDataVolumes = [],
+      } = detail;
+
+      if (!volumeDetail) {
+        this.updateFormValue('bootFromVolume', true);
+        this.updateContext({
+          instanceSnapshotDisk: null,
+          instanceSnapshotDataVolumes: [],
+          bootFromVolume: true,
+        });
+        this.setState({
+          instanceSnapshotDisk: null,
+          instanceSnapshotDataVolumes: [],
+          bootFromVolume: true,
+        });
+        return;
+      }
+
+      const finalMinSize = Math.max(min_disk, size, snapshotSize);
+      const bdmFormatData = JSON.parse(block_device_mapping) || [];
+      const systemDiskBdm = bdmFormatData[0] || {};
+      const instanceSnapshotDisk = getDiskInfo({
+        volumeDetail,
+        snapshotDetail,
+        selfBdmData: systemDiskBdm,
+      });
+
+      this.updateFormValue('instanceSnapshotDisk', instanceSnapshotDisk);
       this.updateContext({
-        instanceSnapshotDisk: null,
-        instanceSnapshotDataVolumes: [],
-        bootFromVolume: true,
+        instanceSnapshotDisk,
+        instanceSnapshotDataVolumes,
       });
       this.setState({
-        instanceSnapshotDisk: null,
-        instanceSnapshotMinSize: 0,
-        instanceSnapshotDataVolumes: [],
-        bootFromVolume: true,
+        instanceSnapshotDisk,
+        instanceSnapshotMinSize: finalMinSize,
+        instanceSnapshotDataVolumes,
       });
+    } catch (error) {
+      console.error('Failed to fetch snapshot volume data:', error);
+      // Keep the immediate values on error
     }
-    const minSize = Math.max(min_disk, size, snapshotSize);
-
-    const bdmFormatData = JSON.parse(block_device_mapping) || [];
-    const systemDiskBdm = bdmFormatData[0] || {};
-    const instanceSnapshotDisk = getDiskInfo({
-      volumeDetail,
-      snapshotDetail,
-      selfBdmData: systemDiskBdm,
-    });
-    this.updateFormValue('instanceSnapshotDisk', instanceSnapshotDisk);
-    this.updateContext({
-      instanceSnapshotDisk,
-      instanceSnapshotDataVolumes,
-    });
-    this.setState({
-      instanceSnapshotDisk,
-      instanceSnapshotMinSize: minSize,
-      instanceSnapshotDataVolumes,
-    });
   };
 
   onBootableVolumeChange = (value) => {
@@ -800,7 +848,9 @@ export class BaseStep extends Base {
         name: 'flavor',
         label: t('Specification'),
         type: 'select-table',
-        component: this.getFlavorComponent({ image: this.state.image }),
+        component: this.getFlavorComponent({
+          size: this.getSystemDiskMinSizeForFlavor(),
+        }),
         required: true,
         wrapperCol: {
           xs: {

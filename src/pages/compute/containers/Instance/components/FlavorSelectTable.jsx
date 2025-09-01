@@ -110,16 +110,11 @@ export class FlavorSelectTable extends Component {
       isIronic = false,
       filterIronic = true,
       excludeFlavors = [],
-      image
+      size,
     } = this.props;
     const { arch, category } = this.state;
     if (!arch) {
       return [];
-    }
-
-    let minDisk = 0;
-    if (image && image.min_disk) {
-      minDisk = image.min_disk;
     }
 
     return (this.flavorStore.list.data || [])
@@ -151,9 +146,9 @@ export class FlavorSelectTable extends Component {
         return it.architecture === arch && it.category === category;
       })
       .filter((it) => {
-      // Filter by min_disk from image
-        if (minDisk > 0) {
-          return it.disk >= minDisk;
+        // Filter by min_disk from image/snapshot
+        if (size > 0) {
+          return it.disk >= size;
         }
         return true;
       });

@@ -41,6 +41,12 @@ export class ConfirmStep extends Base {
       return null;
     }
     const { size, typeOption, deleteTypeLabel } = diskInfo || {};
+
+    // Safety check for typeOption to prevent runtime errors
+    if (!typeOption || !typeOption.label) {
+      return size ? `${size}GiB ${deleteTypeLabel || ''}` : '';
+    }
+
     return `${typeOption.label} ${size}GiB ${deleteTypeLabel}`;
   }
 
