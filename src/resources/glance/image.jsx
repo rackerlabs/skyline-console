@@ -225,4 +225,9 @@ export const getImageColumns = (self) => [
     dataIndex: 'size',
     valueRender: 'formatSize',
   },
+  {
+    title: t('Image Virtual Size'),
+    dataIndex: 'virtual_size',
+    valueRender: 'formatSize',
+  },
 ];
