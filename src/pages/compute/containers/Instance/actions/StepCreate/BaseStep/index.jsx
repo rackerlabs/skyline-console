@@ -314,6 +314,27 @@ export class BaseStep extends Base {
     ];
   }
 
+  getMaxOfImageOrSnapshot(min_disk, size, virtual_size) {
+    const sizeGiB = Math.ceil(size / 1024 / 1024 / 1024);
+    const virtualSize = Math.ceil(virtual_size / 1024 / 1024 / 1024);
+    return Math.max(min_disk, sizeGiB, virtualSize);
+  }
+
+  getMinMemoryForFlavor() {
+    let minMemory = 0;
+    if (this.sourceTypeIsImage) {
+      const { min_ram = 0 } = this.state.image || {};
+      const minMemoryinGB = Math.ceil(min_ram / 1024);
+      minMemory = Math.max(minMemory, minMemoryinGB);
+    }
+    if (this.sourceTypeIsSnapshot) {
+      const { min_ram = 0 } = this.state.instanceSnapshot || {};
+      const minMemoryinGB = Math.ceil(min_ram / 1024);
+      minMemory = Math.max(minMemory, minMemoryinGB);
+    }
+    return minMemory;
+  }
+
   getMinDiskSizeForFlavor() {
     let minSize = 0;
     if (this.sourceTypeIsImage) {
@@ -322,9 +343,12 @@ export class BaseStep extends Base {
         size = 0,
         virtual_size = 0,
       } = this.state.image || {};
-      const sizeGiB = Math.ceil(size / 1024 / 1024 / 1024);
-      const virtualSize = Math.ceil(virtual_size / 1024 / 1024 / 1024);
-      const imageMinSize = Math.max(min_disk, sizeGiB, virtualSize, 1);
+
+      const imageMinSize = this.getMaxOfImageOrSnapshot(
+        min_disk,
+        size,
+        virtual_size
+      );
       minSize = Math.max(minSize, imageMinSize);
     }
 
@@ -361,9 +385,12 @@ export class BaseStep extends Base {
         size = 0,
         virtual_size = 0,
       } = this.state.image || {};
-      const sizeGiB = Math.ceil(size / 1024 / 1024 / 1024);
-      const virtualSize = Math.ceil(virtual_size / 1024 / 1024 / 1024);
-      const imageMinSize = Math.max(min_disk, sizeGiB, virtualSize, 1);
+
+      const imageMinSize = this.getMaxOfImageOrSnapshot(
+        min_disk,
+        size,
+        virtual_size
+      );
       minSize = Math.max(minSize, imageMinSize);
     }
 
@@ -430,7 +457,7 @@ export class BaseStep extends Base {
   };
 
   onInstanceSnapshotChange = async (value) => {
-    const { min_disk, size, id } = value.selectedRows[0] || {};
+    const { min_disk, size, virtual_size, id } = value.selectedRows[0] || {};
     if (!id) {
       this.updateContext({
         instanceSnapshotDisk: null,
@@ -443,25 +470,26 @@ export class BaseStep extends Base {
       });
       return;
     }
-
     // IMMEDIATE UPDATE: Use basic snapshot data for instant flavor filtering
-    const immediateMinSize = Math.max(min_disk, size, 1);
     this.setState({
-      instanceSnapshotMinSize: immediateMinSize,
+      instanceSnapshotMinSize: this.getMaxOfImageOrSnapshot(
+        min_disk,
+        size,
+        virtual_size
+      ),
     });
 
     // ASYNC UPDATE: Fetch detailed volume data in the background
-    this.fetchSnapshotVolumeDataAsync(id, min_disk, size);
+    this.fetchSnapshotVolumeDataAsync(id, min_disk, size, virtual_size);
   };
 
-  fetchSnapshotVolumeDataAsync = async (id, min_disk, size) => {
+  fetchSnapshotVolumeDataAsync = async (id, min_disk, size, virtual_size) => {
     try {
       const detail =
         await this.instanceSnapshotStore.fetchInstanceSnapshotVolumeData({
           id,
         });
       const {
-        snapshotDetail: { size: snapshotSize = 0 } = {},
         block_device_mapping = '',
         volumeDetail,
         snapshotDetail,
@@ -483,7 +511,6 @@ export class BaseStep extends Base {
         return;
       }
 
-      const finalMinSize = Math.max(min_disk, size, snapshotSize);
       const bdmFormatData = JSON.parse(block_device_mapping) || [];
       const systemDiskBdm = bdmFormatData[0] || {};
       const instanceSnapshotDisk = getDiskInfo({
@@ -499,7 +526,11 @@ export class BaseStep extends Base {
       });
       this.setState({
         instanceSnapshotDisk,
-        instanceSnapshotMinSize: finalMinSize,
+        instanceSnapshotMinSize: this.getMaxOfImageOrSnapshot(
+          min_disk,
+          size,
+          virtual_size
+        ),
         instanceSnapshotDataVolumes,
       });
     } catch (error) {
@@ -845,26 +876,6 @@ export class BaseStep extends Base {
         type: 'divider',
       },
       {
-        name: 'flavor',
-        label: t('Specification'),
-        type: 'select-table',
-        component: this.getFlavorComponent({
-          size: this.getMinDiskSizeForFlavor(),
-        }),
-        required: true,
-        wrapperCol: {
-          xs: {
-            span: 24,
-          },
-          sm: {
-            span: 18,
-          },
-        },
-      },
-      {
-        type: 'divider',
-      },
-      {
         name: 'bootFromVolume',
         label: t('Boot From Volume'),
         type: 'radio',
@@ -928,6 +939,28 @@ export class BaseStep extends Base {
         ),
         onChange: this.onDataDiskChange,
         display: this.enableCinder,
+      },
+      {
+        type: 'divider',
+      },
+      {
+        name: 'flavor',
+        label: t('Specification'),
+        type: 'select-table',
+        component: this.getFlavorComponent({
+          size: this.getMinDiskSizeForFlavor(),
+          memory: this.getMinMemoryForFlavor(),
+          bootFromVolume: this.state.bootFromVolume,
+        }),
+        required: true,
+        wrapperCol: {
+          xs: {
+            span: 24,
+          },
+          sm: {
+            span: 18,
+          },
+        },
       },
     ];
   }

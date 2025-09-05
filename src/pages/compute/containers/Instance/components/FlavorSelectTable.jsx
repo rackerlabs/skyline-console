@@ -111,6 +111,8 @@ export class FlavorSelectTable extends Component {
       filterIronic = true,
       excludeFlavors = [],
       size,
+      memory,
+      bootFromVolume,
     } = this.props;
     const { arch, category } = this.state;
     if (!arch) {
@@ -146,10 +148,15 @@ export class FlavorSelectTable extends Component {
         return it.architecture === arch && it.category === category;
       })
       .filter((it) => {
-        // Filter by min_disk from image/snapshot
-        if (size > 0) {
+        // Must have enough RAM/memory
+        const flavorRamInGB = Math.ceil(it.ram / 1024);
+        if (flavorRamInGB < memory) return false;
+
+        // For image/snapshot boot, check disk size
+        if (!bootFromVolume && size > 0) {
           return it.disk >= size;
         }
+
         return true;
       });
   }
