@@ -90,9 +90,9 @@ export default [
         exact: true,
       },
       {
-        path: `${PATH}/container/detail/:container/:folder`,
+        path: `${PATH}/container/detail/:container/:folder*`,
         component: ContainerObject,
-        exact: true,
+        exact: false,
       },
       { path: '*', component: E404 },
     ],

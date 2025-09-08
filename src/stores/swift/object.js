@@ -57,7 +57,7 @@ export class ObjectStore extends Base {
     const result = await this.client.list(container, params);
     this.container = {
       name: container,
-      folder,
+      folder: folder ? decodeURIComponent(folder) : folder,
       path,
       prefix,
       hasCopy: this.copiedFiles.length > 0,
@@ -130,8 +130,14 @@ export class ObjectStore extends Base {
   @action
   updateData = (items) => {
     const { name, path, folder, prefix, hasCopy } = this.container || {};
-    return items.map((it) => {
-      return {
+    return items
+      .filter((it) => {
+        if (!prefix) return true;
+        const { name: itemName, subdir } = it;
+        const fullItemName = subdir || itemName;
+        return fullItemName !== prefix && itemName !== prefix;
+      })
+      .map((it) => ({
         ...it,
         container: name,
         path,
@@ -140,8 +146,7 @@ export class ObjectStore extends Base {
         hasCopy,
         shortName: this.getShortName(it, prefix),
         name: it.subdir || it.name,
-      };
-    });
+      }));
   };
 
   @action

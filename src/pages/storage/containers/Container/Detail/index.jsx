@@ -127,7 +127,7 @@ export class ContainerObject extends Base {
 
   get isInFolder() {
     const { folder } = this.params;
-    return !!folder;
+    return !!(folder && folder.trim());
   }
 
   get ableAutoFresh() {
@@ -170,7 +170,13 @@ export class ContainerObject extends Base {
 
   updateFetchParams = (params) => {
     const { folder } = this.params;
-    const prefix = this.getRequestFolder(folder);
+    const folderPath = folder
+      ? folder
+          .split('/')
+          .filter((part) => part)
+          .join('/')
+      : '';
+    const prefix = this.getRequestFolder(folderPath);
     return {
       ...params,
       prefix,
@@ -184,10 +190,10 @@ export class ContainerObject extends Base {
       render: (name, record) => {
         const { type, container } = record;
         if (type === 'folder') {
-          const str = encodeURIComponent(record.name);
+          const folderPath = record.name;
           return this.getLinkRender('folderDetail', name, {
             container,
-            folder: str,
+            folder: folderPath,
           });
         }
         return name;
@@ -266,9 +272,13 @@ export class ContainerObject extends Base {
 
   renderHeader() {
     const { container = '', folder = '' } = this.params || {};
-    const folders = decodeURIComponent(folder)
-      .split('/')
-      .filter((it) => !!it);
+    const folderPath = folder
+      ? folder
+          .split('/')
+          .filter((part) => part)
+          .join('/')
+      : '';
+    const folders = folderPath.split('/').filter((it) => !!it);
     const containerLink = {
       path: this.getRoutePath('containerDetail', { id: container }),
       link: this.getLinkRender('containerDetail', container, { id: container }),
@@ -279,11 +289,11 @@ export class ContainerObject extends Base {
       return {
         path: this.getRoutePath('folderDetail', {
           container,
-          folder: encodeURIComponent(path),
+          folder: path,
         }),
         link: this.getLinkRender('folderDetail', it, {
           container,
-          folder: encodeURIComponent(path),
+          folder: path,
         }),
       };
     });
