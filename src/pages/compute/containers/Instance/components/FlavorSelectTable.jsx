@@ -16,7 +16,7 @@ import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
 import { toJS } from 'mobx';
 import SelectTable from 'components/FormItem/SelectTable';
-import { Radio } from 'antd';
+import { Radio, Alert } from 'antd';
 import globalSettingStore from 'stores/skyline/setting';
 import globalFlavorStore from 'stores/nova/flavor';
 import {
@@ -111,6 +111,8 @@ export class FlavorSelectTable extends Component {
       filterIronic = true,
       excludeFlavors = [],
       size,
+      memory,
+      bootFromVolume,
     } = this.props;
     const { arch, category } = this.state;
     if (!arch) {
@@ -146,10 +148,15 @@ export class FlavorSelectTable extends Component {
         return it.architecture === arch && it.category === category;
       })
       .filter((it) => {
-        // Filter by min_disk from image/snapshot
-        if (size > 0) {
+        // Must have enough RAM/memory
+        const flavorRamInGB = Math.ceil(it.ram / 1024);
+        if (flavorRamInGB < memory) return false;
+
+        // For image/snapshot boot, check disk size
+        if (!bootFromVolume && size > 0) {
           return it.disk >= size;
         }
+
         return true;
       });
   }
@@ -330,9 +337,12 @@ export class FlavorSelectTable extends Component {
     const { value, disabledFunc } = this.props;
     const isLoading =
       this.settingStore.list.isLoading && this.flavorStore.list.isLoading;
+
+    const data = this.flavors;
+
     const props = {
       columns: this.columns,
-      data: this.flavors,
+      data,
       tableHeader: this.renderTableHeader(),
       isLoading,
       filterParams: getFlavorSearchFilters(),
@@ -340,7 +350,24 @@ export class FlavorSelectTable extends Component {
       onChange: this.onChange,
       disabledFunc,
     };
-    return <SelectTable {...props} />;
+
+    return (
+      <div>
+        <SelectTable {...props} />
+        {!isLoading &&
+          (this.flavorStore.list.data || []).length > 0 &&
+          data.length <= 0 && (
+            <Alert
+              message={t(
+                "No Flavor satisfies Image's Disk and Memory requirements. Please select another image."
+              )}
+              type="error"
+              showIcon
+              style={{ marginTop: 16 }}
+            />
+          )}
+      </div>
+    );
   }
 }
 
