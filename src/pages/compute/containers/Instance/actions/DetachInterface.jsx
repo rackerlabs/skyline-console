@@ -28,6 +28,7 @@ export class DetachInterface extends ModalAction {
     this.store = new ServerStore();
     this.getPorts();
     this.state.portLoading = true;
+    this.state.autoSelectInterface = null;
   }
 
   get name() {
@@ -64,14 +65,26 @@ export class DetachInterface extends ModalAction {
     this.setState({
       portLoading: false,
     });
+
+    if (this.ports && this.ports.length === 1) {
+      const [{ id }] = this.ports;
+      const selected = { selectedRowKeys: [id] };
+
+      this.setState({ autoSelectInterface: selected }, () => {
+        const setForm = () =>
+          this.formRef?.current?.setFieldsValue({ interfaces: selected });
+        if (!setForm()) {
+          Promise.resolve().then(setForm);
+        }
+      });
+    }
   }
 
   get defaultValue() {
     const { name } = this.item;
-    const value = {
+    return {
       instance: name,
     };
-    return value;
   }
 
   static policy = 'os_compute_api:os-attach-interfaces:delete';
@@ -84,10 +97,7 @@ export class DetachInterface extends ModalAction {
     );
 
   get formItems() {
-    const { portLoading } = this.state;
-    if (portLoading) {
-      return [];
-    }
+    const { portLoading, autoSelectInterface } = this.state;
     return [
       {
         name: 'instance',
@@ -99,11 +109,11 @@ export class DetachInterface extends ModalAction {
         name: 'interfaces',
         label: t('Network Interface'),
         type: 'select-table',
-        marksFirstAsDefault: true,
         required: true,
         data: this.ports,
         isLoading: portLoading,
         isMulti: true,
+        initValue: autoSelectInterface || {},
         filterParams: [
           {
             label: t('Ip Address'),

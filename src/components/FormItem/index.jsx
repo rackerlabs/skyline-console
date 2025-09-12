@@ -129,6 +129,7 @@ export default class FormItem extends React.Component {
     dependencies: PropTypes.array,
     formref: PropTypes.object,
     hasRequiredCheck: PropTypes.bool,
+    autoSelectFirst: PropTypes.bool,
   };
 
   static defaultProps = {
@@ -161,6 +162,7 @@ export default class FormItem extends React.Component {
           checkBoxInfo,
           allowClear,
           required,
+          autoSelectFirst,
           ...rest
         } = this.props;
         return {
@@ -176,6 +178,7 @@ export default class FormItem extends React.Component {
           checkOptions,
           checkBoxInfo,
           allowClear: required ? allowClear || false : allowClear,
+          autoSelectFirst,
           ...rest,
         };
       }

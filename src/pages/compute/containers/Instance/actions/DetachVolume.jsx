@@ -29,6 +29,7 @@ export class DetachVolume extends ModalAction {
     this.store = globalServerStore;
     this.volumeStore = new InstanceVolumeStore();
     this.getVolumes();
+    this.state.autoSelectVolume = null;
   }
 
   get name() {
@@ -47,9 +48,22 @@ export class DetachVolume extends ModalAction {
     return (this.volumeStore.list.data || []).filter((item) => !isOsDisk(item));
   }
 
-  getVolumes() {
+  async getVolumes() {
     const { id } = this.item;
-    this.volumeStore.fetchList({ serverId: id });
+    await this.volumeStore.fetchList({ serverId: id });
+
+    if (this.volumes && this.volumes.length === 1) {
+      const [{ id: volumeId }] = this.volumes;
+      const selected = { selectedRowKeys: [volumeId] };
+
+      this.setState({ autoSelectVolume: selected }, () => {
+        const setForm = () =>
+          this.formRef?.current?.setFieldsValue({ volumes: selected });
+        if (!setForm()) {
+          Promise.resolve().then(setForm);
+        }
+      });
+    }
   }
 
   get defaultValue() {
@@ -72,9 +86,7 @@ export class DetachVolume extends ModalAction {
   };
 
   get formItems() {
-    if (this.volumeStore.list.isLoading) {
-      return [];
-    }
+    const { autoSelectVolume } = this.state;
     return [
       {
         name: 'instance',
@@ -88,8 +100,8 @@ export class DetachVolume extends ModalAction {
         type: 'select-table',
         required: true,
         data: this.volumes,
-        marksFirstAsDefault: true,
         isLoading: this.volumeStore.list.isLoading,
+        initValue: autoSelectVolume || {},
         filterParams: [
           {
             label: t('Name'),

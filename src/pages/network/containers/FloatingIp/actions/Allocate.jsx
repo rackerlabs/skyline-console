@@ -265,9 +265,6 @@ export class Allocate extends ModalAction {
       batchAllocate = false,
       maxCount,
     } = this.state;
-    if (!networks || networks.length === 0) {
-      return [];
-    }
     const networkItems = networks.map((item) => ({
       label: item.name,
       value: item.id,
@@ -280,6 +277,7 @@ export class Allocate extends ModalAction {
         options: networkItems,
         onChange: this.handleNetworkChange,
         required: true,
+        autoSelectFirst: true,
       },
       {
         name: 'project_id',
@@ -310,6 +308,7 @@ export class Allocate extends ModalAction {
           </>
         ),
         hidden: !selectedNetwork,
+        autoSelectFirst: true,
         required: false,
       },
       {

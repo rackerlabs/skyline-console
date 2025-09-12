@@ -20,24 +20,40 @@ import styles from './index.less';
 export default class index extends Component {
   constructor(props) {
     super(props);
-    const {
-      checkOptions = [],
-      options = [],
-      value,
-      isWrappedValue = false,
-      onChange = () => {},
-    } = props;
-    if ((isUndefined(value) || isNull(value)) && options.length > 0) {
-      const firstOption = options[0];
-      const firstValue = isWrappedValue ? firstOption : firstOption.value;
-      onChange(firstValue);
-    }
+    const { checkOptions, autoSelectFirst, options } = props;
     if (checkOptions) {
       this.state = {
         selectAll: false,
       };
     }
+
+    if (autoSelectFirst && options && options.length > 0 && !props.value) {
+      this.autoSelectFirstOption();
+    }
   }
+
+  componentDidUpdate(prevProps) {
+    const { autoSelectFirst, options, value } = this.props;
+
+    if (
+      autoSelectFirst &&
+      options &&
+      options.length > 0 &&
+      !value &&
+      (prevProps.options !== options || prevProps.value !== value)
+    ) {
+      this.autoSelectFirstOption();
+    }
+  }
+
+  autoSelectFirstOption = () => {
+    const { options, onChange, isWrappedValue } = this.props;
+    if (options && options.length > 0) {
+      const firstOption = options[0];
+      const value = isWrappedValue ? firstOption : firstOption.value;
+      onChange && onChange(value);
+    }
+  };
 
   onChange = (value, option) => {
     const { onChange, isWrappedValue } = this.props;
