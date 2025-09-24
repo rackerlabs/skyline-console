@@ -24,7 +24,8 @@ export class LoadBalancerFlavorStore extends Base {
       profileMap[profile.id] = profile;
     });
     // Merge needed fields into each flavor
-    const merged = flavors?.flavors.map((flavor) => {
+    const enabledFlavors = flavors?.flavors.filter((flavor) => flavor.enabled);
+    const merged = enabledFlavors?.map((flavor) => {
       const profile = profileMap[flavor.flavor_profile_id] || {};
       const flavorData = JSON.parse(profile?.flavor_data);
       return {
