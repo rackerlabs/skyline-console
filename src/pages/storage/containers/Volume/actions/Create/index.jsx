@@ -232,7 +232,7 @@ export class Create extends FormAction {
   }
 
   async getVolumeTypes() {
-    const types = await this.volumeTypeStore.fetchList();
+    const types = await this.volumeTypeStore.fetchList({ showQoS: true });
     if (types.length > 0) {
       const defaultType = types[0];
       const { id, name } = defaultType;

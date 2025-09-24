@@ -59,8 +59,7 @@ export class VolumeTypeStore extends Base {
   }
 
   async listDidFetch(items, allProjects, filters) {
-    const { showEncryption } = filters;
-    const showQoS = true;
+    const { showEncryption, showQoS } = filters || {};
     if (items.length === 0) {
       return items;
     }
