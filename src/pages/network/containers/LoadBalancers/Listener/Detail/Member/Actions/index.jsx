@@ -14,6 +14,7 @@
 
 import DeleteAction from './DeleteMember';
 import CreateAction from './CreateMember';
+import EnableAction from './EnableMember';
 import Edit from './EditMember';
 import DisableAction from './DisableMember';
 
@@ -26,6 +27,9 @@ export const actionConfigs = {
       },
       {
         action: DisableAction,
+      },
+      {
+        action: EnableAction,
       },
     ],
   },
@@ -43,6 +47,9 @@ export const adminActions = {
       },
       {
         action: DisableAction,
+      },
+      {
+        action: EnableAction,
       },
     ],
   },

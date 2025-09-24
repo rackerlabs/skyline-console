@@ -28,6 +28,10 @@ export default class DisableAction extends ConfirmAction {
     return false;
   }
 
+  get isAsyncAction() {
+    return true;
+  }
+
   get buttonText() {
     return t('Disable');
   }
