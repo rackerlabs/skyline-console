@@ -45,9 +45,9 @@ export class Create extends ModalAction {
         name: 'name',
         label: t('Name'),
         type: 'input-name',
-        withoutChinese: true,
         required: true,
         isSwiftFile: true,
+        maxLength: 63,
       },
       {
         name: 'isPublic',

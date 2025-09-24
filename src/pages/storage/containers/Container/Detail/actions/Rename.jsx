@@ -77,9 +77,9 @@ export class Rename extends ModalAction {
         name: 'newname',
         label: t('Rename'),
         type: 'input-name',
-        withoutChinese: true,
         isSwiftFile: true,
         required: true,
+        maxLength: 63,
       },
     ];
   }

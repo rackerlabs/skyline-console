@@ -69,19 +69,9 @@ export class CreateFolder extends ModalAction {
         name: 'folder_name',
         label: t('Folder Name'),
         type: 'input-name',
-        withoutChinese: true,
         required: true,
         isSwiftFile: true,
-        validator: (rule, value) => {
-          if (value.length < 2) {
-            return Promise.reject(
-              new Error(
-                `${t('Invalid: ')}${t('Please input at least 2 characters.')}`
-              )
-            );
-          }
-          return Promise.resolve();
-        },
+        maxLength: 63,
       },
     ];
   }
