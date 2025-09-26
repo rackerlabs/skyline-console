@@ -28,6 +28,7 @@ export class BaseStep extends Base {
     this.state = {
       loading: true,
       flavorList: [],
+      autoSelectFlavor: null,
     };
     this.getFlavors();
   }
@@ -88,7 +89,25 @@ export class BaseStep extends Base {
 
   async getFlavors() {
     const flavorList = await this.flavorStore.fetchList();
-    this.setState({ flavorList, loading: false });
+    const first = (flavorList || [])[0];
+    const autoSelectFlavor = first
+      ? { selectedRowKeys: [first.id], selectedRows: [first] }
+      : {};
+    this.setState({ flavorList, loading: false, autoSelectFlavor }, () => {
+      if (first && this.formRef && this.formRef.current) {
+        const current = this.formRef.current.getFieldValue('flavor_id');
+        const hasSelection = current && (current.selectedRowKeys || []).length;
+        if (!hasSelection) {
+          const setForm = () =>
+            this.formRef.current.setFieldsValue({
+              flavor_id: autoSelectFlavor,
+            });
+          if (!setForm()) {
+            Promise.resolve().then(setForm);
+          }
+        }
+      }
+    });
   }
 
   get formItems() {
@@ -111,6 +130,7 @@ export class BaseStep extends Base {
         label: t('Flavors'),
         type: 'select-table',
         data: this.state.flavorList || [],
+        initValue: this.state.autoSelectFlavor || {},
         required: false,
         filterParams: [
           {
