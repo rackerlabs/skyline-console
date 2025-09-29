@@ -32,7 +32,7 @@ const ipWithMask =
 const passwordRegex =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\\[\]`~!@#$%^&*><()_\-+=?:"{}|,.\\/;'])[A-Za-z\d\\[\]`~!@#$%^&*><()_\-+=?:"{}|,.\\/;']{8,32}$/;
 const instancePasswordRegex =
-  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d\\[\]`~!@#$%^&*()_\-+=?:"{}|,.\\/;']{8,16}$/;
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\\[\]`~!@#$%^&*()_\-+=?:"{}|,.\\/;'])[A-Za-z\d\\[\]`~!@#$%^&*()_\-+=?:"{}|,.\\/;']{8,16}$/;
 const emailRegex =
   /^[A-Za-z\d]+([-_.][A-Za-z\d]+)*@([A-Za-z\d]+[-.])+[A-Za-z\d]{2,4}$/;
 const nameRegexWithoutChinese = /^[a-zA-Z][\w"'\[\]^.:()_-]{0,127}$/; // eslint-disable-line
@@ -630,7 +630,7 @@ export const passwordValidate = (rule, value, state) => {
       passwordType === 'instancePassword'
         ? getErrorMessage(
             t(
-              '8 to 16 characters, at least one uppercase letter, one lowercase letter, one number.'
+              '8 to 16 characters, at least one uppercase letter, one lowercase letter, one number and one special character.'
             ),
             hasPrefix
           )
