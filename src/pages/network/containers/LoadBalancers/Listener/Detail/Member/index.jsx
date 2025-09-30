@@ -78,6 +78,13 @@ export class Members extends Base {
       isHideable: true,
     },
     {
+      title: t('Admin State Up'),
+      dataIndex: 'admin_state_up',
+      render: (value) => (value ? t('On') : t('Off')),
+      isStatus: false,
+      isHideable: true,
+    },
+    {
       title: t('Ip Address'),
       dataIndex: 'address',
       isHideable: true,
