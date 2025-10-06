@@ -59,6 +59,10 @@ export class ClusterTemplates extends Base {
   get searchFilters() {
     return [
       {
+        label: t('ID'),
+        name: 'uuid',
+      },
+      {
         label: t('Name'),
         name: 'name',
       },

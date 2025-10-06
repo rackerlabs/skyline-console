@@ -192,6 +192,10 @@ export class Image extends Base {
   get searchFilters() {
     const filters = [
       {
+        label: t('ID'),
+        name: 'id',
+      },
+      {
         label: t('Name'),
         name: 'name',
       },

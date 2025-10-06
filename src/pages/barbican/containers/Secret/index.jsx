@@ -77,6 +77,10 @@ export class SecretList extends BaseList {
   get searchFilters() {
     return [
       {
+        label: t('ID'),
+        name: 'id',
+      },
+      {
         label: t('Name'),
         name: 'name',
       },

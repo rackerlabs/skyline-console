@@ -193,6 +193,10 @@ export const volumeColumns = [
 
 export const volumeFilters = [
   {
+    label: t('ID'),
+    name: 'uuid',
+  },
+  {
     label: t('Name'),
     name: 'name',
   },

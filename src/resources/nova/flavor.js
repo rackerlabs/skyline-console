@@ -296,6 +296,10 @@ export const getFlavorArchInfo = (flavor) => {
 export const getFlavorSearchFilters = (category) => {
   const filters = [
     {
+      label: t('ID'),
+      name: 'id',
+    },
+    {
       label: t('Name'),
       name: 'name',
     },

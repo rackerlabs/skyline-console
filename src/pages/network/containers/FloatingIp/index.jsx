@@ -311,6 +311,10 @@ export class FloatingIps extends Base {
   get searchFilters() {
     const filters = [
       {
+        label: t('ID'),
+        name: 'id',
+      },
+      {
         label: t('Floating IP'),
         name: 'floating_ip_address',
       },

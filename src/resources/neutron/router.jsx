@@ -86,6 +86,10 @@ export const getRouterColumns = (self) => [
 
 export const routerFilters = [
   {
+    label: t('ID'),
+    name: 'id',
+  },
+  {
     label: t('Name'),
     name: 'name',
   },

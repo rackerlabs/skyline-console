@@ -133,6 +133,10 @@ export class Networks extends Base {
   }
 
   get searchFilters() {
+    const idFilter = {
+      label: t('ID'),
+      name: 'id',
+    };
     const nameFilter = {
       label: t('Name'),
       name: 'name',
@@ -156,12 +160,12 @@ export class Networks extends Base {
       ],
     };
     if (this.isSharedTab) {
-      return [nameFilter, externalFilter, projectFilter];
+      return [idFilter, nameFilter, externalFilter, projectFilter];
     }
     if (this.isExternalTab) {
-      return [nameFilter, sharedFilter, projectFilter];
+      return [idFilter, nameFilter, sharedFilter, projectFilter];
     }
-    return [nameFilter, sharedFilter, externalFilter];
+    return [idFilter, nameFilter, sharedFilter, externalFilter];
   }
 }
 

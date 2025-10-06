@@ -265,6 +265,10 @@ export class Port extends Base {
   get searchFilters() {
     const ret = [
       {
+        label: t('ID'),
+        name: 'uuid',
+      },
+      {
         label: t('Name'),
         name: 'name',
       },
