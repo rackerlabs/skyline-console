@@ -21,6 +21,7 @@ import { toJS } from 'mobx';
 import { uniqWith, get } from 'lodash';
 import globalLbaasStore from 'stores/octavia/loadbalancer';
 import isEqual from 'react-fast-compare';
+import instanceNameStore from 'stores/nova/instance-name';
 
 export class CreateAction extends ModalAction {
   static id = 'manage-member';
@@ -58,12 +59,25 @@ export class CreateAction extends ModalAction {
         return this.store.fetchList();
       })
       .then((ports) => {
-        this.setState({
-          ports: ports.filter(
-            (port) =>
-              port.device_owner !== 'network:dhcp' &&
-              port.device_owner !== 'network:router_gateway'
-          ),
+        const filteredPorts = ports.filter(
+          (port) =>
+            port.device_owner !== 'network:dhcp' &&
+            port.device_owner !== 'network:router_gateway'
+        );
+        Promise.all(
+          filteredPorts.map(async (port) => {
+            const instanceName = port.id
+              ? await instanceNameStore.fetchInstanceNameByPortId(port.id)
+              : '';
+            return {
+              ...port,
+              instance_name: instanceName,
+            };
+          })
+        ).then((resolvedPorts) => {
+          this.setState({
+            ports: resolvedPorts,
+          });
         });
       });
   }

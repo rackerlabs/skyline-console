@@ -16,6 +16,7 @@ import { inject, observer } from 'mobx-react';
 import Base from 'components/Form';
 import { PortStore } from 'stores/neutron/port-extension';
 import { get } from 'lodash';
+import instanceNameStore from 'stores/nova/instance-name';
 
 export class MemberStep extends Base {
   init() {
@@ -24,12 +25,23 @@ export class MemberStep extends Base {
       ports: [],
     };
     this.store.fetchList().then((ports) => {
-      this.setState({
-        ports: ports.filter(
+      const updatedPorts = ports
+        .filter(
           (port) =>
             port.device_owner !== 'network:dhcp' &&
             port.device_owner !== 'network:router_gateway'
-        ),
+        )
+        .map(async (port) => {
+          const instanceName = port.id
+            ? await instanceNameStore.fetchInstanceNameByPortId(port.id)
+            : '';
+          return {
+            ...port,
+            instance_name: instanceName,
+          };
+        });
+      Promise.all(updatedPorts).then((resolvedPorts) => {
+        this.setState({ ports: resolvedPorts });
       });
     });
   }
