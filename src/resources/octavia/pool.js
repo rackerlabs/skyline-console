@@ -27,6 +27,9 @@ export const algorithmDict = {
   LEAST_CONNECTIONS: t('LEAST_CONNECTIONS'),
   ROUND_ROBIN: t('ROUND_ROBIN'),
   SOURCE_IP: t('SOURCE_IP'),
+};
+
+export const OvnAlgorithmDict = {
   SOURCE_IP_PORT: t('SOURCE_IP_PORT'),
 };
 
@@ -47,5 +50,10 @@ export const algorithmTip = {
 
 export const Algorithm = Object.keys(algorithmDict).map((key) => ({
   label: algorithmDict[key],
+  value: key,
+}));
+
+export const OvnPoolAlgorithm = Object.keys(OvnAlgorithmDict).map((key) => ({
+  label: OvnAlgorithmDict[key],
   value: key,
 }));
