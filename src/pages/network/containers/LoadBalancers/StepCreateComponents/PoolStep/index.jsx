@@ -14,7 +14,11 @@
 
 import { inject, observer } from 'mobx-react';
 import Base from 'components/Form';
-import { Algorithm, algorithmTip } from 'resources/octavia/pool';
+import {
+  Algorithm,
+  OvnPoolAlgorithm,
+  algorithmTip,
+} from 'resources/octavia/pool';
 import { poolProtocols } from 'resources/octavia/lb';
 
 export class PoolStep extends Base {
@@ -84,7 +88,7 @@ export class PoolStep extends Base {
         name: 'pool_lb_algorithm',
         label: t('Pool Algorithm'),
         type: 'select',
-        options: Algorithm,
+        options: this.isOVN ? OvnPoolAlgorithm : Algorithm,
         onChange: this.handleAlgorithmChange,
         extra: pool_lb_algorithm && algorithmTip[pool_lb_algorithm],
         required: true,
