@@ -180,9 +180,6 @@ export class StepCreate extends StepAction {
     const healthMonitorData = {
       admin_state_up: monitor_admin_state_up,
     };
-    if (provider !== 'ovn') {
-      healthMonitorData.url_path = health_url_path;
-    }
     Object.keys(rest).forEach((i) => {
       if (i.indexOf('listener') === 0) {
         listenerData[i.replace('listener_', '')] = values[i];
@@ -195,18 +192,21 @@ export class StepCreate extends StepAction {
     });
 
     if (enableHealthMonitor) {
-      poolData.healthmonitor = {
-        ...healthMonitorData,
-        ...(provider !== 'ovn'
-          ? {
-              url_path:
-                healthMonitorData.url_path === '' ||
-                healthMonitorData.url_path == null
-                  ? '/'
-                  : healthMonitorData.url_path,
-            }
-          : {}),
-      };
+      const healthMonitorPayload = { ...healthMonitorData };
+
+      // Only add url_path if provider is not OVN and type is not TCP or UDP-CONNECT
+      if (
+        provider !== 'ovn' &&
+        healthMonitorData.type !== 'TCP' &&
+        healthMonitorData.type !== 'UDP-CONNECT'
+      ) {
+        healthMonitorPayload.url_path =
+          health_url_path === '' || health_url_path == null
+            ? '/'
+            : health_url_path;
+      }
+
+      poolData.healthmonitor = healthMonitorPayload;
     }
     const {
       extMembers = [],
