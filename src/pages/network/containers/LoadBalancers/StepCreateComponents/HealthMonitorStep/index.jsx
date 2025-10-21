@@ -56,10 +56,17 @@ export class HealthMonitorStep extends Base {
     };
   }
 
+  handleHealthTypeChange = (value) => {
+    this.setState({
+      health_type: value,
+    });
+    console.log('value', value);
+  };
+
   allowed = () => Promise.resolve();
 
   get formItems() {
-    const { health_delay, enableHealthMonitor } = this.state;
+    const { health_delay, enableHealthMonitor, health_type } = this.state;
     return [
       {
         name: 'enableHealthMonitor',
@@ -127,6 +134,7 @@ export class HealthMonitorStep extends Base {
         options: this.filteredProtocolOptions,
         required: true,
         hidden: !enableHealthMonitor,
+        onChange: this.handleHealthTypeChange,
       },
       {
         name: 'monitor_admin_state_up',
@@ -156,6 +164,7 @@ export class HealthMonitorStep extends Base {
           'Defaults to "/" if left blank. Recommended: use a dedicated status page like "/status.html".'
         ),
         hidden: !enableHealthMonitor || this.isOVN,
+        disabled: health_type === 'TCP' || health_type === 'UDP-CONNECT',
       },
     ];
   }
