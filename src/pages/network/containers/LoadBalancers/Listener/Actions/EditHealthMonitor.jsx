@@ -224,7 +224,7 @@ export class EditHealthMonitor extends ModalAction {
         ],
         placeholder: t('e.g., /status.html or /healthcheck.html'),
         extra: t(
-          'Defaults to "/" if left blank. Recommended: use a dedicated status page like "/status.html". Disabled for TCP and UDP types.'
+          'Defaults to "/" if left blank. Recommended: use a dedicated status page like "/status.html". This option is not applicable for TCP and UDP health monitor types.'
         ),
         hidden: !enableHealthMonitor,
         disabled: healthType === 'TCP' || healthType === 'UDP-CONNECT',
