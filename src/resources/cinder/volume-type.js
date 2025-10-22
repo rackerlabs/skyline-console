@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import { isEmpty } from 'lodash';
-import { multiTip } from './volume';
 
 export const consumerTypes = {
   'front-end': t('Frontend'),
@@ -53,16 +52,21 @@ export const volumeTypeColumns = [
     render: (value) => value || '-',
   },
   {
+    title: t('Cost (/GB/hr)'),
+    dataIndex: ['extra_specs', ':price'],
+    isHideable: true,
+    render: (value) => {
+      const num = parseFloat(value);
+      if (Number.isNaN(num)) {
+        return '-';
+      }
+      return `$${num.toFixed(6)}`;
+    },
+  },
+  {
     title: t('Public'),
     dataIndex: 'is_public',
     valueRender: 'yesNo',
-  },
-  {
-    title: t('Shared'),
-    dataIndex: 'multiattach',
-    valueRender: 'yesNo',
-    titleTip: multiTip,
-    width: 120,
   },
 ];
 

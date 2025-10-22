@@ -50,7 +50,12 @@ export class Detach extends ModalAction {
   }
 
   get instances() {
-    return this.instanceStore.list.data || [];
+    const all = this.instanceStore.list.data || [];
+    const members = (this.item.attachments || []).map((it) => it.server_id);
+    if (!members || members.length === 0) {
+      return [];
+    }
+    return all.filter((it) => members.includes(it.id));
   }
 
   async getInstances() {
