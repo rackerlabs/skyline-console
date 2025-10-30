@@ -19,6 +19,7 @@ import globalVolumeTypeStore, {
 } from 'stores/cinder/volume-type';
 import { has } from 'lodash';
 import { multiTip } from 'resources/cinder/volume';
+import { getVolumeTypeColumns } from 'resources/cinder/volume-type';
 import actionConfigs from './actions';
 
 export class VolumeType extends Base {
@@ -66,44 +67,50 @@ export class VolumeType extends Base {
     };
   };
 
-  getColumns = () => [
-    {
-      title: t('ID/Name'),
-      dataIndex: 'name',
-      routeName: 'volumeTypeDetailAdmin',
-    },
-    {
-      title: t('Description'),
-      dataIndex: 'description',
-      isHideable: true,
-      valueRender: 'noValue',
-    },
-    {
-      title: t('Associated QoS Spec ID/Name'),
-      dataIndex: 'qos_specs_name',
-      isLink: true,
-      routeName: 'volumeTypeQosDetailAdmin',
-      idKey: 'qos_specs_id',
-    },
-    {
-      title: t('Encryption'),
-      dataIndex: 'encryption',
-      isHideable: true,
-      render: (value) => (value && value.provider) || '-',
-    },
-    {
-      title: t('Public'),
-      dataIndex: 'is_public',
-      valueRender: 'yesNo',
-    },
-    {
-      title: t('Shared'),
-      dataIndex: 'multiattach',
-      valueRender: 'yesNo',
-      titleTip: multiTip,
-      width: 120,
-    },
-  ];
+  getColumns = () => {
+    const data = this.store.list.data || [];
+    const baseColumns = getVolumeTypeColumns(data);
+
+    const descriptionCol = baseColumns.find(
+      (col) => col.dataIndex === 'description'
+    );
+    const costCol = baseColumns.find(
+      (col) =>
+        Array.isArray(col.dataIndex) && col.dataIndex[0] === 'extra_specs'
+    );
+    const publicCol = baseColumns.find((col) => col.dataIndex === 'is_public');
+
+    return [
+      {
+        title: t('ID/Name'),
+        dataIndex: 'name',
+        routeName: 'volumeTypeDetailAdmin',
+      },
+      descriptionCol,
+      {
+        title: t('Associated QoS Spec ID/Name'),
+        dataIndex: 'qos_specs_name',
+        isLink: true,
+        routeName: 'volumeTypeQosDetailAdmin',
+        idKey: 'qos_specs_id',
+      },
+      costCol,
+      publicCol,
+      {
+        title: t('Encryption'),
+        dataIndex: 'encryption',
+        isHideable: true,
+        render: (value) => (value && value.provider) || '-',
+      },
+      {
+        title: t('Shared'),
+        dataIndex: 'multiattach',
+        valueRender: 'yesNo',
+        titleTip: multiTip,
+        width: 120,
+      },
+    ].filter(Boolean);
+  };
 
   get searchFilters() {
     return [

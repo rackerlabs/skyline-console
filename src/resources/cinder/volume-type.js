@@ -30,45 +30,62 @@ export const controls = {
   'back-end': t('Back End'),
 };
 
-export const volumeTypeColumns = [
-  {
-    title: t('Name'),
-    dataIndex: 'name',
-  },
-  {
-    title: t('Description'),
-    dataIndex: 'description',
-    isHideable: true,
-    valueRender: 'noValue',
-  },
-  {
-    title: t('Read IOPS/sec per GB'),
-    dataIndex: ['qos_props', 'read_iops_sec_per_gb'],
-    render: (value) => value || '-',
-  },
-  {
-    title: t('Write IOPS/sec per GB'),
-    dataIndex: ['qos_props', 'write_iops_sec_per_gb'],
-    render: (value) => value || '-',
-  },
-  {
-    title: t('Cost (/GB/hr)'),
-    dataIndex: ['extra_specs', ':price'],
-    isHideable: true,
-    render: (value) => {
-      const num = parseFloat(value);
-      if (Number.isNaN(num)) {
-        return '-';
-      }
-      return `$${num.toFixed(6)}`;
+export const getVolumeTypeColumns = (data) => {
+  const hasPricing =
+    data &&
+    data.some((volumeType) => {
+      const price = volumeType?.extra_specs?.[':price'];
+      return price && !Number.isNaN(parseFloat(price));
+    });
+
+  const columns = [
+    {
+      title: t('Name'),
+      dataIndex: 'name',
     },
-  },
-  {
+    {
+      title: t('Description'),
+      dataIndex: 'description',
+      isHideable: true,
+      valueRender: 'noValue',
+    },
+    {
+      title: t('Read IOPS/sec per GB'),
+      dataIndex: ['qos_props', 'read_iops_sec_per_gb'],
+      render: (value) => value || '-',
+    },
+    {
+      title: t('Write IOPS/sec per GB'),
+      dataIndex: ['qos_props', 'write_iops_sec_per_gb'],
+      render: (value) => value || '-',
+    },
+  ];
+
+  if (hasPricing) {
+    columns.push({
+      title: t('Cost (/GB/hr)'),
+      dataIndex: ['extra_specs', ':price'],
+      isHideable: true,
+      render: (value) => {
+        const num = parseFloat(value);
+        if (Number.isNaN(num)) {
+          return '-';
+        }
+        return `$${num.toFixed(6)}`;
+      },
+    });
+  }
+
+  columns.push({
     title: t('Public'),
     dataIndex: 'is_public',
     valueRender: 'yesNo',
-  },
-];
+  });
+
+  return columns;
+};
+
+export const volumeTypeColumns = getVolumeTypeColumns([]);
 
 export const volumeTypeFilters = [
   {
@@ -78,7 +95,7 @@ export const volumeTypeFilters = [
 ];
 
 export const volumeTypeSelectProps = {
-  columns: volumeTypeColumns,
+  columns: getVolumeTypeColumns([]),
   filterParams: volumeTypeFilters,
 };
 

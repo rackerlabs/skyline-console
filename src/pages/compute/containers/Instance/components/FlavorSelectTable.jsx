@@ -163,7 +163,8 @@ export class FlavorSelectTable extends Component {
 
   getBaseColumns() {
     const { category, arch } = this.state;
-    let base = [...getBaseColumns()];
+    const allData = this.flavorStore.list.data || [];
+    let base = [...getBaseColumns(null, allData)];
     base[0].title = t('Name');
     base.splice(1, 1);
     if (!categoryHasIOPS(category)) {

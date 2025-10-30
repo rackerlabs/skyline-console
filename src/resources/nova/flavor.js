@@ -137,63 +137,77 @@ export const isGpuVisual = (category) =>
 export const isComputeOptimized = (category) =>
   category === 'compute_optimized_type';
 
-export const getBaseColumns = (self) => [
-  {
-    title: t('ID/Name'),
-    dataIndex: 'name',
-    routeName: self ? self.getRouteName('flavorDetail') : '',
-  },
-  {
-    title: t('Category'),
-    dataIndex: 'category',
-    valueMap: flavorCategoryList,
-  },
-  {
-    title: t('Disk (GiB)'),
-    dataIndex: 'disk',
-    isHideable: true,
-  },
-  {
-    title: t('CPU'),
-    dataIndex: 'vcpus',
-    isHideable: true,
-  },
-  {
-    title: t('Memory'),
-    dataIndex: 'ram',
-    isHideable: true,
-    render: (ram) => formatSize(ram, 2),
-  },
-  {
-    title: t('Internal Network Bandwidth (Gbps)'),
-    dataIndex: 'quota:vif_outbound_average',
-    isHideable: true,
-    width: 120,
-    render: (value) => {
-      if (!value) {
-        return '-';
-      }
-      return value / 1000 / 125;
+export const getBaseColumns = (self, data) => {
+  const hasPricing =
+    data &&
+    data.some((flavor) => {
+      const price = flavor?.[':price'] || flavor?.extra_specs?.[':price'];
+      return price && !Number.isNaN(parseFloat(price));
+    });
+
+  const columns = [
+    {
+      title: t('ID/Name'),
+      dataIndex: 'name',
+      routeName: self ? self.getRouteName('flavorDetail') : '',
     },
-  },
-  {
-    title: t('Ephemeral Disk (GiB)'),
-    dataIndex: 'OS-FLV-EXT-DATA:ephemeral',
-    isHideable: true,
-  },
-  {
-    title: t('Cost per Hour'),
-    dataIndex: ':price',
-    isHideable: true,
-    render: (value) => {
-      const num = parseFloat(value);
-      if (Number.isNaN(num)) {
-        return '-';
-      }
-      return `$${num.toFixed(3)}`;
+    {
+      title: t('Category'),
+      dataIndex: 'category',
+      valueMap: flavorCategoryList,
     },
-  },
-];
+    {
+      title: t('Disk (GiB)'),
+      dataIndex: 'disk',
+      isHideable: true,
+    },
+    {
+      title: t('CPU'),
+      dataIndex: 'vcpus',
+      isHideable: true,
+    },
+    {
+      title: t('Memory'),
+      dataIndex: 'ram',
+      isHideable: true,
+      render: (ram) => formatSize(ram, 2),
+    },
+    {
+      title: t('Internal Network Bandwidth (Gbps)'),
+      dataIndex: 'quota:vif_outbound_average',
+      isHideable: true,
+      width: 120,
+      render: (value) => {
+        if (!value) {
+          return '-';
+        }
+        return value / 1000 / 125;
+      },
+    },
+    {
+      title: t('Ephemeral Disk (GiB)'),
+      dataIndex: 'OS-FLV-EXT-DATA:ephemeral',
+      isHideable: true,
+    },
+  ];
+
+  if (hasPricing) {
+    columns.push({
+      title: t('Cost per Hour'),
+      dataIndex: ':price',
+      isHideable: true,
+      render: (value) => {
+        const num = parseFloat(value);
+        if (Number.isNaN(num)) {
+          return '-';
+        }
+        return `$${num.toFixed(3)}`;
+      },
+    });
+  }
+
+  return columns;
+};
 
 export const extraColumns = [
   {

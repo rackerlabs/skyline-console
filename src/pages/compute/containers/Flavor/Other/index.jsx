@@ -26,6 +26,12 @@ import actionConfigs from './actions';
 export class Flavor extends Base {
   init() {
     this.store = new FlavorStore();
+    this.allFlavorStore = new FlavorStore();
+    this.getAllFlavors();
+  }
+
+  async getAllFlavors() {
+    await this.allFlavorStore.fetchList({});
   }
 
   get policy() {
@@ -41,7 +47,8 @@ export class Flavor extends Base {
   }
 
   getColumns = () => {
-    const newBaseColumns = [...getBaseColumns(this)];
+    const allData = this.allFlavorStore.list.data || [];
+    const newBaseColumns = [...getBaseColumns(this, allData)];
     newBaseColumns.splice(1, 1);
     return [...newBaseColumns, ...extraColumns];
   };

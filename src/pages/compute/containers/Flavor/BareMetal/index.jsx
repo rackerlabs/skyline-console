@@ -42,7 +42,8 @@ export class Flavor extends Base {
   }
 
   getColumns = () => {
-    const columns = [...getBaseColumns(this), ...extraColumns];
+    const data = this.store.list.data || [];
+    const columns = [...getBaseColumns(this, data), ...extraColumns];
     const removes = [
       'quota:vif_outbound_average',
       'OS-FLV-EXT-DATA:ephemeral',

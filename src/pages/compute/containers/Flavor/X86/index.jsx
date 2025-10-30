@@ -42,7 +42,10 @@ export class Flavor extends Base {
     return true;
   }
 
-  getColumns = () => [...getBaseColumns(this), ...extraColumns];
+  getColumns = () => {
+    const data = this.store.list.data || [];
+    return [...getBaseColumns(this, data), ...extraColumns];
+  };
 
   get actionConfigs() {
     return this.isAdminPage ? actionConfigs : emptyActionConfig;

@@ -46,7 +46,10 @@ import {
   canImageCreateIronicInstance,
   canImageCreateInstance,
 } from 'resources/glance/image';
-import { volumeTypeSelectProps } from 'resources/cinder/volume-type';
+import {
+  getVolumeTypeColumns,
+  volumeTypeFilters,
+} from 'resources/cinder/volume-type';
 import { allSettled } from 'utils';
 import styles from './index.less';
 
@@ -511,7 +514,8 @@ export class Create extends FormAction {
         tip: t(
           'The volume type needs to set "multiattach" in the metadata to support shared volume attributes.'
         ),
-        ...volumeTypeSelectProps,
+        columns: getVolumeTypeColumns(this.volumeTypes),
+        filterParams: volumeTypeFilters,
         data: this.volumeTypes,
         isLoading: this.volumeTypeStore.list.isLoading,
         required: true,
