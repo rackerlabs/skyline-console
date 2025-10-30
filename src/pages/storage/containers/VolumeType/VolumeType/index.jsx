@@ -94,14 +94,13 @@ export class VolumeType extends Base {
         routeName: 'volumeTypeQosDetailAdmin',
         idKey: 'qos_specs_id',
       },
-      costCol,
-      publicCol,
       {
         title: t('Encryption'),
         dataIndex: 'encryption',
         isHideable: true,
         render: (value) => (value && value.provider) || '-',
       },
+      publicCol,
       {
         title: t('Shared'),
         dataIndex: 'multiattach',
@@ -109,6 +108,7 @@ export class VolumeType extends Base {
         titleTip: multiTip,
         width: 120,
       },
+      costCol,
     ].filter(Boolean);
   };
 
