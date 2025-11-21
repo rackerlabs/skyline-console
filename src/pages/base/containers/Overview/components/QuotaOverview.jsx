@@ -252,7 +252,12 @@ export class QuotaOverview extends Component {
 
   get volumeTypeData() {
     const { volumeTypeData } = this.props;
-    return volumeTypeData || this.volumeTypeStore.list.data;
+    const data = volumeTypeData || this.volumeTypeStore.list.data || [];
+    const hasNonSpecialName = data.some((it) => !it.name.startsWith('__'));
+    if (hasNonSpecialName) {
+      return data.filter((it) => !it.name.startsWith('__'));
+    }
+    return data;
   }
 
   get volumeTypesQuota() {
