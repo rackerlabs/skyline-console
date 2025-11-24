@@ -64,20 +64,62 @@ export class CreateAction extends ModalAction {
             port.device_owner !== 'network:dhcp' &&
             port.device_owner !== 'network:router_gateway'
         );
+
+        // Immediately populate table with ports, using server_name for compute:nova
+        // This allows the table to show data right away
+        const initialPorts = filteredPorts.map((port) => {
+          // Use server_name for compute:nova (already available from backend)
+          const instanceName =
+            port.device_owner === 'compute:nova' ? port.server_name || '' : '';
+          return {
+            ...port,
+            instance_name: instanceName,
+          };
+        });
+        this.setState({ ports: initialPorts });
+
+        // Then fetch instance names in the background for ports that need it
+        // Only fetch for ports that don't already have server_name
+        const portsNeedingFetch = filteredPorts.filter(
+          (port) =>
+            port.id &&
+            port.device_owner !== 'compute:nova' &&
+            port.device_owner &&
+            port.device_owner.startsWith('compute:')
+        );
+
+        if (portsNeedingFetch.length === 0) {
+          return;
+        }
+
+        // Fetch instance names in parallel and update state as they come in
         Promise.all(
-          filteredPorts.map(async (port) => {
-            const instanceName = port.id
-              ? await instanceNameStore.fetchInstanceNameByPortId(port.id)
-              : '';
-            return {
-              ...port,
-              instance_name: instanceName,
-            };
+          portsNeedingFetch.map(async (port) => {
+            try {
+              const instanceName =
+                await instanceNameStore.fetchInstanceNameByPortId(port.id);
+              return { portId: port.id, instanceName };
+            } catch (error) {
+              return { portId: port.id, instanceName: '' };
+            }
           })
-        ).then((resolvedPorts) => {
-          this.setState({
-            ports: resolvedPorts,
+        ).then((results) => {
+          // Update ports with fetched instance names
+          const instanceNameMap = new Map(
+            results.map((result) => [result.portId, result.instanceName])
+          );
+
+          const updatedPorts = this.state.ports.map((port) => {
+            if (instanceNameMap.has(port.id)) {
+              return {
+                ...port,
+                instance_name: instanceNameMap.get(port.id),
+              };
+            }
+            return port;
           });
+
+          this.setState({ ports: updatedPorts });
         });
       });
   }

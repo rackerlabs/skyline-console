@@ -35,6 +35,7 @@ export class BaseStep extends Base {
       provider: 'amphora',
       flavorsLoaded: false,
       providersLoaded: false,
+      subnetsLoading: false,
     };
     this.loadInitialData();
   }
@@ -71,6 +72,7 @@ export class BaseStep extends Base {
     this.setState(
       {
         network_id: new_network_id,
+        subnetsLoading: true,
       },
       () => {
         // Reset owned subnets after change owned network
@@ -92,10 +94,18 @@ export class BaseStep extends Base {
   }
 
   fetchSubnetDetails = async (network_id) => {
-    const ret = await this.subnetStore.fetchList({ network_id });
-    this.setState({
-      subnetDetails: ret || [],
-    });
+    try {
+      const ret = await this.subnetStore.fetchList({ network_id });
+      this.setState({
+        subnetDetails: ret || [],
+        subnetsLoading: false,
+      });
+    } catch (e) {
+      this.setState({
+        subnetDetails: [],
+        subnetsLoading: false,
+      });
+    }
   };
 
   async loadInitialData() {
@@ -162,7 +172,12 @@ export class BaseStep extends Base {
   }
 
   get formItems() {
-    const { network_id, subnetDetails = [], providerList = [] } = this.state;
+    const {
+      network_id,
+      subnetDetails = [],
+      subnetsLoading,
+      providerList = [],
+    } = this.state;
     return [
       {
         name: 'name',
@@ -248,6 +263,7 @@ export class BaseStep extends Base {
         label: t('Owned Subnet'),
         type: 'ip-distributor',
         subnets: subnetDetails,
+        subnetsLoading,
         formRef: this.formRef,
         maxNumber: 1,
         hidden: !network_id,
