@@ -19,8 +19,6 @@ import { FloatingIpStore } from 'stores/neutron/floatingIp';
 import { NetworkStore } from 'stores/neutron/network';
 import globalProjectStore from 'stores/keystone/project';
 import globalSubnetStore from 'stores/neutron/subnet';
-import { QoSPolicyStore } from 'stores/neutron/qos-policy';
-import { getQoSPolicyTabs } from 'resources/neutron/qos-policy';
 import { qosEndpoint } from 'client/client/constants';
 import { projectTableOptions } from 'resources/keystone/project';
 import { isAdminPage } from 'utils';
@@ -52,7 +50,6 @@ export class Allocate extends ModalAction {
   init() {
     this.store = new FloatingIpStore();
     this.networkStore = new NetworkStore();
-    this.qosPolicyStore = new QoSPolicyStore();
     this.projectStore = globalProjectStore;
     this.state = {
       ...(this.state || {}),
@@ -66,6 +63,8 @@ export class Allocate extends ModalAction {
       quotaLoading: true,
       projectId: this.currentProjectId,
       maxCount: 2,
+      enableSubnetSelection: false,
+      hasMultipleSubnets: false,
     };
     this.getExternalNetworks();
     this.isAdminPage && this.fetchProjectList();
@@ -180,18 +179,40 @@ export class Allocate extends ModalAction {
     const subnets = await globalSubnetStore.fetchList({
       network_id: networkId,
     });
-    this.setState({
-      subnets: subnets.map((item) => ({
-        allocation_pools: item.allocation_pools,
-        ip_version: item.ip_version,
-        value: item.id,
-        label: item.name,
-      })),
-      selectedNetwork: networkId,
-    });
-    this.formRef.current.setFieldsValue({
-      subnet_id: null,
-    });
+    const subnetOptions = subnets.map((item) => ({
+      allocation_pools: item.allocation_pools,
+      ip_version: item.ip_version,
+      value: item.id,
+      label: item.name,
+    }));
+    const hasMultipleSubnets = subnetOptions.length > 1;
+    this.setState(
+      {
+        subnets: subnetOptions,
+        selectedNetwork: networkId,
+        hasMultipleSubnets,
+      },
+      () => {
+        const { enableSubnetSelection } = this.state;
+        if (
+          (enableSubnetSelection || !hasMultipleSubnets) &&
+          subnetOptions.length > 0
+        ) {
+          const firstSubnet = subnetOptions[0];
+          this.formRef?.current?.setFieldsValue({
+            subnet_id: firstSubnet,
+          });
+          this.handleSubnetChange(firstSubnet);
+        } else {
+          this.setState({
+            selectedSubnet: null,
+          });
+          this.formRef?.current?.setFieldsValue({
+            subnet_id: undefined,
+          });
+        }
+      }
+    );
   };
 
   handleSubnetChange = (option) => {
@@ -204,16 +225,13 @@ export class Allocate extends ModalAction {
     subnet_id,
     batch_allocate,
     count,
-    qos_policy_id,
     project_id,
+    enable_subnet_selection,
     ...rest
   }) => {
     const data = rest;
     if (subnet_id) {
       data.subnet_id = subnet_id.value;
-    }
-    if (qos_policy_id && qos_policy_id.selectedRowKeys.length > 0) {
-      data.qos_policy_id = qos_policy_id.selectedRowKeys[0];
     }
     if (batch_allocate) {
       data.floating_ip_address = null;
@@ -249,6 +267,34 @@ export class Allocate extends ModalAction {
     );
   };
 
+  handleSubnetToggle = (checked) => {
+    this.setState(
+      {
+        enableSubnetSelection: checked,
+      },
+      () => {
+        if (!checked) {
+          this.setState({
+            selectedSubnet: null,
+          });
+          this.formRef?.current?.setFieldsValue({
+            subnet_id: undefined,
+            floating_ip_address: undefined,
+          });
+        } else {
+          const { subnets = [] } = this.state;
+          if (subnets.length > 0) {
+            const firstSubnet = subnets[0];
+            this.formRef?.current?.setFieldsValue({
+              subnet_id: firstSubnet,
+            });
+            this.handleSubnetChange(firstSubnet);
+          }
+        }
+      }
+    );
+  };
+
   checkCanSpecifyFloatingIpAddress() {
     return (
       checkPolicyRule('create_floatingip') &&
@@ -264,6 +310,8 @@ export class Allocate extends ModalAction {
       selectedSubnet,
       batchAllocate = false,
       maxCount,
+      enableSubnetSelection = false,
+      hasMultipleSubnets = false,
     } = this.state;
     const networkItems = networks.map((item) => ({
       label: item.name,
@@ -291,6 +339,15 @@ export class Allocate extends ModalAction {
         ...projectTableOptions,
       },
       {
+        name: 'enable_subnet_selection',
+        label: t('Owned Subnet'),
+        type: 'check',
+        content: t('Specify subnet manually'),
+        onChange: this.handleSubnetToggle,
+        display: !!selectedNetwork && subnets.length > 0,
+        disabled: subnets.length <= 1,
+      },
+      {
         name: 'subnet_id',
         label: t('Owned Subnet'),
         type: 'select',
@@ -307,8 +364,9 @@ export class Allocate extends ModalAction {
             ))}
           </>
         ),
-        hidden: !selectedNetwork,
-        autoSelectFirst: true,
+        hidden:
+          !selectedNetwork || (!enableSubnetSelection && hasMultipleSubnets),
+        autoSelectFirst: false,
         required: false,
       },
       {
@@ -338,21 +396,7 @@ export class Allocate extends ModalAction {
         display: this.checkCanSpecifyFloatingIpAddress(),
         type: 'ip-input',
         version: selectedSubnet && (selectedSubnet.ip_version || 4),
-      },
-      {
-        name: 'description',
-        label: t('Description'),
-        type: 'textarea',
-      },
-      {
-        name: 'qos_policy_id',
-        label: t('QoS Policy'),
-        type: 'tab-select-table',
-        tabs: getQoSPolicyTabs.call(this),
-        isMulti: false,
-        tip: t('Choosing a QoS policy can limit bandwidth and DSCP'),
-        onChange: this.onQosChange,
-        display: !!this.qosEndpoint,
+        extra: t('Only available when a subnet is selected'),
       },
     ];
   }
