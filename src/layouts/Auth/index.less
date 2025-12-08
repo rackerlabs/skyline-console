@@ -11,26 +11,26 @@
 .background {
   position: fixed;
   top: 0;
-  left: 0;
   right: 0;
   bottom: 0;
+  left: 0;
   z-index: 1;
-  
+
   .backgroundImage {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    position: absolute;
-    top: 0;
-    left: 0;
   }
-  
+
   .overlay {
     position: absolute;
     top: 0;
-    left: 0;
     right: 0;
     bottom: 0;
+    left: 0;
     background-color: rgba(14, 34, 181, 15%); // Original overlay color
   }
 }
@@ -44,8 +44,8 @@
   justify-content: center;
   width: 50%;
   min-width: 320px; // Reduced minimum width for better mobile support
-  padding: 0 60px;
   height: 100vh; // Full height to center the card
+  padding: 0 60px;
 }
 
 // Right column - Logo and branding
@@ -61,65 +61,58 @@
 
 // Branding container
 .brandingContainer {
-  text-align: center;
   color: white;
-  
+  text-align: center;
+
   .logo {
-    height: 150px;
     width: auto;
     max-width: 250px;
+    height: 150px;
     filter: brightness(1.1) contrast(1.1); // Make logo brighter and more visible
   }
-  
+
   .brandTitle {
-    font-size: 32px;
+    margin: 0 0 8px;
+    color: #fff;
     font-weight: 600;
-    color: #ffffff;
-    margin: 0 0 8px 0;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5); // Stronger shadow for better contrast
+    font-size: 32px;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 50%); // Stronger shadow for better contrast
   }
-  
+
   .brandSubtitle {
-    font-size: 16px;
-    font-weight: 500; // Slightly bolder
-    color: #ffffff; // Full white instead of 80% opacity
     margin: 0;
-    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4); // Stronger shadow for better visibility
+    color: #fff; // Full white instead of 80% opacity
+    font-weight: 500; // Slightly bolder
+    font-size: 16px;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 40%); // Stronger shadow for better visibility
   }
 }
 
 // Card container for login form (updated for left positioning)
 .cardContainer {
   position: relative;
-  width: 100%;
-  max-width: 420px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border-radius: 24px;
-  box-shadow: 
-    0 32px 64px rgba(0, 0, 0, 0.4),
-    0 16px 32px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 24px 24px 20px 24px; // Reduced padding significantly
-  overflow: hidden; // Prevent outer scrolling
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex; // Make it a flex container
   flex-direction: column; // Stack children vertically
+  width: 100%;
+  max-width: 420px;
+  padding: 24px 24px 20px; // Reduced padding significantly
+  overflow: hidden; // Prevent outer scrolling
+  background: rgba(255, 255, 255, 95%);
+  border: 1px solid rgba(255, 255, 255, 20%);
+  border-radius: 24px;
+  box-shadow: 0 32px 64px rgba(0, 0, 0, 40%), 0 16px 32px rgba(0, 0, 0, 20%),
+    inset 0 1px 0 rgba(255, 255, 255, 40%);
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 50%), 0 20px 40px rgba(0, 0, 0, 30%),
+    inset 0 1px 0 rgba(255, 255, 255, 40%);
+  backdrop-filter: blur(20px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-  
   // Desktop: Auto height for compact forms, max height constraint for expanded forms
   @media (min-width: 769px) {
     height: auto; // Let content determine height on desktop
     min-height: 400px; // Minimum height for good proportions
     max-height: calc(100vh - 20px); // Never exceed screen height
   }
-  
-  box-shadow: 
-      0 40px 80px rgba(0, 0, 0, 0.5),
-      0 20px 40px rgba(0, 0, 0, 0.3),
-      inset 0 1px 0 rgba(255, 255, 255, 0.4);
-  
 }
 
 // Responsive design - Tablet view (769px to 1024px stays desktop, below 768px goes mobile)
@@ -127,45 +120,45 @@
   .container {
     flex-direction: column;
   }
-  
+
   .leftColumn,
   .rightColumn {
     width: 100%;
     min-width: auto;
   }
-  
+
   .leftColumn {
     order: 2;
-    padding: 20px 16px;
     height: auto; // Allow natural height
     min-height: 60vh; // Minimum height
+    padding: 20px 16px;
   }
-  
+
   .rightColumn {
     order: 1;
-    padding: 40px 16px 20px 16px;
+    padding: 40px 16px 20px;
   }
 
   .brandingContainer {
     .logo {
-      height: 120px;
       width: 120px;
+      height: 120px;
       margin-bottom: 4px;
       filter: brightness(1.15) contrast(1.15); // Even brighter on tablet
     }
-    
+
     .brandTitle {
-      font-size: 24px;
       margin-bottom: 4px;
-      color: #ffffff;
-      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+      color: #fff;
+      font-size: 24px;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 50%);
     }
-    
+
     .brandSubtitle {
-      font-size: 14px;
-      color: #ffffff;
+      color: #fff;
       font-weight: 500;
-      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+      font-size: 14px;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 40%);
     }
   }
 }
@@ -173,146 +166,148 @@
 // Mobile view refinements
 @media (max-width: 768px) {
   .container {
-    padding: 10px; // Add container padding for margins
     min-height: 100vh; // Ensure container takes full height
+    padding: 10px; // Add container padding for margins
   }
-  
+
   .leftColumn {
-    padding: 0;
-    margin-top: 20px; // Add gap between branding and login panel
-    flex: 1; // Take remaining space
     display: flex;
+    flex: 1; // Take remaining space
     flex-direction: column;
+    margin-top: 20px; // Add gap between branding and login panel
+    padding: 0;
   }
-  
+
   .rightColumn {
     display: flex; // Show branding on mobile at top
-    width: 100%;
-    padding: 20px 0 15px 0; // Increased bottom padding for more space
-    justify-content: center;
-    margin-bottom: 10px; // Additional margin below branding
     flex-shrink: 0; // Prevent shrinking
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 10px; // Additional margin below branding
+    padding: 20px 0 15px; // Increased bottom padding for more space
   }
-  
+
   .cardContainer {
-    padding: 20px 20px 16px 20px; // Reduced mobile padding
-    border-radius: 20px;
-    height: auto; // Let content determine height
-    max-height: calc(100vh - 180px); // Never exceed available space
-    min-height: 300px; // Minimum height for usability
-    flex: 1; // Take available space
     display: flex;
+    flex: 1; // Take available space
     flex-direction: column;
-    
+    height: auto; // Let content determine height
+    min-height: 300px; // Minimum height for usability
+    max-height: calc(100vh - 180px); // Never exceed available space
+    padding: 20px 20px 16px; // Reduced mobile padding
+
     // Ensure scrolling works when content is too tall
     overflow: hidden;
+    border-radius: 20px;
   }
 }
 
 // Medium mobile range - ensure good spacing
 @media (max-width: 640px) and (min-width: 481px) {
   .rightColumn {
-    padding: 24px 0 20px 0; // Extra padding for medium screens
     margin-bottom: 15px; // More separation
+    padding: 24px 0 20px; // Extra padding for medium screens
   }
-  
+
   .leftColumn {
     margin-top: 25px; // Extra gap for medium mobile screens
   }
-  
+
   .cardContainer {
-    max-height: calc(100vh - 220px); // Conservative height accounting for all spacing
     min-height: 280px; // Smaller minimum for medium screens
+    max-height: calc(
+      100vh - 220px
+    ); // Conservative height accounting for all spacing
   }
 }
 
 // Short screen height adjustments for mobile
 @media (max-width: 768px) and (max-height: 600px) {
   .rightColumn {
-    padding: 16px 0 10px 0; // Reduce branding padding on short screens
     margin-bottom: 5px;
+    padding: 16px 0 10px; // Reduce branding padding on short screens
   }
-  
+
   .leftColumn {
     margin-top: 15px; // Reduce gap on short screens
   }
-  
+
   .cardContainer {
-    max-height: calc(100vh - 120px); // More space for content on short screens
     min-height: 250px; // Lower minimum for very short screens
+    max-height: calc(100vh - 120px); // More space for content on short screens
   }
 }
 
 @media (max-width: 480px) {
   .container {
-    padding: 8px; // Smaller container padding on small screens
     min-height: 100vh; // Ensure full height
+    padding: 8px; // Smaller container padding on small screens
   }
-  
+
   .leftColumn {
-    padding: 0; // No additional padding
+    display: flex;
+    flex: 1;
+    flex-direction: column;
     margin-top: 16px; // Smaller but adequate gap on small screens
-    flex: 1;
-    display: flex;
-    flex-direction: column;
+    padding: 0; // No additional padding
   }
-  
+
   .rightColumn {
-    padding: 16px 0 12px 0; // Increased bottom padding for small screens
-    margin-bottom: 8px; // Additional margin for separation
     flex-shrink: 0;
+    margin-bottom: 8px; // Additional margin for separation
+    padding: 16px 0 12px; // Increased bottom padding for small screens
   }
-  
+
   .cardContainer {
-    padding: 16px 16px 12px 16px; // Further reduced padding
-    border-radius: 16px;
-    height: auto; // Let content determine height
-    max-height: calc(100vh - 160px); // Conservative for small screens
-    min-height: 280px; // Reasonable minimum for small screens
-    flex: 1;
     display: flex;
+    flex: 1;
     flex-direction: column;
+    height: auto; // Let content determine height
+    min-height: 280px; // Reasonable minimum for small screens
+    max-height: calc(100vh - 160px); // Conservative for small screens
+    padding: 16px 16px 12px; // Further reduced padding
     overflow: hidden;
+    border-radius: 16px;
   }
 }
 
 // Very short screens on small devices
 @media (max-width: 480px) and (max-height: 500px) {
   .rightColumn {
-    padding: 12px 0 8px 0; // Minimal branding padding
     margin-bottom: 4px;
+    padding: 12px 0 8px; // Minimal branding padding
   }
-  
+
   .leftColumn {
     margin-top: 12px; // Minimal gap
   }
-  
+
   .cardContainer {
-    max-height: calc(100vh - 100px); // Maximum space for content
     min-height: 200px; // Very low minimum for tiny screens
+    max-height: calc(100vh - 100px); // Maximum space for content
   }
-  
+
   .brandingContainer {
     .logo {
-      height: 100px;
       width: 100px;
+      height: 100px;
       margin-bottom: 12px; // Reduced margin for mobile
       filter: brightness(1.2) contrast(1.2); // Maximum brightness on mobile
     }
-    
+
     .brandTitle {
-      font-size: 20px;
       margin-bottom: 4px; // Reduced margin
-      color: #ffffff;
-      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6); // Strong shadow for mobile visibility
+      color: #fff;
+      font-size: 20px;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 60%); // Strong shadow for mobile visibility
     }
-    
+
     .brandSubtitle {
-      font-size: 13px;
       margin-bottom: 0; // No bottom margin
-      color: #ffffff;
+      color: #fff;
       font-weight: 500;
-      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5); // Strong shadow for mobile
+      font-size: 13px;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 50%); // Strong shadow for mobile
     }
   }
 }

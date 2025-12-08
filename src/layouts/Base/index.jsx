@@ -155,6 +155,9 @@ export class BaseLayout extends Component {
   };
 
   checkPath = (path, pathname, realPath) => {
+    if (!path) {
+      return false;
+    }
     if (path instanceof RegExp) {
       return path.test(pathname);
     }

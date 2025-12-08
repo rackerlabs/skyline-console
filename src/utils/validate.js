@@ -538,6 +538,19 @@ export const nameTypeValidate = {
   databaseUserNameValidate,
 };
 
+export const isValidUrl = (url) => {
+  if (!url || typeof url !== 'string') {
+    return false;
+  }
+  try {
+    // eslint-disable-next-line no-new
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 export const cidrAllValidate = (rule, value) => {
   if (isIpCidr(value) || isIPv6Cidr(value)) {
     return Promise.resolve(true);

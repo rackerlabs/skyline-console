@@ -64,7 +64,6 @@ export class Allocate extends ModalAction {
       projectId: this.currentProjectId,
       maxCount: 2,
       enableSubnetSelection: false,
-      hasMultipleSubnets: false,
     };
     this.getExternalNetworks();
     this.isAdminPage && this.fetchProjectList();
@@ -120,13 +119,16 @@ export class Allocate extends ModalAction {
     const result = await this.projectStore.fetchProjectNeutronQuota(projectId);
     const { floatingip: quota = {} } = result || {};
     const { left = 0 } = quota;
+    // Handle unlimited quota (-1) by setting maxCount to Infinity
+    const maxCountValue = left === -1 ? Infinity : left;
     this.setState({
       quota,
       quotaLoading: false,
-      maxCount: left,
+      maxCount: maxCountValue,
     });
     let newCount = count;
-    if (left < count) {
+    // Only adjust count if quota is limited (not -1) and less than requested count
+    if (left !== -1 && left < count) {
       newCount = left;
     } else if (left > 0 && count === 0) {
       newCount = 1;
@@ -185,19 +187,15 @@ export class Allocate extends ModalAction {
       value: item.id,
       label: item.name,
     }));
-    const hasMultipleSubnets = subnetOptions.length > 1;
     this.setState(
       {
         subnets: subnetOptions,
         selectedNetwork: networkId,
-        hasMultipleSubnets,
       },
       () => {
         const { enableSubnetSelection } = this.state;
-        if (
-          (enableSubnetSelection || !hasMultipleSubnets) &&
-          subnetOptions.length > 0
-        ) {
+        // Only auto-select subnet if checkbox is checked
+        if (enableSubnetSelection && subnetOptions.length > 0) {
           const firstSubnet = subnetOptions[0];
           this.formRef?.current?.setFieldsValue({
             subnet_id: firstSubnet,
@@ -209,6 +207,7 @@ export class Allocate extends ModalAction {
           });
           this.formRef?.current?.setFieldsValue({
             subnet_id: undefined,
+            floating_ip_address: undefined,
           });
         }
       }
@@ -311,7 +310,6 @@ export class Allocate extends ModalAction {
       batchAllocate = false,
       maxCount,
       enableSubnetSelection = false,
-      hasMultipleSubnets = false,
     } = this.state;
     const networkItems = networks.map((item) => ({
       label: item.name,
@@ -345,7 +343,6 @@ export class Allocate extends ModalAction {
         content: t('Specify subnet manually'),
         onChange: this.handleSubnetToggle,
         display: !!selectedNetwork && subnets.length > 0,
-        disabled: subnets.length <= 1,
       },
       {
         name: 'subnet_id',
@@ -364,8 +361,7 @@ export class Allocate extends ModalAction {
             ))}
           </>
         ),
-        hidden:
-          !selectedNetwork || (!enableSubnetSelection && hasMultipleSubnets),
+        hidden: !selectedNetwork || !enableSubnetSelection,
         autoSelectFirst: false,
         required: false,
       },
@@ -384,7 +380,7 @@ export class Allocate extends ModalAction {
         label: t('Count'),
         type: 'input-int',
         min: 1,
-        max: maxCount,
+        max: maxCount > 0 || maxCount === Infinity ? maxCount : undefined,
         hidden: !batchAllocate,
         required: true,
         onChange: this.onCountChange,

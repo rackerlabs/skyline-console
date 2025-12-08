@@ -94,6 +94,13 @@ export class Right extends Component {
           </Breadcrumb.Item>
         );
       }
+      if (!item.path) {
+        return (
+          <Breadcrumb.Item key={item.key} className={styles['breadcrumb-item']}>
+            {item.name}
+          </Breadcrumb.Item>
+        );
+      }
       return (
         <Breadcrumb.Item key={item.key}>
           <Link

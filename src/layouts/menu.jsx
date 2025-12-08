@@ -24,12 +24,23 @@ import {
   SwitcherOutlined,
   ContainerOutlined,
   LockOutlined,
+  BookOutlined,
+  PlayCircleOutlined,
 } from '@ant-design/icons';
 
 const renderMenu = (t) => {
   if (!t) {
     return [];
   }
+  const gettingStartedUrl =
+    (typeof GLOBAL_VARIABLES !== 'undefined' &&
+      GLOBAL_VARIABLES.gettingStartedUrl) ||
+    'https://www.youtube.com/watch?v=euINDzNBMZc&list=PLXK8KWNgW1MvNAsjegC8lm4HmR6dpHmAO';
+  const documentationUrl =
+    (typeof GLOBAL_VARIABLES !== 'undefined' &&
+      GLOBAL_VARIABLES.documentationUrl) ||
+    'https://docs.rackspacecloud.com/cloud-onboarding-welcome';
+
   const menu = [
     {
       path: '/base/overview',
@@ -859,6 +870,30 @@ const renderMenu = (t) => {
           ],
         },
       ],
+    },
+    {
+      type: 'divider',
+      key: 'help-divider',
+    },
+    {
+      externalUrl: documentationUrl,
+      name: t('Documentation'),
+      key: 'documentation',
+      icon: <BookOutlined />,
+      level: 0,
+      hasBreadcrumb: false,
+      hasChildren: false,
+      ariaLabel: t('Documentation - Opens documentation in new tab'),
+    },
+    {
+      externalUrl: gettingStartedUrl,
+      name: t('Getting Started'),
+      key: 'gettingStarted',
+      icon: <PlayCircleOutlined />,
+      level: 0,
+      hasBreadcrumb: false,
+      hasChildren: false,
+      ariaLabel: t('Getting Started - Opens video tutorials in new tab'),
     },
   ];
   return menu;

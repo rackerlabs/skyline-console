@@ -11,6 +11,7 @@
     "no-descending-specificity": null,
     "at-rule-no-unknown": null,
     "color-function-notation": "legacy",
+    "no-empty-source": null,
     "property-no-unknown": [
       true,
       {

@@ -3240,5 +3240,9 @@
   "{name} {id} could not be found.": "{name} {id} could not be found.",
   "{number} {resource}": "{number} {resource}",
   "{pageSize} items/page": "{pageSize} items/page",
-  "{seconds} seconds": "{seconds} seconds"
+  "{seconds} seconds": "{seconds} seconds",
+  "Documentation": "Documentation",
+  "Getting Started": "Getting Started",
+  "Documentation - Opens documentation in new tab": "Documentation - Opens documentation in new tab",
+  "Getting Started - Opens video tutorials in new tab": "Getting Started - Opens video tutorials in new tab"
 }

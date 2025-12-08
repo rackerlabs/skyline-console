@@ -14,7 +14,11 @@
 
 import React, { Component } from 'react';
 import { Menu, Tooltip } from 'antd';
-import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
+import {
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  ExportOutlined,
+} from '@ant-design/icons';
 import { inject, observer } from 'mobx-react';
 import { toJS } from 'mobx';
 import { isString, isEqual } from 'lodash';
@@ -23,7 +27,7 @@ import { getPath } from 'utils/route-map';
 import i18n from 'core/i18n';
 import styles from './index.less';
 
-const { SubMenu } = Menu;
+const { SubMenu, Divider } = Menu;
 
 const { getLocaleShortName } = i18n;
 
@@ -120,6 +124,27 @@ export class LayoutMenu extends Component {
   };
 
   onClickMenuItem = ({ key }) => {
+    const findItem = (items) => {
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.key === key) {
+          return item;
+        }
+        if (item.children) {
+          const found = findItem(item.children);
+          if (found) {
+            return found;
+          }
+        }
+      }
+      return null;
+    };
+    const menuItem = findItem(this.menu);
+
+    if (menuItem?.externalUrl) {
+      window.open(menuItem.externalUrl, '_blank', 'noopener,noreferrer');
+      return;
+    }
     const path = getPath({ key });
     const { pathname } = this.props;
     if (pathname !== path) {
@@ -134,9 +159,33 @@ export class LayoutMenu extends Component {
 
   renderMenuItem = (item, isSubMenu) => {
     const { collapsed, hover } = this.state;
+    const { showChildren = true, externalUrl, type, ariaLabel } = item;
+
+    if (type === 'divider') {
+      return <Divider key={item.key} />;
+    }
+
+    if (!externalUrl && !item.path) {
+      return null;
+    }
+
     if (collapsed && !hover) {
+      const handleExternalClick = externalUrl
+        ? () => {
+            window.open(externalUrl, '_blank', 'noopener,noreferrer');
+          }
+        : undefined;
       return (
-        <Menu.Item key={item.key} className={styles['menu-item-collapsed']}>
+        <Menu.Item
+          key={item.key}
+          className={styles['menu-item-collapsed']}
+          onClick={handleExternalClick}
+          aria-label={
+            externalUrl
+              ? ariaLabel || `${item.name} - Opens in new tab`
+              : undefined
+          }
+        >
           {this.renderMenuItemIcon({ item, collapsed, isSubMenu })}
         </Menu.Item>
       );
@@ -145,7 +194,6 @@ export class LayoutMenu extends Component {
     if (item.level > 1) {
       return null;
     }
-    const { showChildren = true } = item;
     if (
       !showChildren ||
       !item.children ||
@@ -156,21 +204,45 @@ export class LayoutMenu extends Component {
         <Menu.Item
           key={item.key}
           className={styles['menu-item']}
-          onClick={this.onClickMenuItem}
+          onClick={externalUrl ? undefined : this.onClickMenuItem}
         >
-          <span className={styles['menu-item-title-wrapper']}>
-            {/* <Menu.Item key={item.key} className={styles['menu-item-no-child']}> */}
-            {this.renderMenuItemIcon({ item, isSubMenu })}
-            <span
-              className={
-                item.level === 0 || (item.level === 1 && !showChildren)
-                  ? styles['menu-item-title']
-                  : styles['sub-menu-item-title']
-              }
+          {externalUrl ? (
+            <a
+              href={externalUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${styles['menu-item-title-wrapper']} ${styles['external-link']}`}
+              aria-label={ariaLabel || `${item.name} - Opens in new tab`}
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
             >
-              {item.name}
+              {this.renderMenuItemIcon({ item, isSubMenu })}
+              <span
+                className={
+                  item.level === 0 || (item.level === 1 && !showChildren)
+                    ? styles['menu-item-title']
+                    : styles['sub-menu-item-title']
+                }
+              >
+                {item.name}
+              </span>
+              <ExportOutlined className={styles['external-link-icon']} />
+            </a>
+          ) : (
+            <span className={styles['menu-item-title-wrapper']}>
+              {this.renderMenuItemIcon({ item, isSubMenu })}
+              <span
+                className={
+                  item.level === 0 || (item.level === 1 && !showChildren)
+                    ? styles['menu-item-title']
+                    : styles['sub-menu-item-title']
+                }
+              >
+                {item.name}
+              </span>
             </span>
-          </span>
+          )}
         </Menu.Item>
       );
     }

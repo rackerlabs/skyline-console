@@ -140,16 +140,53 @@
 }
 
 .menu-item {
+  position: relative;
   font-size: @size-normal;
 
   :global {
     a {
       color: inherit;
+      transition: opacity 0.2s ease;
+
+      &::before {
+        width: 5px;
+      }
+
+      &:hover {
+        opacity: 0.8;
+      }
+
+      &:active {
+        opacity: 0.6;
+      }
+    }
+  }
+
+  :global(.ant-menu-item) {
+    position: relative;
+  }
+
+  .external-link {
+    display: flex;
+    align-items: center;
+    transition: opacity 0.2s ease;
+
+    &:hover {
+      opacity: 0.8;
     }
 
-    a::before {
-      width: 5px;
+    &:active {
+      opacity: 0.6;
     }
+  }
+
+  .external-link-icon {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    font-size: 12px;
+    transform: translateY(-50%);
+    opacity: 0.6;
   }
 }
 
@@ -279,7 +316,6 @@
   border-right: none;
   border-radius: 0 4px 4px 0;
   transform: scaleX(2.2) perspective(50px) rotateY(50deg);
-  transform: scaleX(2.2) perspective(50px) rotateY(50deg);
   transform-origin: bottom;
   transform-origin: left;
   content: '';
@@ -402,6 +438,7 @@
 
 .sub-menu-title {
   display: flex;
+
   span {
     display: flex;
     align-items: center;
@@ -410,4 +447,5 @@
 
 .menu-item-title-wrapper {
   display: flex;
+  width: 100%;
 }
