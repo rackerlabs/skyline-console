@@ -481,6 +481,15 @@ export class QuickStartNetwork extends ModalAction {
 
     const { network, subnet } = result || {};
 
+    if (network && network.mtu !== undefined && network.mtu >= 1500) {
+      try {
+        await globalNetworkStore.edit({ id: network.id }, { mtu: 1500 });
+        network.mtu = 1500;
+      } catch (error) {
+        console.warn('Could not update network MTU to 1500:', error);
+      }
+    }
+
     globalNetworkStore.lastCreatedItem = network;
     globalNetworkStore.lastCreatedSubnet = subnet;
 
