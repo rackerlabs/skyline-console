@@ -50,6 +50,7 @@ import DeleteIronic from './DeleteIronic';
 import ConfirmResize from './ConfirmResize';
 import RevertResize from './RevertResize';
 import ModifyTags from './ModifyTags';
+import ResetState from './ResetState';
 
 const statusActions = [
   StartAction,
@@ -66,6 +67,7 @@ const statusActions = [
   Unshelve,
   RescueInstance,
   UnRescueInstance,
+  ResetState,
 ];
 
 const resourceActions = [

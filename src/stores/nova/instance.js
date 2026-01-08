@@ -116,9 +116,9 @@ export class ServerStore extends Base {
           noReminder: true,
           all_projects,
         });
-        if (result){
-          result.forEach(element => {
-            if (element.id == id) {
+        if (result) {
+          result.forEach((element) => {
+            if (element.id === id) {
               item.itemInList = element;
             }
           });
@@ -126,9 +126,9 @@ export class ServerStore extends Base {
       } else {
         const store = new RecycleBinStore();
         const result = await store.fetchList({ uuid: id, all_projects });
-        if (result){
-          result.forEach(element => {
-            if (element.id == id) {
+        if (result) {
+          result.forEach((element) => {
+            if (element.id === id) {
               item.itemInList = element;
             }
           });
@@ -375,6 +375,16 @@ export class ServerStore extends Base {
     const body = {
       reboot: {
         type: 'HARD',
+      },
+    };
+    return this.operation({ body, id });
+  }
+
+  @action
+  async resetState({ id }) {
+    const body = {
+      'os-resetState': {
+        state: 'active',
       },
     };
     return this.operation({ body, id });
