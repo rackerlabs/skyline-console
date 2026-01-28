@@ -93,13 +93,7 @@ export class ContainerStore extends Base {
     try {
       return await this.submitting(this.client.delete(id));
     } catch (error) {
-      const errorData = error?.response?.data || error?.data || error;
-      const errorString =
-        typeof errorData === 'string'
-          ? errorData
-          : JSON.stringify(errorData || {});
-
-      if (errorString.includes('Conflict')) {
+      if (error?.response?.status === 409) {
         const message = t(
           'Cannot delete container "{name}". The container is not empty.',
           {
@@ -108,7 +102,6 @@ export class ContainerStore extends Base {
         );
         const transformedError = new Error(message);
         transformedError.response = { data: message, status: 409 };
-        transformedError.message = message;
         return Promise.reject(transformedError);
       }
       return Promise.reject(error);
