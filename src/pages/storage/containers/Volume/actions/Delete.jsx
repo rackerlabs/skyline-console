@@ -48,7 +48,12 @@ export default class DeleteAction extends ConfirmAction {
 
   canDelete = (item) => {
     const { status, attachments = [] } = item;
-    const allowedStatus = ['available', 'error', 'error_extending'];
+    const allowedStatus = [
+      'available',
+      'error',
+      'error_extending',
+      'error_restoring',
+    ];
     return allowedStatus.includes(status) && !attachments?.length;
   };
 
