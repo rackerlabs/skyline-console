@@ -129,7 +129,9 @@ export class RootStore {
     const { roles = [], base_domains, user: userInfo = {} } = user || {};
     this.roles = roles;
     this.baseDomains = base_domains;
-    this.hasAdminPageRole = await this.getUserSystemRoles(userInfo);
+    const hasSystemAdminRole = await this.getUserSystemRoles(userInfo);
+    const hasProjectAdminRole = roles.some((it) => it.name === 'admin');
+    this.hasAdminPageRole = hasSystemAdminRole || hasProjectAdminRole;
     this.hasAdminRole = this.hasAdminPageRole;
     this.hasAdminOnlyRole = roles.some((it) => it.name === 'admin');
   }
