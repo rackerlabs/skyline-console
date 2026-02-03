@@ -339,14 +339,18 @@ export class StepCreate extends StepAction {
       });
     }
 
+    const labels = { ...requestLabels };
+    if (auto_healing_enabled) {
+      labels.auto_healing_enabled = 'true';
+    }
+    if (auto_scaling_enabled) {
+      labels.auto_scaling_enabled = 'true';
+    }
+
     const data = {
       ...rest,
       name: values.name,
-      labels: {
-        ...requestLabels,
-        auto_healing_enabled: `${!!auto_healing_enabled}`,
-        auto_scaling_enabled: `${!!auto_scaling_enabled}`,
-      },
+      labels,
       cluster_template_id: clusterTemplate.selectedRowKeys[0],
       keypair: (keypair && keypair.selectedRowKeys[0]) || null,
       master_flavor_id:
