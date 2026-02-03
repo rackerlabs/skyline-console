@@ -90,7 +90,7 @@ export class StepNodeSpec extends Base {
     const { context: { coe = '' } = {} } = this.props;
     let acceptedOs = [];
     if (coe === 'kubernetes') {
-      acceptedOs = ['fedora-coreos'];
+      acceptedOs = ['flatcar', 'ubuntu', 'fedora-coreos'];
     } else if (['swarm', 'swarm-mode'].includes(coe)) {
       acceptedOs = ['fedora-atomic'];
     } else {

@@ -354,8 +354,12 @@ export class StepCreate extends StepAction {
       cluster_template_id: clusterTemplate.selectedRowKeys[0],
       keypair: (keypair && keypair.selectedRowKeys[0]) || null,
       master_flavor_id:
-        (masterFlavor && masterFlavor.selectedRowKeys[0]) || null,
-      flavor_id: (flavor && flavor.selectedRowKeys[0]) || null,
+        (masterFlavor &&
+          masterFlavor.selectedRows &&
+          masterFlavor.selectedRows[0]?.name) ||
+        null,
+      flavor_id:
+        (flavor && flavor.selectedRows && flavor.selectedRows[0]?.name) || null,
       fixed_network: (!newNetwork && fixedNetwork.selectedRowKeys[0]) || null,
       fixed_subnet: (!newNetwork && fixedSubnet.selectedRowKeys[0]) || null,
     };
