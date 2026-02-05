@@ -30,6 +30,20 @@ export const controls = {
   'back-end': t('Back End'),
 };
 
+// Default IOPS values for volume types when not available from QoS specs
+const defaultIOPSValues = {
+  Performance: 10,
+  Standard: 5,
+  Capacity: 1,
+  'HA-Performance': 20,
+  'HA-Standard': 10,
+};
+
+const getDefaultIOPS = (volumeTypeName) => {
+  if (!volumeTypeName) return null;
+  return defaultIOPSValues[volumeTypeName] || null;
+};
+
 export const getVolumeTypeColumns = (data) => {
   const hasPricing =
     data &&
@@ -52,12 +66,48 @@ export const getVolumeTypeColumns = (data) => {
     {
       title: t('Read IOPS/sec per GB'),
       dataIndex: ['qos_props', 'read_iops_sec_per_gb'],
-      render: (value) => value || '-',
+      render: (value, record) => {
+        const volumeTypeName = record?.name || '';
+
+        // For HA-Performance and HA-Standard, check expectedIOPSperGiB first
+        if (
+          volumeTypeName === 'HA-Performance' ||
+          volumeTypeName === 'HA-Standard'
+        ) {
+          const expectedIOPS = record?.qos_props?.expectedIOPSperGiB;
+          if (expectedIOPS) return expectedIOPS;
+        }
+
+        // Use the specific read_iops_sec_per_gb value if available
+        if (value) return value;
+
+        // Fallback to default static values based on volume type name
+        const defaultIOPS = getDefaultIOPS(volumeTypeName);
+        return defaultIOPS !== null ? defaultIOPS : '-';
+      },
     },
     {
       title: t('Write IOPS/sec per GB'),
       dataIndex: ['qos_props', 'write_iops_sec_per_gb'],
-      render: (value) => value || '-',
+      render: (value, record) => {
+        const volumeTypeName = record?.name || '';
+
+        // For HA-Performance and HA-Standard, check expectedIOPSperGiB first
+        if (
+          volumeTypeName === 'HA-Performance' ||
+          volumeTypeName === 'HA-Standard'
+        ) {
+          const expectedIOPS = record?.qos_props?.expectedIOPSperGiB;
+          if (expectedIOPS) return expectedIOPS;
+        }
+
+        // Use the specific write_iops_sec_per_gb value if available
+        if (value) return value;
+
+        // Fallback to default static values based on volume type name
+        const defaultIOPS = getDefaultIOPS(volumeTypeName);
+        return defaultIOPS !== null ? defaultIOPS : '-';
+      },
     },
   ];
 
