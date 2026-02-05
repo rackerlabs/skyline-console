@@ -23,6 +23,10 @@ import debianIcon from 'asset/image/debian.svg';
 import coreosIcon from 'asset/image/coreos.svg';
 import archIcon from 'asset/image/arch.svg';
 import freebsdIcon from 'asset/image/freebsd.svg';
+import almaIcon from 'asset/image/alma.svg';
+import rockyIcon from 'asset/image/rocky.svg';
+import redhatIcon from 'asset/image/redhat.svg';
+import oracleIcon from 'asset/image/oracle.svg';
 import othersIcon from 'asset/image/others.svg';
 import { Tooltip } from 'antd';
 import styles from './index.less';
@@ -49,6 +53,14 @@ export default class index extends Component {
       coreos: coreosIcon,
       arch: archIcon,
       freebsd: freebsdIcon,
+      alma: almaIcon,
+      almalinux: almaIcon,
+      rocky: rockyIcon,
+      rockylinux: rockyIcon,
+      rhel: redhatIcon,
+      redhat: redhatIcon,
+      oracle: oracleIcon,
+      oraclelinux: oracleIcon,
       others: othersIcon,
     };
   }
@@ -61,23 +73,23 @@ export default class index extends Component {
   render() {
     const src = this.getImageSrc();
     const { type, className, title } = this.props;
+    const imageClassName = classnames(
+      styles.image,
+      {
+        [styles.oracle]:
+          type &&
+          (type.toLowerCase() === 'oracle' ||
+            type.toLowerCase() === 'oraclelinux'),
+      },
+      className
+    );
     if (title) {
       return (
         <Tooltip title={title}>
-          <img
-            src={src}
-            alt={title}
-            className={classnames(styles.image, className)}
-          />
+          <img src={src} alt={title} className={imageClassName} />
         </Tooltip>
       );
     }
-    return (
-      <img
-        src={src}
-        alt={type}
-        className={classnames(styles.image, className)}
-      />
-    );
+    return <img src={src} alt={type} className={imageClassName} />;
   }
 }

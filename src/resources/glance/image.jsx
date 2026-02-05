@@ -45,6 +45,14 @@ export const imageOS = {
   coreos: t('CoreOS'),
   arch: t('Arch'),
   freebsd: t('FreeBSD'),
+  alma: t('Alma'),
+  almalinux: t('AlmaLinux'),
+  rocky: t('Rocky'),
+  rockylinux: t('Rocky'),
+  rhel: t('RHEL'),
+  redhat: t('Red Hat'),
+  oracle: t('Oracle'),
+  oraclelinux: t('OracleLinux'),
   others: t('Others'),
 };
 
@@ -157,13 +165,21 @@ export const getImageSystemTabs = () => {
     'coreos',
     'arch',
     'freebsd',
+    'alma',
+    'rocky',
+    'rhel',
+    'oracle',
     'others',
   ];
   return valueList.map((value) => {
-    const label =
-      value !== 'others'
-        ? value.slice(0, 1).toUpperCase() + value.slice(1)
-        : t('Others');
+    let label;
+    if (value === 'others') {
+      label = t('Others');
+    } else if (value === 'rhel') {
+      label = t('Red Hat');
+    } else {
+      label = value.slice(0, 1).toUpperCase() + value.slice(1);
+    }
     return {
       label,
       value,
@@ -172,8 +188,20 @@ export const getImageSystemTabs = () => {
   });
 };
 
-export const getImageOS = (item) =>
-  imageOS[item.os_distro] ? item.os_distro : 'others';
+// Map variant os_distro values to canonical tab values
+const osDistroMap = {
+  almalinux: 'alma',
+  oraclelinux: 'oracle',
+};
+
+export const getImageOS = (item) => {
+  if (!item.os_distro || !imageOS[item.os_distro]) {
+    return 'others';
+  }
+  const osDistro = item.os_distro.toLowerCase();
+  // Return mapped value if exists, otherwise return the original
+  return osDistroMap[osDistro] || osDistro;
+};
 
 export const getImageColumns = (self) => [
   {
