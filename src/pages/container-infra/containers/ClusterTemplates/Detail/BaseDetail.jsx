@@ -168,10 +168,10 @@ export class BaseDetail extends Base {
       original_keypair_id,
       flavor_id,
       original_flavor_id,
-      flavor: { name: flavorName } = {},
+      flavor: { name: flavorName, id: flavorId } = {},
       master_flavor_id,
       original_master_flavor_id,
-      masterFlavor: { name: masterFlavorName } = {},
+      masterFlavor: { name: masterFlavorName, id: masterFlavorId } = {},
     } = this.detailData;
     const imageUrl = original_image_id
       ? `${original_image_id} (${t('The resource has been deleted')})`
@@ -191,20 +191,20 @@ export class BaseDetail extends Base {
 
     const flavorUrl = original_flavor_id
       ? `${original_flavor_id} (${t('The resource has been deleted')})`
-      : flavor_id
+      : flavorId
       ? this.getLinkRender('flavorDetail', flavorName || flavor_id, {
-          id: flavor_id,
+          id: flavorId,
         })
       : '-';
 
     const masterFlavorUrl = original_master_flavor_id
       ? `${original_master_flavor_id} (${t('The resource has been deleted')})`
-      : master_flavor_id
+      : masterFlavorId
       ? this.getLinkRender(
           'flavorDetail',
           masterFlavorName || master_flavor_id,
           {
-            id: master_flavor_id,
+            id: masterFlavorId,
           }
         )
       : '-';

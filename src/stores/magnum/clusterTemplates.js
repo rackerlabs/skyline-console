@@ -101,13 +101,34 @@ export class ClusterTemplatesStore extends Base {
   }
 
   async detailDidFetch(item) {
+    const isUUID = (str) => {
+      if (!str || typeof str !== 'string') return false;
+      const uuidRegex =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      return uuidRegex.test(str);
+    };
+
+    const getFlavorByIdOrName = async (flavorIdOrName) => {
+      if (!flavorIdOrName) return {};
+      if (isUUID(flavorIdOrName)) {
+        return this.flavorClient.show(flavorIdOrName);
+      }
+      try {
+        const flavors = await this.flavorClient.list();
+        const flavor = (flavors.flavors || []).find(
+          (f) => f.name === flavorIdOrName || f.id === flavorIdOrName
+        );
+        return flavor ? { flavor } : {};
+      } catch (error) {
+        return {};
+      }
+    };
+
     const [kp = {}, fr = {}, mfr = {}, ext = {}, fx = {}, sub = {}, img] =
       await allSettled([
         client.nova.keypairs.list(),
-        item.flavor_id ? this.flavorClient.show(item.flavor_id) : {},
-        item.master_flavor_id
-          ? this.flavorClient.show(item.master_flavor_id)
-          : {},
+        item.flavor_id ? getFlavorByIdOrName(item.flavor_id) : {},
+        item.master_flavor_id ? getFlavorByIdOrName(item.master_flavor_id) : {},
         item.external_network_id
           ? this.networkClient.show(item.external_network_id)
           : {},

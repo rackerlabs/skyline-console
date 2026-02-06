@@ -150,6 +150,7 @@ export class StepNetwork extends Base {
         label: t('Network Driver'),
         placeholder: t('Choose a Network Driver'),
         type: 'select',
+        autoSelectFirst: true,
         options: this.networkDrivers,
         disabled: network_driver && this.isEdit,
       },

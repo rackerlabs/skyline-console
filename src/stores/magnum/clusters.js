@@ -98,11 +98,35 @@ export class ClustersStore extends Base {
     const masterFlavorId = item.master_flavor_id || templateMasterFlavorId;
     const fixedNetworkId = item.fixed_network || templateFixedNetworkId;
     const fixedSubnetId = item.fixed_subnet || templateSubnetId;
+
+    const isUUID = (str) => {
+      if (!str || typeof str !== 'string') return false;
+      const uuidRegex =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      return uuidRegex.test(str);
+    };
+
+    const getFlavorByIdOrName = async (flavorIdOrName) => {
+      if (!flavorIdOrName) return {};
+      if (isUUID(flavorIdOrName)) {
+        return this.flavorClient.show(flavorIdOrName);
+      }
+      try {
+        const flavors = await this.flavorClient.list();
+        const flavor = (flavors.flavors || []).find(
+          (f) => f.name === flavorIdOrName || f.id === flavorIdOrName
+        );
+        return flavor ? { flavor } : {};
+      } catch (error) {
+        return {};
+      }
+    };
+
     const [kp = {}, fr = {}, mfr = {}, fx = {}, sub = {}, stack] =
       await allSettled([
         client.nova.keypairs.list(),
-        flavorId ? this.flavorClient.show(flavorId) : {},
-        masterFlavorId ? this.flavorClient.show(masterFlavorId) : {},
+        flavorId ? getFlavorByIdOrName(flavorId) : {},
+        masterFlavorId ? getFlavorByIdOrName(masterFlavorId) : {},
         fixedNetworkId ? this.networkClient.show(fixedNetworkId) : {},
         fixedSubnetId ? this.subnetClient.show(fixedSubnetId) : {},
         item.stack_id ? this.stackClient.list({ id: item.stack_id }) : {},
