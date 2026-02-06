@@ -119,9 +119,13 @@ export class StepCreate extends StepAction {
       external_network_id: externalNetwork.selectedRowKeys[0],
       fixed_network: (fixedNetwork && fixedNetwork.selectedRowKeys[0]) || null,
       fixed_subnet: (fixedSubnet && fixedSubnet.selectedRowKeys[0]) || null,
-      flavor_id: (flavor && flavor.selectedRowKeys[0]) || null,
+      flavor_id:
+        (flavor && flavor.selectedRows && flavor.selectedRows[0]?.name) || null,
       master_flavor_id:
-        (masterFlavor && masterFlavor.selectedRowKeys[0]) || null,
+        (masterFlavor &&
+          masterFlavor.selectedRows &&
+          masterFlavor.selectedRows[0]?.name) ||
+        null,
       image_id: (images && images.selectedRowKeys[0]) || null,
       keypair_id: (keypair && keypair.selectedRowKeys[0]) || null,
     };

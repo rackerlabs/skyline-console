@@ -71,6 +71,7 @@ export class StepInfo extends Base {
         name: 'coe',
         label: t('COE'),
         type: 'select',
+        autoSelectFirst: true,
         options: [
           {
             label: t('Kubernetes'),

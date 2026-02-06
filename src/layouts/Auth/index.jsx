@@ -26,11 +26,23 @@ import styles from './index.less';
 export class AuthLayout extends Component {
   constructor(props) {
     super(props);
-
     this.routes = props.route.routes;
+    this.state = { backgroundLoaded: false };
   }
 
+  markBackgroundLoaded = () => {
+    if (!this.state.backgroundLoaded) {
+      this.setState({ backgroundLoaded: true });
+    }
+  };
+
+  handleBackgroundImageRef = (img) => {
+    if (img?.complete) this.markBackgroundLoaded();
+  };
+
   render() {
+    const { backgroundLoaded } = this.state;
+
     return (
       <div
         className={styles.container}
@@ -46,9 +58,12 @@ export class AuthLayout extends Component {
           <picture>
             <source srcSet={loginFullImageWebp} type="image/webp" />
             <img
+              ref={this.handleBackgroundImageRef}
               alt=""
               className={styles.backgroundImage}
               src={loginFullImagePng}
+              onLoad={this.markBackgroundLoaded}
+              onError={this.markBackgroundLoaded}
               aria-hidden="true"
             />
           </picture>
@@ -72,7 +87,9 @@ export class AuthLayout extends Component {
 
         {/* Right column - Logo and branding */}
         <div
-          className={styles.rightColumn}
+          className={`${styles.rightColumn} ${
+            backgroundLoaded ? styles.visible : ''
+          }`}
           role="region"
           aria-label="Branding section"
         >

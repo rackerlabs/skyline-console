@@ -159,29 +159,29 @@ export class BaseDetail extends Base {
     const {
       master_flavor_id,
       original_master_flavor_id,
-      masterFlavor: { name: masterFlavorName } = {},
+      masterFlavor: { name: masterFlavorName, id: masterFlavorId } = {},
       flavor_id,
       original_flavor_id,
-      flavor: { name: flavorName } = {},
+      flavor: { name: flavorName, id: flavorId } = {},
     } = this.detailData;
 
     const masterFlavorUrl = original_master_flavor_id
       ? `${original_master_flavor_id} (${t('The resource has been deleted')})`
-      : master_flavor_id
+      : masterFlavorId
       ? this.getLinkRender(
           'flavorDetail',
           masterFlavorName || master_flavor_id,
           {
-            id: master_flavor_id,
+            id: masterFlavorId,
           }
         )
       : '-';
 
     const flavorUrl = original_flavor_id
       ? `${original_flavor_id} (${t('The resource has been deleted')})`
-      : flavor_id
+      : flavorId
       ? this.getLinkRender('flavorDetail', flavorName || flavor_id, {
-          id: flavor_id,
+          id: flavorId,
         })
       : '-';
 
