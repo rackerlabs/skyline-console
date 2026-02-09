@@ -47,6 +47,26 @@ export class StepLabel extends Base {
     return values;
   }
 
+  keyValidator = (rule, values) => {
+    if (!values?.length) return Promise.resolve();
+    const pattern = /^[a-zA-Z][a-zA-Z0-9_.-]*$/;
+    const invalidKey = values.find((item) => {
+      const key = item?.value?.key;
+      if (!key) {
+        return false;
+      }
+      return !pattern.test(key);
+    });
+    if (invalidKey) {
+      return Promise.reject(
+        t(
+          'The name should start with upper letter or lower letter, characters can only contain "0-9, a-z, A-Z, -, _, ."'
+        )
+      );
+    }
+    return Promise.resolve();
+  };
+
   get formItems() {
     return [
       {
@@ -55,6 +75,7 @@ export class StepLabel extends Base {
         type: 'add-select',
         itemComponent: KeyValueInput,
         addText: t('Add Label'),
+        validator: this.keyValidator,
       },
     ];
   }

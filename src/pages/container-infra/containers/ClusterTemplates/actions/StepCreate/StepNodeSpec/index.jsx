@@ -105,42 +105,23 @@ export class StepNodeSpec extends Base {
 
   get imageList() {
     return (this.imageStore.list.data || []).filter((it) => {
-      const { originData: { os_distro } = {} } = it;
-      return this.acceptedImageOs.includes(os_distro);
+      const { originData: { os_distro, kube_version } = {} } = it;
+      return (
+        this.acceptedImageOs.includes(os_distro) &&
+        kube_version !== undefined &&
+        kube_version !== null &&
+        kube_version !== ''
+      );
     });
   }
 
-  get volumeDrivers() {
-    const { context: { coe = '' } = {} } = this.props;
-    let acceptedVolumeDriver = [];
-    if (coe === 'kubernetes') {
-      acceptedVolumeDriver = [{ value: 'cinder', label: 'Cinder' }];
-    } else if (['swarm', 'mesos'].includes(coe)) {
-      acceptedVolumeDriver = [{ value: 'rexray', label: 'Rexray' }];
-    }
-    return acceptedVolumeDriver;
-  }
-
   get defaultValue() {
-    let values = {};
+    const values = {};
 
     if (this.isEdit) {
       const {
-        extra: {
-          image_id,
-          keypair_id,
-          flavor_id,
-          master_flavor_id,
-          volume_driver,
-          docker_storage_driver,
-          docker_volume_size,
-        } = {},
+        extra: { image_id, keypair_id, flavor_id, master_flavor_id } = {},
       } = this.props;
-      values = {
-        volume_driver,
-        docker_storage_driver,
-        docker_volume_size,
-      };
       if (flavor_id) {
         values.flavor = {
           selectedRowKeys: [flavor_id],
@@ -163,15 +144,6 @@ export class StepNodeSpec extends Base {
       }
     }
     return values;
-  }
-
-  get minVolumeSize() {
-    const { docker_storage_driver } = this.state;
-    return docker_storage_driver === 'devicemapper' ? 3 : 1;
-  }
-
-  get nameForStateUpdate() {
-    return ['docker_storage_driver'];
   }
 
   get formItems() {
@@ -248,55 +220,6 @@ export class StepNodeSpec extends Base {
             name: 'name',
           },
         ],
-      },
-      {
-        name: 'volume_driver',
-        label: t('Volume Driver'),
-        type: 'select',
-        options: this.volumeDrivers,
-      },
-      {
-        name: 'docker_storage_driver',
-        label: t('Docker Storage Driver'),
-        type: 'select',
-        options: [
-          {
-            label: t('Devicemapper'),
-            value: 'devicemapper',
-          },
-          {
-            label: t('Overlay'),
-            value: 'overlay',
-          },
-          {
-            label: t('Overlay2'),
-            value: 'overlay2',
-          },
-        ],
-        onChange: () => {
-          this.resetFormValue(['docker_volume_size']);
-        },
-      },
-      {
-        name: 'docker_volume_size',
-        label: t('Docker Volume Size (GiB)'),
-        type: 'input-int',
-        min: this.minVolumeSize,
-        required: this.minVolumeSize === 3,
-        placeholder: t('Spec'),
-        validator: (rule, value) => {
-          if (
-            this.minVolumeSize === 3 &&
-            (!value || value < this.minVolumeSize)
-          ) {
-            return Promise.reject(
-              new Error(
-                t('The min size is {size} GiB', { size: this.minVolumeSize })
-              )
-            );
-          }
-          return Promise.resolve();
-        },
       },
     ];
   }
