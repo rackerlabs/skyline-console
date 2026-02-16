@@ -33,7 +33,9 @@ export class StepInfo extends Base {
   }
 
   get defaultValue() {
-    let values = {};
+    let values = {
+      coe: 'kubernetes',
+    };
 
     if (this.isEdit) {
       const {
@@ -41,7 +43,6 @@ export class StepInfo extends Base {
           name,
           coe,
           public: publics,
-          hidden,
           registry_enabled,
           tls_disabled,
         } = {},
@@ -50,7 +51,6 @@ export class StepInfo extends Base {
         name,
         coe,
         public: publics,
-        hidden,
         registry_enabled,
         tls_disabled,
       };
@@ -58,63 +58,48 @@ export class StepInfo extends Base {
     return values;
   }
 
+  nameValidator = (rule, value) => {
+    const pattern = /^[a-zA-Z][a-zA-Z0-9_.-]*$/;
+    if (!value) {
+      // eslint-disable-next-line prefer-promise-reject-errors
+      return Promise.reject('');
+    }
+    if (!pattern.test(value)) {
+      return Promise.reject(
+        t(
+          'The name should start with upper letter or lower letter, characters can only contain "0-9, a-z, A-Z, -, _, ."'
+        )
+      );
+    }
+    return Promise.resolve();
+  };
+
   get formItems() {
     return [
       {
         name: 'name',
-        label: t('Cluster Template Name'),
+        label: t('Template Name'),
         type: 'input',
         placeholder: t('Please input cluster template name'),
         required: true,
+        validator: this.nameValidator,
+      },
+      {
+        name: 'coeDisplay',
+        label: t('COE'),
+        type: 'label',
+        content: t('Kubernetes'),
+        style: { marginBottom: 22 },
       },
       {
         name: 'coe',
-        label: t('COE'),
-        type: 'select',
-        autoSelectFirst: true,
-        options: [
-          {
-            label: t('Kubernetes'),
-            value: 'kubernetes',
-          },
-          {
-            label: t('Docker Swarm'),
-            value: 'swarm',
-          },
-          {
-            label: t('Docker Swarm Mode'),
-            value: 'swarm-mode',
-          },
-          {
-            label: t('Mesos'),
-            value: 'mesos',
-          },
-          {
-            label: t('DC/OS'),
-            value: 'dcos',
-          },
-        ],
-        required: true,
+        type: 'input',
+        hidden: true,
       },
       {
         name: 'public',
         label: t('Public'),
-        type: 'check',
-      },
-      {
-        name: 'hidden',
-        label: t('Hidden'),
-        type: 'check',
-      },
-      {
-        name: 'registry_enabled',
-        label: t('Enable Registry'),
-        type: 'check',
-      },
-      {
-        name: 'tls_disabled',
-        label: t('Disable TLS'),
-        type: 'check',
+        type: 'switch',
       },
     ];
   }

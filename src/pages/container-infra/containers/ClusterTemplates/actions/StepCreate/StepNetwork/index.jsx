@@ -58,13 +58,11 @@ export class StepNetwork extends Base {
   }
 
   get networkDrivers() {
-    const { context: { coe = '' } = {} } = this.props;
+    const { context = {} } = this.props;
+    const coe = context.coe || 'kubernetes';
     let acceptedDrivers = [];
     if (coe === 'kubernetes') {
-      acceptedDrivers = [
-        { value: 'calico', label: 'Calico' },
-        { value: 'flannel', label: 'Flannel' },
-      ];
+      acceptedDrivers = [{ value: 'calico', label: 'Calico' }];
     } else if (['swarm', 'swarm-mode'].includes(coe)) {
       acceptedDrivers = [
         { value: 'docker', label: 'Docker' },
@@ -77,7 +75,10 @@ export class StepNetwork extends Base {
   }
 
   get defaultValue() {
-    let values = {};
+    let values = {
+      network_driver: 'calico',
+      master_lb_enabled: true,
+    };
 
     if (this.isEdit) {
       const {
@@ -135,7 +136,7 @@ export class StepNetwork extends Base {
 
   get formItems() {
     const {
-      extra: { network_driver, fixed_subnet, fixedSubnet } = {},
+      extra: { fixed_subnet, fixedSubnet } = {},
       context: { fixedSubnet: fixedSubnetContext },
     } = this.props;
 
@@ -146,13 +147,16 @@ export class StepNetwork extends Base {
 
     return [
       {
-        name: 'network_driver',
+        name: 'networkDriverDisplay',
         label: t('Network Driver'),
-        placeholder: t('Choose a Network Driver'),
-        type: 'select',
-        autoSelectFirst: true,
-        options: this.networkDrivers,
-        disabled: network_driver && this.isEdit,
+        type: 'label',
+        content: t('Calico'),
+        style: { marginBottom: 24 },
+      },
+      {
+        name: 'network_driver',
+        type: 'input',
+        hidden: true,
       },
       {
         name: 'http_proxy',
@@ -256,6 +260,7 @@ export class StepNetwork extends Base {
         label: t('Enable Load Balancer'),
         type: 'check',
         content: t('Enabled Load Balancer for Master Nodes'),
+        disabled: true,
       },
       {
         name: 'floating_ip_enabled',

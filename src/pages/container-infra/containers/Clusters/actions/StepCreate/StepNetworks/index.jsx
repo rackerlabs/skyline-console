@@ -94,6 +94,7 @@ export class StepNetworks extends Base {
 
     return {
       newNetwork: true,
+      master_lb_enabled: true,
       fixedNetwork: fixedNetwork || {
         selectedRowKeys: fixed_network ? [fixed_network] : [],
         selectedRows: fixed_network ? [this.network] : [],
@@ -130,7 +131,7 @@ export class StepNetworks extends Base {
         label: t('Enable Load Balancer'),
         type: 'check',
         content: t('Enabled Load Balancer for Master Nodes'),
-        tip: defaultTip,
+        disabled: true,
       },
       {
         name: 'newNetwork',
