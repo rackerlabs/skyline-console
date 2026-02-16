@@ -748,9 +748,6 @@ export class StepCreate extends StepAction {
         getUserData(server.adminPass, userData, username || 'root')
       );
     }
-    if (loginType.value === 'keypair' || server.adminPass || server.user_data) {
-      server.config_drive = true;
-    }
     const body = {
       server,
     };

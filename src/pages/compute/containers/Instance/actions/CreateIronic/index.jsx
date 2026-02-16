@@ -332,9 +332,6 @@ export class CreateIronic extends StepAction {
         getUserData(server.adminPass, userData, username || 'root')
       );
     }
-    if (loginType.value === 'keypair' || server.adminPass || server.user_data) {
-      server.config_drive = true;
-    }
     return {
       server,
     };
