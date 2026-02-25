@@ -17,13 +17,15 @@ import PropTypes from 'prop-types';
 export const navItemPropType = PropTypes.shape({
   name: PropTypes.string,
   path: PropTypes.string,
+  externalUrl: PropTypes.string,
   children: PropTypes.arrayOf(navItemPropType),
 });
 
 export const getFirstLevelNavItemLink = (item) => {
   const { children = [] } = item;
   if (!children.length) {
-    return item.path;
+    return item.path || '/';
   }
-  return item.children[0].path;
+  const firstChildWithPath = (children || []).find((c) => c.path);
+  return (firstChildWithPath && firstChildWithPath.path) || item.path || '/';
 };

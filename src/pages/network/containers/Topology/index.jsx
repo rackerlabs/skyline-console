@@ -544,7 +544,9 @@ export class Topology extends React.Component {
       },
     });
 
-    const width = document.getElementById('container').scrollWidth;
+    const container = document.getElementById('container');
+    if (!container) return;
+    const width = container.scrollWidth;
 
     // data required for rendering
     let data = {
@@ -693,7 +695,9 @@ export class Topology extends React.Component {
       withoutServerData,
       allData,
     } = this.state;
-    const width = document.getElementById('container').scrollWidth;
+    const container = document.getElementById('container');
+    if (!container) return;
+    const width = container.scrollWidth;
     const showIns = !showAll;
     this.setState({
       showAll: showIns,
