@@ -55,7 +55,30 @@ export class ClusterTemplatesStore extends Base {
 
   @action
   async update({ id }, body) {
+    const allowedKeys = [
+      'name',
+      'coe',
+      'public',
+      'registry_enabled',
+      'tls_disabled',
+      'network_driver',
+      'http_proxy',
+      'https_proxy',
+      'no_proxy',
+      'dns_nameserver',
+      'master_lb_enabled',
+      'floating_ip_enabled',
+      'labels',
+      'external_network_id',
+      'fixed_network',
+      'fixed_subnet',
+      'flavor_id',
+      'master_flavor_id',
+      'image_id',
+      'keypair_id',
+    ];
     const newBody = Object.keys(body)
+      .filter((key) => allowedKeys.includes(key))
       .filter(
         (key) =>
           !(

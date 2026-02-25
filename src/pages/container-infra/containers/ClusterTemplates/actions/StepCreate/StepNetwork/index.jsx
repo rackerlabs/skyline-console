@@ -75,6 +75,8 @@ export class StepNetwork extends Base {
   }
 
   get defaultValue() {
+    const { context: { externalNetwork: externalNetworkContext } = {} } =
+      this.props;
     let values = {
       network_driver: 'calico',
       master_lb_enabled: true,
@@ -129,6 +131,13 @@ export class StepNetwork extends Base {
           selectedRows: [fixedSubnet],
         };
       }
+      if (externalNetworkContext) {
+        values.externalNetwork = externalNetworkContext;
+      }
+    }
+
+    if (!this.isEdit && externalNetworkContext) {
+      values.externalNetwork = externalNetworkContext;
     }
 
     return values;
@@ -193,6 +202,11 @@ export class StepNetwork extends Base {
           },
         ],
         columns: networkColumns(this),
+        onChange: (value) => {
+          this.updateContext({
+            externalNetwork: value,
+          });
+        },
       },
       {
         name: 'fixedNetwork',
