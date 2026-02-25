@@ -32,14 +32,30 @@ export default class Left extends React.Component {
     items: [],
   };
 
-  renderItem = (item) => {
+  renderItem = (item, index) => {
+    const { onClose } = this.props;
+    const key = item.path || item.name || item.key || index;
+
+    if (item.externalUrl) {
+      return (
+        <div className={styles.item} key={key}>
+          <a
+            href={item.externalUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={onClose}
+            className={styles['item-label']}
+          >
+            {item.name}
+          </a>
+        </div>
+      );
+    }
+
+    const linkTo = getFirstLevelNavItemLink(item);
     return (
-      <div className={styles.item} key={item.path}>
-        <Link
-          onClick={this.props.onClose}
-          to={getFirstLevelNavItemLink(item)}
-          className={styles['item-label']}
-        >
+      <div className={styles.item} key={key}>
+        <Link onClick={onClose} to={linkTo} className={styles['item-label']}>
           {item.name}
         </Link>
       </div>
@@ -50,7 +66,7 @@ export default class Left extends React.Component {
     const { items } = this.props;
     return (
       <div id="global-nav-left" className={styles.left}>
-        {items.map(this.renderItem)}
+        {items.map((item, index) => this.renderItem(item, index))}
       </div>
     );
   }

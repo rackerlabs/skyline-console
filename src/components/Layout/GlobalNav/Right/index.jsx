@@ -84,10 +84,28 @@ export default class Right extends React.Component {
     const currentChildren = children.length ? children : [item];
     const { onClose } = this.props;
     const items = currentChildren.map((it) => {
-      const { name, path } = it;
+      const { name, path, externalUrl } = it;
+      const key = `${name}-${path || externalUrl || name}`;
+
+      if (externalUrl) {
+        return (
+          <div key={key} className={styles['children-item']}>
+            <a
+              href={externalUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={onClose}
+            >
+              <span className={styles['link-name']}>{name}</span>
+            </a>
+          </div>
+        );
+      }
+
+      const linkTo = path || '/';
       return (
-        <div key={`${name}-${path}`} className={styles['children-item']}>
-          <Link onClick={onClose} to={path}>
+        <div key={key} className={styles['children-item']}>
+          <Link onClick={onClose} to={linkTo}>
             <span className={styles['link-name']}>{name}</span>
           </Link>
         </div>
@@ -102,7 +120,7 @@ export default class Right extends React.Component {
     return (
       <div className={styles['nav-item']} key={item.name}>
         <div className={styles.title}>{name}</div>
-        <div classnames={styles.children}>
+        <div className={styles.children}>
           {this.renderNavItemChildren(item)}
         </div>
       </div>
