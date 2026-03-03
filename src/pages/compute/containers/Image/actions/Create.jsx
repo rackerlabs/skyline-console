@@ -318,6 +318,9 @@ export class CreateForm extends FormAction {
         label: t('Protected'),
         type: 'check',
         content: t('Protected'),
+        extra: t(
+          'If you enable protection, only support can remove it. The image cannot be deleted until protection is disabled.'
+        ),
       },
       {
         name: 'usage_type',
