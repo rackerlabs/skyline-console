@@ -14,6 +14,7 @@
 
 import { ConfirmAction } from 'containers/Action';
 import globalNetworkStore from 'stores/neutron/network';
+import globalPortStore from 'stores/neutron/port-extension';
 import { checkSystemAdmin } from 'resources/skyline/policy';
 import globalRootStore from 'stores/root';
 
@@ -55,5 +56,28 @@ export default class DeleteAction extends ConfirmAction {
     return true;
   }
 
-  onSubmit = (data) => globalNetworkStore.delete(data);
+  onSubmit = async (data) => {
+    const { id } = data;
+    // Delete OVN metadata ports before deleting the network.
+    // These ports (device_owner starting with 'network:distributed') are
+    // internal OVN metadata service ports that are not automatically removed
+    // by the API when the network is deleted via the UI.
+    try {
+      const ports = await globalPortStore.pureFetchList({ network_id: id });
+      const ovnMetaPorts = ports.filter(
+        (p) =>
+          p.device_owner && p.device_owner.startsWith('network:distributed')
+      );
+      if (ovnMetaPorts.length) {
+        await Promise.all(ovnMetaPorts.map((p) => globalPortStore.delete(p)));
+      }
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        'Failed to clean up OVN metadata ports before network deletion',
+        e
+      );
+    }
+    return globalNetworkStore.delete(data);
+  };
 }
