@@ -549,28 +549,34 @@ export class Login extends Component {
         </div>
 
         {/* Scrollable content area */}
+        {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
         <div
           className={scrollableClass}
-          role="main"
-          aria-label="Login form content"
+          onKeyDown={(e) => e.key === 'Enter' && this.handleSubmit()}
         >
-          <h1 className={styles.welcomeMessage} id="login-title" aria-level="1">
-            {this.productName}
-          </h1>
+          <div role="main" aria-label="Login form content">
+            <h1
+              className={styles.welcomeMessage}
+              id="login-title"
+              aria-level="1"
+            >
+              {this.productName}
+            </h1>
 
-          <SimpleForm
-            formItems={this.formItemsWithoutSubmit}
-            name="normal_login"
-            className={styles.loginForm}
-            initialValues={this.defaultValue}
-            onFinish={this.onFinish}
-            formref={this.formRef}
-            size="large"
-            aria-labelledby="login-title"
-            aria-describedby="login-description"
-          />
+            <SimpleForm
+              formItems={this.formItemsWithoutSubmit}
+              name="normal_login"
+              className={styles.loginForm}
+              initialValues={this.defaultValue}
+              onFinish={this.onFinish}
+              formref={this.formRef}
+              size="large"
+              aria-labelledby="login-title"
+              aria-describedby="login-description"
+            />
 
-          {this.renderExtra()}
+            {this.renderExtra()}
+          </div>
         </div>
 
         {/* Fixed bottom section */}
