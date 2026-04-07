@@ -38,9 +38,20 @@ export default class DeleteAction extends ConfirmAction {
 
   policy = 'delete_port';
 
+  isOVNMetadataPort(item) {
+    return (
+      item &&
+      item.device_owner &&
+      item.device_owner.startsWith('network:distributed')
+    );
+  }
+
   allowedCheckFunc = (item) => {
     if (!item) {
       return true;
+    }
+    if (this.isOVNMetadataPort(item)) {
+      return false;
     }
     return this.isOwnerOrAdmin(item);
   };
