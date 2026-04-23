@@ -126,6 +126,9 @@ export class HttpRequest {
         const disposition = response.headers['content-disposition'] || '';
         const contentType = response.headers['content-type'] || '';
         const { method = 'get' } = response.config || {};
+        if (response.config && response.config.fullResponse) {
+          return response;
+        }
         if (method.toLowerCase() === 'head') {
           return response;
         }

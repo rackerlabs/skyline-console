@@ -178,9 +178,9 @@ export class ObjectStore extends Base {
     const { name, path, folder, prefix, hasCopy } = this.container || {};
     return items
       .filter((it) => {
-        if (!prefix) return true;
-        const { name: itemName, subdir } = it;
+        const { name: itemName = '', subdir = '' } = it;
         const fullItemName = subdir || itemName;
+        if (!prefix) return true;
         return fullItemName !== prefix && itemName !== prefix;
       })
       .map((it) => {
