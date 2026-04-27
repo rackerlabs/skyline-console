@@ -1,35 +1,39 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import globalInstanceLogStore from 'src/stores/nova/instance';
 import { Button, Col, Form, InputNumber, Row, Skeleton } from 'antd';
 import { SearchOutlined, SettingOutlined } from '@ant-design/icons';
 import classnames from 'classnames';
-import styles from 'src/components/Tables/Base/index.less';
+import tableStyles from 'src/components/Tables/Base/index.less';
+import styles from './index.less';
 
-export default function Log(props) {
+export default function Log({ detail }) {
   const [logs, setLogs] = useState('');
   const [loading, setLoading] = useState(true);
 
+  const getLogs = useCallback(
+    async (tailSize) => {
+      setLoading(true);
+      const data = await globalInstanceLogStore.fetchLogs(detail.id, tailSize);
+      setLogs(data.output);
+      setLoading(false);
+    },
+    [detail.id]
+  );
+
   useEffect(() => {
     getLogs(35);
-  }, []);
+  }, [getLogs]);
 
-  const getLogs = async (tailSize) => {
+  const onFinish = useCallback(
+    (value) => {
+      getLogs(value.number);
+    },
+    [getLogs]
+  );
+
+  const viewFullLog = useCallback(async () => {
     setLoading(true);
-    const data = await globalInstanceLogStore.fetchLogs(
-      props.detail.id,
-      tailSize
-    );
-    setLogs(data.output);
-    setLoading(false);
-  };
-
-  function onFinish(value) {
-    getLogs(value.number);
-  }
-
-  async function viewFullLog() {
-    setLoading(true);
-    const data = await globalInstanceLogStore.fetchLogs(props.detail.id, null);
+    const data = await globalInstanceLogStore.fetchLogs(detail.id, null);
     const newWindow = window.open('console', '_blank');
     const title = t('Console Log');
     const htmlContent = `
@@ -44,33 +48,42 @@ export default function Log(props) {
     newWindow.document.write(htmlContent);
     newWindow.document.close();
     setLoading(false);
-  }
+  }, [detail.id]);
 
   return (
-    <div>
+    <div className={styles.wrapper}>
       <Form initialValues={{ number: 35 }} onFinish={onFinish}>
-        <Row gutter={16}>
-          <Col className="gutter-row" span={16}>
-            <h2 style={{ paddingLeft: 16 }}>{t('Instance Console Log')}</h2>
+        <Row gutter={[16, 8]} className={styles['toolbar-row']}>
+          <Col className="gutter-row" xs={24} md={12} xl={16}>
+            <h2 className={styles.title}>{t('Instance Console Log')}</h2>
           </Col>
-          <Col className="gutter-row" span={4}>
-            <Form.Item name="number" label={t('Log Length')}>
+          <Col className="gutter-row" xs={24} sm={12} md={6} xl={4}>
+            <Form.Item
+              name="number"
+              label={t('Log Length')}
+              className={styles['log-length']}
+            >
               <InputNumber
                 min={1}
                 max={100000}
                 placeholder={t('Log Length')}
-                style={{ width: '100%' }}
-                addonafter={<SettingOutlined />}
+                className={styles['log-length-input']}
+                addonAfter={<SettingOutlined />}
               />
             </Form.Item>
           </Col>
-          <Col className="gutter-row" span={4}>
-            <div className={classnames(styles['table-header-btns'])}>
+          <Col className="gutter-row" xs={24} sm={12} md={6} xl={4}>
+            <div
+              className={classnames(
+                tableStyles['table-header-btns'],
+                styles['log-actions']
+              )}
+            >
               <Button type="primary" htmlType="submit">
                 <SearchOutlined />
               </Button>
 
-              <Button type="primary" onClick={() => viewFullLog()}>
+              <Button type="primary" onClick={viewFullLog}>
                 {t('View Full Log')}
               </Button>
             </div>
@@ -78,20 +91,11 @@ export default function Log(props) {
         </Row>
       </Form>
 
-      <div
-        style={{
-          margin: 'auto 16px 16px 16px',
-          padding: 16,
-          backgroundColor: '#90a4ae',
-          borderRadius: 4,
-          color: '#fff',
-          fontSize: 12,
-        }}
-      >
+      <div className={styles['log-output']}>
         {loading ? (
           <Skeleton loading={loading} active />
         ) : logs ? (
-          <pre>{logs}</pre>
+          <pre className={styles['log-text']}>{logs}</pre>
         ) : (
           t('No Logs...')
         )}

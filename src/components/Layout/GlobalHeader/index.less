@@ -263,7 +263,7 @@
   }
 
   .project {
-    max-width: calc(100% - 244px);
+    max-width: calc(100% - 286px);
     font-size: 12px;
 
     .project-icon {
@@ -289,18 +289,22 @@
   }
 
   .single-link {
-    display: none;
+    display: inline-flex;
+    align-items: center;
+    max-width: 104px;
+    margin-right: 4px;
+    padding: 0 4px;
+    overflow: hidden;
+    font-size: 12px;
+    text-overflow: ellipsis;
   }
 
   .console-link {
     display: inline-block;
-    margin-right: 6px;
-    padding: 0 4px;
-    font-size: 12px;
   }
 
   .administrator-link {
-    display: none;
+    display: inline-block;
   }
 
   .menu {
@@ -323,6 +327,7 @@
   .right-links-col {
     display: inline-flex;
     align-items: center;
+    min-width: 0;
   }
 }
 
@@ -332,10 +337,14 @@
   }
 
   .project {
-    max-width: calc(100% - 224px);
+    max-width: calc(100% - 270px);
 
     .project-name {
-      max-width: 56px;
+      max-width: 48px;
     }
+  }
+
+  .single-link {
+    max-width: 88px;
   }
 }

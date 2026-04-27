@@ -167,28 +167,32 @@ export default class DetailBase extends React.Component {
     const { Paragraph } = Typography;
     const icon = collapsed ? <DownOutlined /> : <UpOutlined />;
     return (
-      <div>
-        <span className={styles['title-label']}>{this.titleLabel}</span>
-        <span className={styles['header-title']}>
-          <Paragraph style={{ display: 'inherit' }} copyable>
-            {this.titleValue}
-          </Paragraph>
-        </span>
-        <Divider type="vertical" className={styles['header-divider']} />
-        <Button onClick={this.goBack} type="link">
-          {t('Back')}
-        </Button>
-        <Button
-          type="link"
-          icon={<SyncOutlined />}
-          onClick={this.handleRefresh}
-        />
-        <Button
-          onClick={this.handleDetailInfo}
-          icon={icon}
-          type="link"
-          className={styles['header-button']}
-        />
+      <div className={styles['detail-title']}>
+        <div className={styles['detail-title-main']}>
+          <span className={styles['title-label']}>{this.titleLabel}</span>
+          <span className={styles['header-title']}>
+            <Paragraph className={styles['title-value']} copyable>
+              {this.titleValue}
+            </Paragraph>
+          </span>
+        </div>
+        <div className={styles['detail-title-actions']}>
+          <Divider type="vertical" className={styles['header-divider']} />
+          <Button onClick={this.goBack} type="link">
+            {t('Back')}
+          </Button>
+          <Button
+            type="link"
+            icon={<SyncOutlined />}
+            onClick={this.handleRefresh}
+          />
+          <Button
+            onClick={this.handleDetailInfo}
+            icon={icon}
+            type="link"
+            className={styles['header-button']}
+          />
+        </div>
       </div>
     );
   }

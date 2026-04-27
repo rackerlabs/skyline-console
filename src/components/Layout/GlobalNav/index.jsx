@@ -101,9 +101,10 @@ export class GlobalNav extends React.Component {
           Math.min(productsColumnWidth, Math.floor(viewportWidth * 0.42))
         )
       : productsColumnWidth;
+    const availableRightWidth = Math.max(viewportWidth - leftDrawerWidth, 0);
     const rightDrawerWidth = isMobileWidth
-      ? Math.max(viewportWidth - leftDrawerWidth, 0)
-      : productsColumnWidth * 4;
+      ? availableRightWidth
+      : Math.min(productsColumnWidth * 4, availableRightWidth);
 
     return (
       <>
