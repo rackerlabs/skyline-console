@@ -119,7 +119,7 @@ export class QuickStartNetwork extends ModalAction {
 
   get labelCol() {
     return {
-      xs: { span: 8 },
+      xs: { span: 24 },
       sm: { span: 8 },
       md: { span: 8 },
       lg: { span: 8 },
@@ -129,7 +129,7 @@ export class QuickStartNetwork extends ModalAction {
 
   get wrapperCol() {
     return {
-      xs: { span: 14 },
+      xs: { span: 24 },
       sm: { span: 14 },
       md: { span: 14 },
       lg: { span: 14 },

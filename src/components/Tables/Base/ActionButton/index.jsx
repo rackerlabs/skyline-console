@@ -513,6 +513,11 @@ export class ActionButton extends Component {
     const ActionComponent = action;
     const { okText, cancelText, id, className } = action;
     const width = this.getModalWidth(action);
+    const maxModalWidth =
+      typeof window === 'undefined'
+        ? width
+        : Math.max(window.innerWidth - 24, 280);
+    const modalWidth = Math.min(width, maxModalWidth);
     const okButtonProps = this.getModalOkButtonProps({ item, action, items });
     const cancelButtonProps = this.getModalCancelButtonProps({
       item,
@@ -523,7 +528,7 @@ export class ActionButton extends Component {
       title,
       visible,
       className: classnames(`modal-${id}`, styles['modal-action'], className),
-      width,
+      width: modalWidth,
       onOk: () => this.onClickModalActionOk(),
       onCancel: this.onClickModalActionCancel,
       okButtonProps,

@@ -60,11 +60,12 @@ export class ProjectDropdown extends React.Component {
         <ItemActionButtons
           actions={{ moreActions: [{ action: ProjectSelect }] }}
         />
-        <AppstoreOutlined style={{ marginRight: 10 }} />
-        {/* style={{ display: 'inline-block', width: '115px' }} */}
-        <span>{projectName}</span>
-        <SwapOutlined style={{ color: '#A3A3A3', marginLeft: 24 }} />
-        <Divider type="vertical" />
+        <AppstoreOutlined className={styles['project-icon']} />
+        <span className={styles['project-name']} title={projectName}>
+          {projectName}
+        </span>
+        <SwapOutlined className={styles['project-toggle']} />
+        <Divider type="vertical" className={styles['project-divider']} />
         <span className={styles.domain}>{userDomainName}</span>
       </div>
     );

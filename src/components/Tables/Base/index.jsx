@@ -914,8 +914,7 @@ export class BaseTable extends React.Component {
     const header = this.renderTableTitle();
     const currentColumns = this.getColumns();
     const scroll = {
-      // x: 'max-content',
-      // x: scrollX || this.hasItemActions() ? 1300 : 1500
+      x: 'max-content',
     };
     if (scrollY > 0) {
       scroll.y = scrollY || 400;
@@ -934,6 +933,7 @@ export class BaseTable extends React.Component {
           rowSelection={rowSelection}
           sortDirections={['ascend', 'descend', 'ascend']}
           scroll={scroll}
+          tableLayout="auto"
           showSorterTooltip={false}
           expandable={expandable}
           footer={footer}

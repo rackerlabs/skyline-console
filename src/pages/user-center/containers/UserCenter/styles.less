@@ -6,21 +6,31 @@
   overflow: auto;
 
   .user-info-card {
-    height: 255px;
+    min-height: 255px;
 
     .user-info-detail {
-      height: 100%;
+      height: auto;
       padding: 24px;
       text-align: left;
 
       .user-info-detail-item {
         display: flex;
-        align-items: center;
-        height: 100%;
+        align-items: flex-start;
+        min-height: 42px;
         padding-left: 3rem;
         color: @color-text-body;
         font-weight: 400;
         font-size: 16px;
+      }
+
+      .user-info-label,
+      .user-info-value {
+        line-height: 1.5;
+      }
+
+      .user-info-value {
+        word-break: break-word;
+        overflow-wrap: anywhere;
       }
     }
   }
@@ -38,4 +48,36 @@
   background-color: white;
   border-radius: @border-radius;
   box-shadow: @base-shadow;
+}
+
+@media (max-width: 768px) {
+  .content {
+    padding: 12px;
+
+    .user-info-card {
+      min-height: 0;
+
+      .user-info-avatar {
+        margin-bottom: 8px;
+      }
+
+      .user-info-detail {
+        padding: 8px 0 0;
+
+        .user-info-detail-item {
+          min-height: 0;
+          padding-left: 0;
+          font-size: 14px;
+        }
+
+        .user-info-label {
+          color: @color-text-caption;
+        }
+      }
+    }
+  }
+
+  .bgc {
+    padding: 12px;
+  }
 }

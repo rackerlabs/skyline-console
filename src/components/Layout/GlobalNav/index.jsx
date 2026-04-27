@@ -40,8 +40,35 @@ export class GlobalNav extends React.Component {
     super(props);
     this.state = {
       visible: false,
+      viewportWidth: this.getViewportWidth(),
     };
   }
+
+  componentDidMount() {
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', this.onWindowResize);
+    }
+  }
+
+  componentWillUnmount() {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('resize', this.onWindowResize);
+    }
+  }
+
+  getViewportWidth = () => {
+    if (typeof window === 'undefined') {
+      return 1440;
+    }
+    return window.innerWidth || 1440;
+  };
+
+  onWindowResize = () => {
+    const viewportWidth = this.getViewportWidth();
+    if (viewportWidth !== this.state.viewportWidth) {
+      this.setState({ viewportWidth });
+    }
+  };
 
   onClose = () => {
     this.setState({ visible: false });
@@ -56,7 +83,7 @@ export class GlobalNav extends React.Component {
   };
 
   render() {
-    const { visible } = this.state;
+    const { visible, viewportWidth } = this.state;
     const { navItems = [] } = this.props;
 
     const drawerStyle = {
@@ -67,6 +94,16 @@ export class GlobalNav extends React.Component {
     const productsColumnWidth = Number(
       globalCSS.productsColumnWidth.replace('px', '')
     );
+    const isMobileWidth = viewportWidth <= 768;
+    const leftDrawerWidth = isMobileWidth
+      ? Math.max(
+          120,
+          Math.min(productsColumnWidth, Math.floor(viewportWidth * 0.42))
+        )
+      : productsColumnWidth;
+    const rightDrawerWidth = isMobileWidth
+      ? Math.max(viewportWidth - leftDrawerWidth, 0)
+      : productsColumnWidth * 4;
 
     return (
       <>
@@ -86,7 +123,7 @@ export class GlobalNav extends React.Component {
           visible={visible}
           style={drawerStyle}
           bodyStyle={{ padding: 0 }}
-          width={productsColumnWidth}
+          width={leftDrawerWidth}
           destroyOnClose
         >
           <Left items={navItems} onClose={this.onClose} />
@@ -101,11 +138,11 @@ export class GlobalNav extends React.Component {
           visible={visible}
           style={{
             ...drawerStyle,
-            left: visible ? globalCSS.productsColumnWidth : 0,
+            left: visible ? `${leftDrawerWidth}px` : 0,
           }}
           bodyStyle={{ padding: 0 }}
           mask
-          width={productsColumnWidth * 4}
+          width={rightDrawerWidth}
           maskStyle={{ backgroundColor: 'transparent' }}
           closeIcon={<CloseOutlined style={{ fontSize: '20px' }} />}
         >

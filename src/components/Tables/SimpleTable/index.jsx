@@ -292,6 +292,9 @@ export default class SimpleTable extends React.Component {
 
     const currentColumns = this.getColumns();
     const dataSource = this.getDataSource();
+    const scroll = {
+      x: 'max-content',
+    };
     return (
       <Table
         className={classnames(
@@ -306,6 +309,8 @@ export default class SimpleTable extends React.Component {
         pagination={this.getPagination(dataSource)}
         rowSelection={rowSelection}
         sortDirections={['ascend', 'descend', 'ascend']}
+        scroll={scroll}
+        tableLayout="auto"
         showSorterTooltip={false}
         footer={footer}
         onRow={this.onRow}

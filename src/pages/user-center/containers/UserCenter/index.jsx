@@ -45,8 +45,12 @@ export class Overview extends Component {
   renderInfoItem(item) {
     return (
       <Row className={styles['user-info-detail-item']}>
-        <Col span={6}>{item.label}</Col>
-        <Col span={18}>{item.value}</Col>
+        <Col span={6} className={styles['user-info-label']}>
+          {item.label}
+        </Col>
+        <Col span={18} className={styles['user-info-value']}>
+          {item.value}
+        </Col>
       </Row>
     );
   }
@@ -63,7 +67,9 @@ export class Overview extends Component {
     return (
       <>
         <Col
-          span={3}
+          xs={24}
+          sm={4}
+          md={3}
           className={classnames(styles.hvc, styles['user-info-avatar'])}
         >
           <Avatar
@@ -71,11 +77,11 @@ export class Overview extends Component {
             src={ProfileIcon}
           />
         </Col>
-        <Col span={21}>
+        <Col xs={24} sm={20} md={21}>
           <Row className={styles['user-info-detail']}>
             {Object.keys(data).map((item) => {
               return (
-                <Col span={12} key={`user_info_detail_${item}`}>
+                <Col xs={24} sm={12} key={`user_info_detail_${item}`}>
                   {this.renderInfoItem({
                     label: item,
                     value: data[item],

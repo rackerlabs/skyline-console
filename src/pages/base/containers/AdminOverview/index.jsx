@@ -64,10 +64,10 @@ export class Overview extends Component {
           <Col span={24}>{this.renderResourceOverview()}</Col>
         </Row>
         <Row gutter={16}>
-          <Col span={12} className={styles.right}>
+          <Col xs={24} lg={12} className={styles.right}>
             {this.renderComputeService()}
           </Col>
-          <Col span={12} className={styles.right}>
+          <Col xs={24} lg={12} className={styles.right}>
             {this.renderNetworkService()}
           </Col>
         </Row>

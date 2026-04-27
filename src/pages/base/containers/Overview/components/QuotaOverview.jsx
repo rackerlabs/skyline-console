@@ -392,7 +392,7 @@ export class QuotaOverview extends Component {
 
   renderQuotaCard = (data, item = []) =>
     item.map((i) => (
-      <Col key={i.text} span={12}>
+      <Col key={i.text} xs={24} sm={24} md={12}>
         {this.getItemInfo(data, i)}
       </Col>
     ));
@@ -415,7 +415,7 @@ export class QuotaOverview extends Component {
         renderItem={(item) => (
           <Row key={item.index} gutter={[16]}>
             {item.value.map((i) => (
-              <Col span={8} key={i.text}>
+              <Col xs={24} sm={12} lg={8} key={i.text}>
                 {this.getItemInfo(this.projectStore.quota, i)}
               </Col>
             ))}

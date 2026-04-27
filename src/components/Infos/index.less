@@ -9,7 +9,18 @@
     }
 
     .ant-descriptions-item-content {
-      word-break: break-all;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .item {
+    :global {
+      .ant-descriptions-item-label {
+        width: auto;
+      }
     }
   }
 }

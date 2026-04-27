@@ -37,7 +37,7 @@ export class ProjectInfo extends Component {
       <Descriptions.Item
         label={t('User Account')}
         labelStyle={{ fontSize: 14 }}
-        contentStyle={{ fontSize: 14 }}
+        contentStyle={{ fontSize: 14, wordBreak: 'break-word' }}
       >
         {this.currentUser.name}
       </Descriptions.Item>
@@ -49,7 +49,7 @@ export class ProjectInfo extends Component {
       <Descriptions.Item
         label={t('My Role')}
         labelStyle={{ fontSize: 14 }}
-        contentStyle={{ fontSize: 14 }}
+        contentStyle={{ fontSize: 14, wordBreak: 'break-word' }}
       >
         {this.roles.map((item) => item.name).join(', ')}
       </Descriptions.Item>
@@ -61,7 +61,7 @@ export class ProjectInfo extends Component {
       <Descriptions.Item
         label={t('Affiliated Domain')}
         labelStyle={{ fontSize: 14 }}
-        contentStyle={{ fontSize: 14 }}
+        contentStyle={{ fontSize: 14, wordBreak: 'break-word' }}
       >
         {this.currentUser.domain.name}
       </Descriptions.Item>

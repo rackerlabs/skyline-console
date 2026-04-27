@@ -74,6 +74,7 @@ export default class BaseList extends React.Component {
     this.warnMessage = '';
     this.inAction = false;
     this.inSelect = false;
+    this.tableHeightFrame = null;
     this.setTableHeight = this.setTableHeight.bind(this);
     this.debounceSetTableHeight = this.debounceSetTableHeight.call(this);
     this.init();
@@ -111,6 +112,10 @@ export default class BaseList extends React.Component {
     this.stopRefreshAuto();
     if (this.clearListUnmount) {
       this.store.clearData && this.store.clearData('listUnmount');
+    }
+    if (this.tableHeightFrame) {
+      cancelAnimationFrame(this.tableHeightFrame);
+      this.tableHeightFrame = null;
     }
     window.removeEventListener('resize', this.debounceSetTableHeight);
   }
@@ -691,7 +696,7 @@ export default class BaseList extends React.Component {
     }
     const currentTableHeight = this.getTableHeight();
     const { tableHeight } = this.state;
-    if (currentTableHeight !== tableHeight) {
+    if (Math.abs(currentTableHeight - tableHeight) > 1) {
       this.setState({
         tableHeight: currentTableHeight,
       });
@@ -701,6 +706,16 @@ export default class BaseList extends React.Component {
   getColumns() {
     return [];
   }
+
+  requestSetTableHeight = () => {
+    if (this.tableHeightFrame) {
+      return;
+    }
+    this.tableHeightFrame = window.requestAnimationFrame(() => {
+      this.tableHeightFrame = null;
+      this.setTableHeight();
+    });
+  };
 
   fetchListWithTry = async (func) => {
     try {
@@ -915,7 +930,7 @@ export default class BaseList extends React.Component {
       this.setRefreshDataTimerAuto();
     }
     this.updateHintsByData(items);
-    this.setTableHeight();
+    this.requestSetTableHeight();
     return items;
   };
 
@@ -1110,7 +1125,7 @@ export default class BaseList extends React.Component {
   updateHintsByOthers() {
     if (this.updateHints) {
       this.updateHints();
-      setTimeout(this.setTableHeight, 0);
+      this.requestSetTableHeight();
       this.setState({
         newHints: true,
       });

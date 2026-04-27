@@ -125,3 +125,46 @@
     }
   }
 }
+
+@media (max-width: 1366px) {
+  .container {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 12px;
+
+    .right {
+      margin-bottom: 16px;
+
+      .top {
+        :global {
+          .ant-descriptions-view {
+            height: auto;
+            max-height: 220px;
+          }
+
+          .ant-descriptions-item-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+          }
+
+          .ant-descriptions-item-label {
+            width: 100% !important;
+            min-width: 0;
+            padding-bottom: 0;
+          }
+
+          .ant-descriptions-item-content {
+            display: block;
+            width: 100%;
+            word-break: break-word;
+          }
+        }
+      }
+    }
+  }
+}
