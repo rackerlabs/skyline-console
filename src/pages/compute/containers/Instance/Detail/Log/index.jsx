@@ -32,22 +32,8 @@ export default function Log({ detail }) {
   );
 
   const viewFullLog = useCallback(async () => {
-    setLoading(true);
-    const data = await globalInstanceLogStore.fetchLogs(detail.id, null);
-    const newWindow = window.open('console', '_blank');
-    const title = t('Console Log');
-    const htmlContent = `
-      <html>
-        <head>
-          <title>${title}</title>
-        </head>
-        <body>
-          <pre>${data.output}</pre>
-        </body>
-      </html>`;
-    newWindow.document.write(htmlContent);
-    newWindow.document.close();
-    setLoading(false);
+    const url = `/compute/instance/detail/${detail.id}/console-log`;
+    window.open(url, '_blank', 'noopener,noreferrer');
   }, [detail.id]);
 
   return (

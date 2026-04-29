@@ -192,6 +192,7 @@ export class BaseStep extends Base {
         data: this.images,
         isLoading: imageLoading,
         required: true,
+        validateTrigger: [],
         filterParams: [
           {
             label: t('Name'),

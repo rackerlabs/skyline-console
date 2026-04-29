@@ -71,6 +71,20 @@ const renderMenu = (t) => {
               routePath: '/compute/instance/detail/:id',
             },
             {
+              path: /^\/compute\/instance\/detail\/[^/]+\/console-log$/,
+              name: t('Console Log'),
+              key: 'instanceConsoleLog',
+              level: 2,
+              routePath: '/compute/instance/detail/:id/console-log',
+            },
+            {
+              path: /^\/compute\/instance-admin\/detail\/[^/]+\/console-log$/,
+              name: t('Console Log'),
+              key: 'instanceConsoleLogAdmin',
+              level: 2,
+              routePath: '/compute/instance-admin/detail/:id/console-log',
+            },
+            {
               path: '/compute/instance/create',
               name: t('Create Instance'),
               key: 'instanceCreate',

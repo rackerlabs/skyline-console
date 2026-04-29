@@ -16,6 +16,7 @@ import BaseLayout from 'layouts/Basic';
 import E404 from 'pages/base/containers/404';
 import Instance from '../containers/Instance';
 import InstanceDetail from '../containers/Instance/Detail';
+import InstanceConsoleLog from '../containers/Instance/ConsoleLog';
 import Flavor from '../containers/Flavor';
 import FlavorDetail from '../containers/Flavor/Detail';
 import FlavorCreate from '../containers/Flavor/actions/StepCreate';
@@ -45,6 +46,16 @@ export default [
     routes: [
       { path: `${PATH}/instance`, component: Instance, exact: true },
       { path: `${PATH}/instance-admin`, component: Instance, exact: true },
+      {
+        path: `${PATH}/instance/detail/:id/console-log`,
+        component: InstanceConsoleLog,
+        exact: true,
+      },
+      {
+        path: `${PATH}/instance-admin/detail/:id/console-log`,
+        component: InstanceConsoleLog,
+        exact: true,
+      },
       {
         path: `${PATH}/instance/detail/:id`,
         component: InstanceDetail,

@@ -192,11 +192,13 @@ export class ServerStore extends Base {
   }
 
   async fetchLogs(id, tailSize) {
-    const logs = await this.client.action(id, {
-      'os-getConsoleOutput': {
-        length: tailSize,
-      },
-    });
+    const actionBody = {
+      'os-getConsoleOutput': {},
+    };
+    if (tailSize !== undefined && tailSize !== null) {
+      actionBody['os-getConsoleOutput'].length = tailSize;
+    }
+    const logs = await this.client.action(id, actionBody);
     return logs;
   }
 

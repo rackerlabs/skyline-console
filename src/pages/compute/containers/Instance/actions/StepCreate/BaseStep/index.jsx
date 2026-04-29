@@ -48,11 +48,12 @@ export class BaseStep extends Base {
     this.volumeStore = new VolumeStore();
     this.volumeTypeStore = globalVolumeTypeStore;
     this.instanceSnapshotStore = globalInstanceSnapshotStore;
+    this.hasLoadedVolumes = false;
+    this.hasLoadedInstanceSnapshots = false;
     this.getAvailZones();
     this.getImages();
     this.getVolumeTypes();
-    this.getVolumes();
-    this.getInstanceSnapshots();
+    this.loadSourceDataByParams();
     this.initSourceChange();
   }
 
@@ -201,6 +202,16 @@ export class BaseStep extends Base {
       : {};
   }
 
+  loadSourceDataByParams() {
+    const { snapshot, volume } = this.locationParams;
+    if (volume) {
+      this.getVolumes();
+    }
+    if (snapshot) {
+      this.getInstanceSnapshots();
+    }
+  }
+
   allowed = () => Promise.resolve();
 
   async getAvailZones() {
@@ -229,6 +240,9 @@ export class BaseStep extends Base {
   }
 
   async getVolumes() {
+    if (this.hasLoadedVolumes) {
+      return;
+    }
     const { image, snapshot, volume } = this.locationParams;
     if (image || snapshot) {
       return;
@@ -240,6 +254,7 @@ export class BaseStep extends Base {
       await this.volumeStore.fetchDetail({
         id: volume,
       });
+      this.hasLoadedVolumes = true;
       this.updateContext({
         source: this.volumeSourceType,
       });
@@ -248,19 +263,25 @@ export class BaseStep extends Base {
         sortKey: 'bootable',
         sortOrder: 'ascend',
       });
+      this.hasLoadedVolumes = true;
     }
   }
 
   async getInstanceSnapshots() {
+    if (this.hasLoadedInstanceSnapshots) {
+      return;
+    }
     const { image, snapshot, volume } = this.locationParams;
     if (image || volume) {
       return;
     }
     if (!snapshot) {
-      this.instanceSnapshotStore.fetchList();
+      await this.instanceSnapshotStore.fetchList();
+      this.hasLoadedInstanceSnapshots = true;
       return;
     }
     await this.instanceSnapshotStore.fetchDetail({ id: snapshot });
+    this.hasLoadedInstanceSnapshots = true;
   }
 
   onImageTabChange = (value) => {
@@ -552,6 +573,12 @@ export class BaseStep extends Base {
   };
 
   onSourceChange(value) {
+    const sourceValue = value?.value || value;
+    if (sourceValue === this.volumeSourceType?.value) {
+      this.getVolumes();
+    } else if (sourceValue === this.snapshotSourceType?.value) {
+      this.getInstanceSnapshots();
+    }
     this.updateContext({
       source: value,
     });
@@ -776,9 +803,10 @@ export class BaseStep extends Base {
       ? this.imageStore.isLoading
       : this.imageStore.list.isLoading;
     const filteredTabs = this.systemTabs;
-    if (!filteredTabs || filteredTabs.length === 0) {
-      return [];
-    }
+    const imageTabs =
+      filteredTabs && filteredTabs.length > 0
+        ? filteredTabs
+        : getImageSystemTabs() || [];
     return [
       {
         name: 'project',
@@ -831,10 +859,11 @@ export class BaseStep extends Base {
           },
         ],
         columns: this.imageColumns,
-        tabs: filteredTabs,
-        defaultTabValue: this.locationParams.os_distro || filteredTabs[0].value,
+        tabs: imageTabs,
+        defaultTabValue: this.locationParams.os_distro || imageTabs[0]?.value,
         selectedLabel: t('Image'),
         onTabChange: this.onImageTabChange,
+        validateTrigger: [],
       },
       {
         name: 'instanceSnapshot',
