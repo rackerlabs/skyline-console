@@ -15,6 +15,7 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import { Row, Col, Modal } from 'antd';
+import classnames from 'classnames';
 import overviewInstance from 'asset/image/overview-instance.svg';
 import overviewNetwork from 'asset/image/overview-network.svg';
 import overviewRouter from 'asset/image/overview-router.svg';
@@ -83,6 +84,17 @@ export class Overview extends Component {
     return 6;
   }
 
+  get hasCinder() {
+    return globalRootStore.checkEndpoint('cinder');
+  }
+
+  get quickStartModalWidth() {
+    if (typeof window === 'undefined') {
+      return 600;
+    }
+    return window.innerWidth <= 768 ? window.innerWidth - 24 : 600;
+  }
+
   handleQuickStart = () => {
     this.setState({ showQuickStartModal: true });
   };
@@ -102,25 +114,27 @@ export class Overview extends Component {
   };
 
   renderAction = (item) => (
-    <Row className={styles['action-button']}>
-      <Col span={8} className={styles['main-icon']}>
+    <div className={styles['action-button']}>
+      <div className={styles['main-icon']}>
         <img alt="avatar" src={item.avatar} className={styles['action-icon']} />
-      </Col>
-      <Col
-        span={16}
-        className={styles['action-label']}
-        style={{ textAlign: 'center' }}
-      >
-        {item.label}
-      </Col>
-    </Row>
+      </div>
+      <div className={styles['action-label']}>{item.label}</div>
+    </div>
   );
 
   renderActions() {
     return this.filterActions.map((item) => {
       const actionContent = this.renderAction(item);
       return (
-        <Col span={this.span} key={item.key}>
+        <Col
+          key={item.key}
+          className={classnames(
+            styles['action-col'],
+            this.hasCinder
+              ? styles['action-col-cinder']
+              : styles['action-col-default']
+          )}
+        >
           {item.isQuickStart ? (
             <div onClick={this.handleQuickStart} style={{ cursor: 'pointer' }}>
               {actionContent}
@@ -153,15 +167,15 @@ export class Overview extends Component {
         <Row
           justify="space-between"
           gutter={16}
-          style={{ marginBottom: '16px' }}
+          className={styles['action-row']}
         >
           {this.renderActions()}
         </Row>
         <Row gutter={16}>
-          <Col span={16} className={styles.left}>
+          <Col xs={24} lg={16} className={styles.left}>
             {this.renderQuota()}
           </Col>
-          <Col span={8} className={styles.right}>
+          <Col xs={24} lg={8} className={styles.right}>
             {this.renderProject()}
             {this.renderExtra()}
           </Col>
@@ -173,7 +187,11 @@ export class Overview extends Component {
           title={t('Network Quick Start')}
           destroyOnClose
           centered
-          width={600}
+          width={this.quickStartModalWidth}
+          bodyStyle={{
+            maxHeight: 'calc(100vh - 160px)',
+            overflowY: 'auto',
+          }}
         >
           <QuickStartNetwork
             onCancel={this.handleModalCancel}

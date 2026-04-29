@@ -145,3 +145,36 @@
 .modal-right-extra-wrapper {
   border-left: solid 2px @gray-2;
 }
+
+@media (max-width: 768px) {
+  .form {
+    margin-right: 8px;
+    margin-left: 8px;
+
+    :global {
+      .ant-form-horizontal .ant-form-item .ant-form-item-label,
+      .ant-form-horizontal .ant-form-item .ant-form-item-control {
+        flex: 0 0 100%;
+        max-width: 100%;
+      }
+
+      .ant-form-item-label {
+        padding-bottom: 4px;
+        text-align: left;
+      }
+    }
+  }
+
+  .footer {
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+
+  .footer-left {
+    margin-left: 0;
+  }
+
+  .btns {
+    margin-right: 0;
+  }
+}

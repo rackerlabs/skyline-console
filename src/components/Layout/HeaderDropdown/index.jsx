@@ -21,8 +21,12 @@ import classNames from 'classnames';
 //   <Dropdown overlayClassName={classNames(styles.container, cls)} {...restProps} />
 // );
 
-const HeaderDropdown = ({ overlayClassName: cls, ...restProps }) => (
-  <Dropdown overlayClassName={classNames(cls)} {...restProps} />
+const HeaderDropdown = ({ overlayClassName: cls, trigger, ...restProps }) => (
+  <Dropdown
+    overlayClassName={classNames(cls)}
+    trigger={trigger || ['click']}
+    {...restProps}
+  />
 );
 
 export default HeaderDropdown;

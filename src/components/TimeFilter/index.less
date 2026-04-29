@@ -1,4 +1,26 @@
 .wrapper {
-  flex: 1;
-  min-width: 450px;
+  display: flex;
+  flex: 1 1 450px;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+
+  :global {
+    .ant-radio-group {
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    .ant-picker {
+      max-width: 100%;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .wrapper {
+    flex: 1 1 100%;
+    width: 100%;
+  }
 }

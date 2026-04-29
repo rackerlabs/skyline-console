@@ -30,14 +30,17 @@ import styles from './index.less';
 const { SubMenu, Divider } = Menu;
 
 const { getLocaleShortName } = i18n;
+const AUTO_COLLAPSE_BREAKPOINT = 1024;
 
 export class LayoutMenu extends Component {
   constructor(props) {
     super(props);
+    const isNarrowViewport = this.checkIsNarrowViewport();
     this.state = {
-      collapsed: false,
+      collapsed: isNarrowViewport,
       hover: false,
       openKeys: [],
+      isNarrowViewport,
     };
     const shortName = getLocaleShortName();
     this.maxTitleLength = shortName === 'zh' ? 9 : 17;
@@ -45,6 +48,8 @@ export class LayoutMenu extends Component {
 
   componentDidMount() {
     this.init();
+    this.syncCollapseState(this.state.collapsed);
+    window.addEventListener('resize', this.onWindowResize);
   }
 
   componentDidUpdate(prevProps) {
@@ -53,6 +58,10 @@ export class LayoutMenu extends Component {
     if (prevPathname && pathname !== prevPathname) {
       this.updateOpenKeysByRoute();
     }
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.onWindowResize);
   }
 
   get menu() {
@@ -87,6 +96,37 @@ export class LayoutMenu extends Component {
     return this.props.rootStore.routing;
   }
 
+  checkIsNarrowViewport = () => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+    return window.innerWidth <= AUTO_COLLAPSE_BREAKPOINT;
+  };
+
+  syncCollapseState = (collapsed) => {
+    const { onCollapseChange } = this.props;
+    onCollapseChange && onCollapseChange(collapsed);
+  };
+
+  onWindowResize = () => {
+    const isNarrowViewport = this.checkIsNarrowViewport();
+    const { isNarrowViewport: prevNarrowViewport } = this.state;
+    if (isNarrowViewport === prevNarrowViewport) {
+      return;
+    }
+    const nextCollapsed = isNarrowViewport;
+    this.setState(
+      {
+        collapsed: nextCollapsed,
+        hover: false,
+        isNarrowViewport,
+      },
+      () => {
+        this.syncCollapseState(nextCollapsed);
+      }
+    );
+  };
+
   onCollapse = (collapsed) => {
     this.setState({ collapsed });
   };
@@ -97,8 +137,7 @@ export class LayoutMenu extends Component {
       collapsed: !collapsed,
       hover: false,
     });
-    const { onCollapseChange } = this.props;
-    onCollapseChange && onCollapseChange(!collapsed);
+    this.syncCollapseState(!collapsed);
   };
 
   onMouseEnter = (e) => {
@@ -152,6 +191,29 @@ export class LayoutMenu extends Component {
     }
   };
 
+  onClickCollapsedMenuItem = (item, event) => {
+    const { collapsed, hover } = this.state;
+    const hasChildren =
+      item &&
+      item.showChildren !== false &&
+      item.children &&
+      item.children.length > 0;
+    if (collapsed && !hover && hasChildren) {
+      event?.domEvent?.preventDefault();
+      event?.domEvent?.stopPropagation();
+      this.setState(
+        {
+          hover: true,
+        },
+        () => {
+          this.updateOpenKeys([item.key]);
+        }
+      );
+      return;
+    }
+    this.onClickMenuItem(event);
+  };
+
   // eslint-disable-next-line no-unused-vars
   renderMenuItemIcon = ({ item, collapsed, isSubMenu }) => {
     return item.icon;
@@ -170,16 +232,11 @@ export class LayoutMenu extends Component {
     }
 
     if (collapsed && !hover) {
-      const handleExternalClick = externalUrl
-        ? () => {
-            window.open(externalUrl, '_blank', 'noopener,noreferrer');
-          }
-        : undefined;
       return (
         <Menu.Item
           key={item.key}
           className={styles['menu-item-collapsed']}
-          onClick={handleExternalClick}
+          onClick={(event) => this.onClickCollapsedMenuItem(item, event)}
           aria-label={
             externalUrl
               ? ariaLabel || `${item.name} - Opens in new tab`

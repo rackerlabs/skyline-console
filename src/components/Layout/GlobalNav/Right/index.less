@@ -44,7 +44,11 @@
   }
 
   .link-name {
+    display: block;
+    overflow: hidden;
     color: @products-sub-title-color;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   }
 }
 
@@ -83,5 +87,27 @@
     .ant-input-clear-icon:active {
       color: @products-drawer-search-input-color;
     }
+  }
+}
+
+@media (max-width: 1200px) {
+  .right {
+    columns: 180px 2;
+  }
+
+  .search {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .right {
+    columns: 100% 1;
+    column-gap: 0;
+  }
+
+  .search {
+    margin-top: 0;
+    margin-bottom: 12px;
   }
 }

@@ -154,7 +154,11 @@ export class AvatarDropdown extends React.Component {
         {this.renderLanguageMenuItem()}
         <Menu.Divider className={styles['menu-divider']} />
         <Menu.Item key="userCenter" className={styles['menu-item']}>
-          <Button href="/user/center" type="link" style={{ textAlign: 'left', paddingLeft: '0px' }}>
+          <Button
+            href="/user/center"
+            type="link"
+            style={{ textAlign: 'left', paddingLeft: '0px' }}
+          >
             {t('User Center')}
           </Button>
         </Menu.Item>
@@ -183,7 +187,11 @@ export class AvatarDropdown extends React.Component {
     );
     // return currentUser && currentUser.name ? menuHeaderDropdown : null;
     return (
-      <HeaderDropdown overlay={menuHeaderDropdown}>
+      <HeaderDropdown
+        overlay={menuHeaderDropdown}
+        trigger={['click']}
+        placement="bottomRight"
+      >
         <div className={`${styles.action}`}>
           <Button
             shape="circle"

@@ -51,6 +51,18 @@ const getAntdLocale = (locale) => {
 };
 
 const localeProvider = getAntdLocale(i18n.getLocale());
+if (process.env.NODE_ENV === 'development') {
+  window.addEventListener(
+    'error',
+    (event) => {
+      if (event?.message?.includes('ResizeObserver loop')) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+    },
+    true
+  );
+}
 
 const render = (component) => {
   ReactDOM.render(

@@ -83,6 +83,10 @@
   .action {
     display: inline-block;
   }
+
+  :global(.ant-row) {
+    flex-wrap: nowrap;
+  }
 }
 
 .project-menu {
@@ -112,10 +116,33 @@
 }
 
 .project {
+  position: relative;
+  display: flex;
+  align-items: center;
   float: left;
+  min-width: 0;
+  max-width: calc(100% - 360px);
   font-size: 14px;
   line-height: @header-height;
   cursor: pointer;
+
+  .project-icon {
+    margin-right: 10px;
+    color: @layout-text-color;
+  }
+
+  .project-name {
+    display: inline-block;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .project-toggle {
+    margin-left: 24px;
+    color: #a3a3a3;
+  }
 
   :global {
     .ant-divider {
@@ -126,8 +153,12 @@
 
     .ant-btn-link {
       position: absolute;
-      min-width: 280px;
+      top: 0;
+      left: 0;
+      width: 100%;
+      min-width: 0;
       min-height: @header-height;
+      padding: 0;
     }
   }
 }
@@ -198,6 +229,11 @@
   }
 }
 
+.console-link,
+.administrator-link {
+  white-space: nowrap;
+}
+
 .token {
   pre {
     padding: 0.4em 0.6em;
@@ -218,5 +254,97 @@
 
   img {
     height: @layout-header-logo-image-height;
+  }
+}
+
+@media (max-width: 768px) {
+  .logo {
+    width: 120px;
+  }
+
+  .project {
+    max-width: calc(100% - 286px);
+    font-size: 12px;
+
+    .project-icon {
+      margin-right: 6px;
+    }
+
+    .project-name {
+      max-width: 92px;
+    }
+
+    .project-toggle {
+      margin-left: 8px;
+    }
+
+    .project-divider {
+      margin-right: 8px;
+      margin-left: 8px;
+    }
+  }
+
+  .domain {
+    display: none;
+  }
+
+  .single-link {
+    display: inline-flex;
+    align-items: center;
+    max-width: 104px;
+    margin-right: 4px;
+    padding: 0 4px;
+    overflow: hidden;
+    font-size: 12px;
+    text-overflow: ellipsis;
+  }
+
+  .console-link {
+    display: inline-block;
+  }
+
+  .administrator-link {
+    display: inline-block;
+  }
+
+  .menu {
+    :global {
+      .ant-dropdown-menu {
+        max-width: calc(100vw - 24px);
+      }
+
+      .ant-dropdown-menu-item {
+        min-width: 220px;
+        max-width: calc(100vw - 24px);
+      }
+    }
+  }
+
+  .right {
+    right: 12px;
+  }
+
+  .right-links-col {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .logo {
+    width: 96px;
+  }
+
+  .project {
+    max-width: calc(100% - 270px);
+
+    .project-name {
+      max-width: 48px;
+    }
+  }
+
+  .single-link {
+    max-width: 88px;
   }
 }

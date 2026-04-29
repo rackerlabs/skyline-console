@@ -31,7 +31,8 @@
       }
 
       div {
-        word-break: break-all;
+        word-break: break-word;
+        overflow-wrap: anywhere;
       }
     }
 
@@ -41,7 +42,20 @@
 
     :global {
       .ant-typography {
-        word-break: break-all;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .card {
+    .card-content {
+      padding: 12px;
+
+      .card-item {
+        margin-bottom: 6px;
       }
     }
   }

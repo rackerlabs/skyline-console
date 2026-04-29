@@ -69,19 +69,19 @@ export default class ModalAction extends BaseForm {
     const size = this.getModalSize();
     if (size === 'large') {
       return {
-        xs: { span: 6 },
+        xs: { span: 24 },
         sm: { span: 4 },
       };
     }
     return {
-      xs: { span: 8 },
+      xs: { span: 24 },
       sm: { span: 6 },
     };
   }
 
   get wrapperCol() {
     return {
-      xs: { span: 16 },
+      xs: { span: 24 },
       sm: { span: 16 },
     };
   }

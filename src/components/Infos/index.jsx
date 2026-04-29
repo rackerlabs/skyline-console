@@ -19,6 +19,14 @@ import { generateId } from 'utils/index';
 import styles from './index.less';
 
 const Infos = ({ title, descriptions, loading }) => {
+  const infoColumns = {
+    xxl: 3,
+    xl: 3,
+    lg: 2,
+    md: 2,
+    sm: 1,
+    xs: 1,
+  };
   const descItems = descriptions.map((it) => {
     if (typeof it.content === 'number') {
       it.content = it.content.toString();
@@ -35,7 +43,7 @@ const Infos = ({ title, descriptions, loading }) => {
   });
   return (
     <Skeleton loading={loading}>
-      <Descriptions colon={false} title={title}>
+      <Descriptions colon={false} title={title} column={infoColumns}>
         {descItems}
       </Descriptions>
     </Skeleton>

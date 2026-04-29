@@ -30,18 +30,18 @@ export class GlobalHeaderRight extends Component {
   }
 
   renderConsole() {
-    if (this.isAdminPage || this.isUserCenterPage) {
-      return (
-        <Button
-          type="link"
-          href="/base/overview"
-          className={styles['single-link']}
-        >
-          {t('Console')}
-        </Button>
-      );
+    if (!this.isAdminPage && !this.isUserCenterPage) {
+      return null;
     }
-    return null;
+    return (
+      <Button
+        type="link"
+        href="/base/overview"
+        className={`${styles['single-link']} ${styles['console-link']}`}
+      >
+        {t('Console')}
+      </Button>
+    );
   }
 
   renderAdministrator() {
@@ -53,7 +53,7 @@ export class GlobalHeaderRight extends Component {
       <Button
         type="link"
         href="/base/overview-admin"
-        className={styles['single-link']}
+        className={`${styles['single-link']} ${styles['administrator-link']}`}
       >
         {t('Administrator')}
       </Button>
@@ -71,14 +71,19 @@ export class GlobalHeaderRight extends Component {
   render() {
     return (
       <div className={styles.right}>
-        <Row justify="space-between" align="middle" gutter={10}>
-          <Col>
+        <Row
+          justify="space-between"
+          align="middle"
+          gutter={10}
+          className={styles['right-row']}
+        >
+          <Col className={styles['right-links-col']}>
             {this.renderExtraLink()}
             {this.renderConsole()}
             {this.renderAdministrator()}
           </Col>
           {this.renderExtra()}
-          <Col>
+          <Col className={styles['right-avatar-col']}>
             <Avatar menu />
           </Col>
         </Row>

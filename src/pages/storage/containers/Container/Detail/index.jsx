@@ -30,6 +30,8 @@ function PopUpContent({ item }) {
   const { container, name, shortName } = item;
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const labelColProps = { xs: 24, sm: 8 };
+  const valueColProps = { xs: 24, sm: 16 };
 
   useEffect(() => {
     let timeout = null;
@@ -49,36 +51,54 @@ function PopUpContent({ item }) {
     <Skeleton loading={loading} />
   ) : (
     <>
-      <Row>
-        <Col span={8}>{t('Name')}</Col>
-        <Col span={12} style={{ wordBreak: 'break-all' }}>
+      <Row className={styles['popup-row']}>
+        <Col {...labelColProps} className={styles['popup-label']}>
+          {t('Name')}
+        </Col>
+        <Col {...valueColProps} className={styles['popup-value']}>
           {shortName}
         </Col>
       </Row>
       {data.etag && (
-        <Row>
-          <Col span={8}>{t('Hash')}</Col>
-          <Col span={12}>{data.etag}</Col>
+        <Row className={styles['popup-row']}>
+          <Col {...labelColProps} className={styles['popup-label']}>
+            {t('Hash')}
+          </Col>
+          <Col {...valueColProps} className={styles['popup-value']}>
+            {data.etag}
+          </Col>
         </Row>
       )}
-      <Row>
-        <Col span={8}>{t('Content Type')}</Col>
-        <Col span={12} style={{ wordBreak: 'break-all' }}>
+      <Row className={styles['popup-row']}>
+        <Col {...labelColProps} className={styles['popup-label']}>
+          {t('Content Type')}
+        </Col>
+        <Col {...valueColProps} className={styles['popup-value']}>
           {data.contentType}
         </Col>
       </Row>
-      <Row>
-        <Col span={8}>{t('Created At')}</Col>
-        <Col span={12}>{getStrFromTimestamp(data.timestamp)}</Col>
+      <Row className={styles['popup-row']}>
+        <Col {...labelColProps} className={styles['popup-label']}>
+          {t('Created At')}
+        </Col>
+        <Col {...valueColProps} className={styles['popup-value']}>
+          {getStrFromTimestamp(data.timestamp)}
+        </Col>
       </Row>
-      <Row>
-        <Col span={8}>{t('Size')}</Col>
-        <Col span={12}>{bytesFilter(data.size || item.bytes)}</Col>
+      <Row className={styles['popup-row']}>
+        <Col {...labelColProps} className={styles['popup-label']}>
+          {t('Size')}
+        </Col>
+        <Col {...valueColProps} className={styles['popup-value']}>
+          {bytesFilter(data.size || item.bytes)}
+        </Col>
       </Row>
       {!isFolder(item) && (
-        <Row>
-          <Col span={8}>{t('Origin File Name')}</Col>
-          <Col span={12} style={{ wordBreak: 'break-all' }}>
+        <Row className={styles['popup-row']}>
+          <Col {...labelColProps} className={styles['popup-label']}>
+            {t('Origin File Name')}
+          </Col>
+          <Col {...valueColProps} className={styles['popup-value']}>
             {decodeURIComponent(data.originFileName)}
           </Col>
         </Row>
@@ -86,7 +106,7 @@ function PopUpContent({ item }) {
     </>
   );
   return (
-    <div key={`object_${name}`} style={{ width: 300 }}>
+    <div key={`object_${name}`} className={styles['popup-content']}>
       {content}
     </div>
   );
@@ -309,7 +329,7 @@ export class ContainerObject extends Base {
     return (
       <div className={styles['link-header']}>
         <span className={styles['link-title']}>{t('Current Path: ')}</span>
-        {itemLinks}
+        <span className={styles['path-items']}>{itemLinks}</span>
       </div>
     );
   }

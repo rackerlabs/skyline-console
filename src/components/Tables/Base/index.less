@@ -11,6 +11,10 @@
       box-shadow: 0 0 10px 0 rgba(0, 0, 0, 5%);
     }
 
+    .ant-table-content {
+      overflow-x: auto;
+    }
+
     .ant-table-pagination.ant-pagination {
       margin: 0;
       padding: 8px 16px;
@@ -24,6 +28,11 @@
 }
 
 .select-title {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
   padding: 2px;
 }
 
@@ -63,19 +72,25 @@
 
 .table-header {
   display: flex;
+  flex-wrap: wrap;
+  gap: 0 12px;
+  align-items: flex-start;
   justify-content: space-between;
 }
 
 .table-header-btns,
 .table-header-action-btns {
   position: relative;
-  display: inline-block;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
   margin-bottom: calc(@body-padding - 4px);
 
   :global {
     button {
-      margin-right: 10px;
-      margin-bottom: 4px;
+      margin-right: 0;
+      margin-bottom: 0;
     }
 
     .ant-btn[disabled] {
@@ -113,12 +128,19 @@
   }
 }
 
+.table-header-action-btns {
+  flex: 1 1 320px;
+  min-width: 0;
+}
+
 .search-row {
-  min-width: 350px;
+  flex: 1 1 350px;
+  min-width: 240px;
 }
 
 .search-input {
-  width: 288px;
+  width: 100%;
+  max-width: 288px;
   height: 32px;
 }
 
@@ -129,9 +151,20 @@
 
 .table-header-right {
   display: flex;
+  flex: 1 1 380px;
+  align-items: flex-start;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.timer {
+  margin-bottom: calc(@body-padding - 4px);
 }
 
 .table-header-btns {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   margin-right: 0;
   margin-left: 10px;
 
@@ -139,5 +172,53 @@
     button:last-child {
       margin-right: 0;
     }
+  }
+}
+
+@media (max-width: 1200px) {
+  .table-header-right {
+    flex: 1 1 100%;
+    justify-content: space-between;
+  }
+
+  .search-row {
+    flex: 1 1 280px;
+    min-width: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .table-header {
+    gap: 8px 0;
+  }
+
+  .table-header-action-btns,
+  .table-header-right,
+  .table-header-btns,
+  .search-row,
+  .timer {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .table-header-right {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .table-header-btns {
+    justify-content: flex-start;
+    margin-bottom: 8px;
+    margin-left: 0;
+  }
+
+  .table-header-btns,
+  .table-header-action-btns {
+    gap: 6px;
+  }
+
+  .button,
+  .create {
+    min-width: 0;
   }
 }

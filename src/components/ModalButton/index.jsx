@@ -228,13 +228,18 @@ export default class ModalButton extends Component {
       showCancelButton,
     } = this.props;
     const width = this.getModalWidth(modalSize);
+    const maxModalWidth =
+      typeof window === 'undefined'
+        ? width
+        : Math.max(window.innerWidth - 24, 280);
+    const modalWidth = Math.min(width, maxModalWidth);
     const content = render ? render(item) : component;
     const configs = {
       visible,
       title,
       key: `modal-${generateId()}`,
       className,
-      width,
+      width: modalWidth,
       onOk: this.handleOk,
       onCancel: this.handleCancel,
       okText,
