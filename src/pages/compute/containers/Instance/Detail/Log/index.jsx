@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import globalInstanceLogStore from 'src/stores/nova/instance';
 import { Button, Col, Form, InputNumber, Row, Skeleton } from 'antd';
 import { SearchOutlined, SettingOutlined } from '@ant-design/icons';
@@ -23,28 +23,17 @@ export default function Log(props) {
     setLoading(false);
   };
 
-  function onFinish(value) {
-    getLogs(value.number);
-  }
+  const onFinish = useCallback(
+    (value) => {
+      getLogs(value.number);
+    },
+    [getLogs]
+  );
 
-  async function viewFullLog() {
-    setLoading(true);
-    const data = await globalInstanceLogStore.fetchLogs(props.detail.id, null);
-    const newWindow = window.open('console', '_blank');
-    const title = t('Console Log');
-    const htmlContent = `
-      <html>
-        <head>
-          <title>${title}</title>
-        </head>
-        <body>
-          <pre>${data.output}</pre>
-        </body>
-      </html>`;
-    newWindow.document.write(htmlContent);
-    newWindow.document.close();
-    setLoading(false);
-  }
+  const viewFullLog = useCallback(async () => {
+    const url = `/compute/instance/detail/${props.detail.id}/console-log`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }, [props.detail.id]);
 
   return (
     <div>
@@ -70,7 +59,7 @@ export default function Log(props) {
                 <SearchOutlined />
               </Button>
 
-              <Button type="primary" onClick={() => viewFullLog()}>
+              <Button type="primary" onClick={viewFullLog}>
                 {t('View Full Log')}
               </Button>
             </div>
