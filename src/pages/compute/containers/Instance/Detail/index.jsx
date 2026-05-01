@@ -31,8 +31,13 @@ import ActionLog from './ActionLog';
 import Snapshots from '../../InstanceSnapshot';
 import actionConfigs from '../actions';
 import Log from './Log';
+import styles from './index.less';
 
 export class InstanceDetail extends Base {
+  get className() {
+    return this.tab && this.tab.key === 'logs' ? styles['logs-tab-main'] : '';
+  }
+
   get name() {
     return t('instance');
   }

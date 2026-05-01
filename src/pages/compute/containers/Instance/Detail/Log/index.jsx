@@ -31,10 +31,9 @@ export default function Log({ detail }) {
     [getLogs]
   );
 
-  const viewFullLog = useCallback(async () => {
-    const url = `/compute/instance/detail/${detail.id}/console-log`;
-    window.open(url, '_blank', 'noopener,noreferrer');
-  }, [detail.id]);
+  const viewFullLog = useCallback(() => {
+    getLogs(null);
+  }, [getLogs]);
 
   return (
     <div className={styles.wrapper}>
