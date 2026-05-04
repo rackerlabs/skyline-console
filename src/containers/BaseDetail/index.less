@@ -6,22 +6,26 @@
 
 .main {
   display: flex;
+  gap: @mid-space;
   padding: 0 @mid-space;
 
   .left-side {
     width: 380px;
+    min-width: 0;
     padding-right: @mid-space;
   }
 
   .right-side {
     flex: 1;
+    min-width: 0;
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .main {
     flex-direction: column;
-    padding: 0 8px;
+    gap: 0;
+    padding: 0 12px;
 
     .left-side {
       width: 100%;
@@ -31,5 +35,11 @@
     .right-side {
       width: 100%;
     }
+  }
+}
+
+@media (max-width: 480px) {
+  .main {
+    padding: 0 8px;
   }
 }

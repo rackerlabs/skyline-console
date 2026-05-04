@@ -8,6 +8,13 @@
   }
 
   :global {
+    .ant-table-wrapper,
+    .ant-table,
+    .ant-table-container,
+    .ant-table-content {
+      min-width: 0;
+    }
+
     .ant-table-content {
       .ant-table-thead {
         tr {
@@ -29,9 +36,13 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .sl-simple-table {
     :global {
+      .ant-table-wrapper {
+        overflow-x: auto;
+      }
+
       .ant-table-content {
         .ant-table-thead {
           tr {

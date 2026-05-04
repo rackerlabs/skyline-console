@@ -10,6 +10,7 @@
 
 .card {
   flex: 1;
+  min-width: 0;
   margin-bottom: @mid-space;
   background-color: #fff;
   border-radius: @border-radius;
@@ -56,6 +57,21 @@
 
       .card-item {
         margin-bottom: 6px;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    .card-content {
+      .card-item {
+        :global {
+          .ant-col {
+            flex: 0 0 100%;
+            max-width: 100%;
+          }
+        }
       }
     }
   }

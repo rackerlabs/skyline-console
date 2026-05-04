@@ -183,8 +183,49 @@ export class BaseTable extends React.Component {
   }
 
   get isMobileWidth() {
-    return this.viewportWidth <= 768;
+    return this.viewportWidth <= 1024;
   }
+
+  getColumnEstimatedWidth = (column) => {
+    const { width, key, dataIndex, title, isStatus } = column;
+    if (typeof width === 'number') {
+      return width;
+    }
+    if (typeof width === 'string') {
+      const parsedWidth = parseInt(width, 10);
+      if (!Number.isNaN(parsedWidth)) {
+        return parsedWidth;
+      }
+    }
+    if (key === 'selection-column') {
+      return 48;
+    }
+    if (key === 'operation') {
+      return 160;
+    }
+    if (isStatus || dataIndex === 'status') {
+      return 120;
+    }
+    if (
+      dataIndex === 'name' ||
+      dataIndex === 'description' ||
+      dataIndex === 'project_name'
+    ) {
+      return 220;
+    }
+    if (title && `${title}`.length > 16) {
+      return 180;
+    }
+    return 140;
+  };
+
+  getTableScrollX = (columns) => {
+    const baseWidth = columns.reduce(
+      (total, column) => total + this.getColumnEstimatedWidth(column),
+      0
+    );
+    return Math.max(baseWidth, this.viewportWidth);
+  };
 
   getDataIndex = (dataIndex) => {
     if (isArray(dataIndex)) {
@@ -489,6 +530,9 @@ export class BaseTable extends React.Component {
         dataIndex,
         align: column.align || 'left',
       };
+      if (this.isMobileWidth && !newColumn.width) {
+        newColumn.width = this.getColumnEstimatedWidth(column);
+      }
       if (newSorter) {
         newColumn.sorter = newSorter;
       }
@@ -959,7 +1003,7 @@ export class BaseTable extends React.Component {
     const currentColumns = this.getColumns();
     const scroll = {};
     if (this.isMobileWidth) {
-      scroll.x = 'max-content';
+      scroll.x = this.getTableScrollX(currentColumns);
     }
     if (scrollY > 0) {
       scroll.y = scrollY || 400;

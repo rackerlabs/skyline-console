@@ -191,7 +191,9 @@
 }
 
 .content {
+  max-width: 100%;
   height: calc(100vh - @header-height);
+  overflow-x: hidden;
   background-color: @background-color;
 }
 
@@ -254,8 +256,10 @@
 }
 
 .breadcrumb {
+  max-width: 100%;
   height: @breadcrumb-height;
   padding-left: @body-padding-left;
+  overflow-x: hidden;
   background-color: #fff;
 
   .breadcrumb-item {
@@ -273,6 +277,7 @@
 }
 
 .main {
+  max-width: 100%;
   height: calc(100vh - @header-height - @breadcrumb-height);
   overflow: hidden;
 }
@@ -328,7 +333,9 @@
 .base-layout {
   position: relative;
   width: 100%;
+  max-width: 100%;
   height: 100vh;
+  overflow-x: hidden;
 }
 
 .base-layout-sider {
@@ -365,7 +372,9 @@
   top: @header-height;
   right: 0;
   left: @sider-width;
+  max-width: 100%;
   height: calc(100vh - @header-height);
+  overflow-x: hidden;
 }
 
 .base-layout-right-collapsed {
