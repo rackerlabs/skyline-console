@@ -86,6 +86,13 @@ export class virtualResourceInfo extends Component {
     this.props.store.getVirtualResourceOverview();
   }
 
+  get isTabletWidth() {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+    return window.innerWidth <= 1200;
+  }
+
   get card() {
     const list = this.props.card || card;
     if (!this.props.rootStore.checkEndpoint('cinder')) {
@@ -112,7 +119,9 @@ export class virtualResourceInfo extends Component {
     return Object.keys(colors).map((key) => (
       <Col span={12} key={key} className={styles.status}>
         <Badge color={colors[key].color} text={colors[key].text} />
-        {resource ? resource[key] : 0}
+        <span className={styles['status-value']}>
+          {resource ? resource[key] : 0}
+        </span>
       </Col>
     ));
   }
@@ -120,28 +129,44 @@ export class virtualResourceInfo extends Component {
   renderCard() {
     const { virtualResource } = this.props.store;
     const span = this.card.length === 1 ? 24 : 12;
+    const responsiveSpan = span === 24 ? 24 : 12;
     return (
       <Row gutter={20}>
         {this.card.map((item) => (
-          <Col span={span} style={{ textAlign: 'center' }} key={item.key}>
+          <Col
+            xs={24}
+            sm={24}
+            md={responsiveSpan}
+            lg={span}
+            xl={span}
+            style={{ textAlign: 'center' }}
+            key={item.key}
+          >
             <Card className={styles.card}>
-              <Link to={item.to} style={{ color: '#000000' }}>
-                <Row>
-                  <Col span={8} style={{ textAlign: 'center' }}>
-                    <img
-                      alt="avatar"
-                      src={item.avatar}
-                      style={{ paddingTop: '14px' }}
-                    />
-                  </Col>
-                  <Col span={16} style={{ textAlign: 'left' }}>
-                    <span className={styles.label}>{item.label}</span>
-                    <span className={styles.all}>
-                      {virtualResource[item.key]
-                        ? virtualResource[item.key].all
-                        : null}
-                    </span>
-                    <Row>
+              <Link to={item.to} className={styles['resource-card-link']}>
+                <div
+                  className={
+                    this.isTabletWidth
+                      ? styles['resource-card-mobile']
+                      : styles['resource-card-layout']
+                  }
+                >
+                  <div className={styles['resource-card-icon']}>
+                    <img alt="avatar" src={item.avatar} />
+                  </div>
+                  <div className={styles['resource-card-content']}>
+                    <div className={styles['resource-card-header']}>
+                      <span className={styles.label}>{item.label}</span>
+                      <span className={styles.all}>
+                        {virtualResource[item.key]
+                          ? virtualResource[item.key].all
+                          : null}
+                      </span>
+                    </div>
+                    <Row
+                      className={styles['resource-status-grid']}
+                      gutter={[8, 8]}
+                    >
                       {virtualResource[item.key]
                         ? this.renderStatusColor(
                             virtualResource[item.key],
@@ -149,8 +174,8 @@ export class virtualResourceInfo extends Component {
                           )
                         : null}
                     </Row>
-                  </Col>
-                </Row>
+                  </div>
+                </div>
               </Link>
             </Card>
           </Col>

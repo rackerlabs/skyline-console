@@ -26,6 +26,7 @@ const TableTransfer = ({
   loading,
   onRowLeft,
   onRowRight,
+  isMobileWidth,
   ...restProps
 }) => (
   <Transfer {...restProps} showSelectAll={false}>
@@ -70,6 +71,7 @@ const TableTransfer = ({
       });
 
       const onRow = currentOnRow || onRowDefault;
+      const scroll = isMobileWidth ? { x: 'max-content' } : undefined;
 
       return (
         <Table
@@ -81,6 +83,7 @@ const TableTransfer = ({
           size="small"
           style={{ pointerEvents: listDisabled ? 'none' : null }}
           onRow={onRow}
+          {...(scroll ? { scroll } : {})}
         />
       );
     }}
@@ -167,6 +170,10 @@ export default class Index extends Component {
       onRowRight,
     } = this.props;
     const { targetKeys } = this.state;
+    const isMobileWidth =
+      typeof window !== 'undefined'
+        ? (window.innerWidth || 1440) <= 768
+        : false;
     return (
       <>
         <TableTransfer
@@ -183,6 +190,7 @@ export default class Index extends Component {
           loading={loading}
           onRowLeft={onRowLeft}
           onRowRight={onRowRight}
+          isMobileWidth={isMobileWidth}
         />
       </>
     );
