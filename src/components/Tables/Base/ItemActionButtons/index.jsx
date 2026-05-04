@@ -176,10 +176,7 @@ function DropdownActionButton({
       moreElement = <span className={className}>{actionButton}</span>;
     } else if (allowedFatherCount > 0) {
       moreElement = (
-        <Dropdown
-          overlay={menu}
-          // trigger={['click']}
-        >
+        <Dropdown overlay={menu} trigger={['click']}>
           <Button type="link" className={styles['more-action']}>
             {t('More')} {<DownOutlined />}
           </Button>

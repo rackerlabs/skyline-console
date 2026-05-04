@@ -1,9 +1,11 @@
 @import '~styles/variables';
 
 .wrapper {
+  max-width: 100%;
   min-height: calc(100vh - 108px);
   margin-top: 16px;
   padding: 0 @body-padding;
+  overflow-x: hidden;
 }
 
 .hint {
@@ -28,7 +30,14 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
+  .wrapper {
+    margin-top: 12px;
+    padding: 0 12px;
+  }
+}
+
+@media (max-width: 480px) {
   .wrapper {
     margin-top: 12px;
     padding: 0 8px;

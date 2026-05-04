@@ -167,6 +167,20 @@ export default class FormItem extends React.Component {
           allowClear,
           required,
           autoSelectFirst,
+          validator,
+          rules,
+          dependencies,
+          formref,
+          validateTrigger,
+          hasRequiredCheck,
+          labelCol,
+          wrapperCol,
+          otherRule,
+          hidden,
+          help,
+          extra,
+          label,
+          type: itemType,
           ...rest
         } = this.props;
         return {

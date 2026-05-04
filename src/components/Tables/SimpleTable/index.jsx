@@ -77,8 +77,49 @@ export default class SimpleTable extends React.Component {
   }
 
   get isMobileWidth() {
-    return this.viewportWidth <= 768;
+    return this.viewportWidth <= 1024;
   }
+
+  getColumnEstimatedWidth = (column) => {
+    const { width, key, dataIndex, title, isStatus } = column;
+    if (typeof width === 'number') {
+      return width;
+    }
+    if (typeof width === 'string') {
+      const parsedWidth = parseInt(width, 10);
+      if (!Number.isNaN(parsedWidth)) {
+        return parsedWidth;
+      }
+    }
+    if (key === 'selection-column') {
+      return 48;
+    }
+    if (key === 'operation') {
+      return 160;
+    }
+    if (isStatus || dataIndex === 'status') {
+      return 120;
+    }
+    if (
+      dataIndex === 'name' ||
+      dataIndex === 'description' ||
+      dataIndex === 'project_name'
+    ) {
+      return 220;
+    }
+    if (title && `${title}`.length > 16) {
+      return 180;
+    }
+    return 140;
+  };
+
+  getTableScrollX = (columns) => {
+    const baseWidth = columns.reduce(
+      (total, column) => total + this.getColumnEstimatedWidth(column),
+      0
+    );
+    return Math.max(baseWidth, this.viewportWidth);
+  };
 
   handleChange = (pagination, filters, sorter, extra) => {
     const { onChange } = this.props;
@@ -190,6 +231,9 @@ export default class SimpleTable extends React.Component {
         dataIndex,
         align: column.align || 'left',
       };
+      if (this.isMobileWidth && !newColumn.width) {
+        newColumn.width = this.getColumnEstimatedWidth(column);
+      }
       if (newSorter) {
         newColumn.sorter = newSorter;
       }
@@ -347,7 +391,9 @@ export default class SimpleTable extends React.Component {
 
     const currentColumns = this.getColumns();
     const dataSource = this.getDataSource();
-    const scroll = this.isMobileWidth ? { x: 'max-content' } : null;
+    const scroll = this.isMobileWidth
+      ? { x: this.getTableScrollX(currentColumns) }
+      : null;
     return (
       <Table
         className={classnames(
