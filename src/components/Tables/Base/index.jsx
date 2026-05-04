@@ -175,6 +175,17 @@ export class BaseTable extends React.Component {
     return itemActions;
   }
 
+  get viewportWidth() {
+    if (typeof window === 'undefined') {
+      return 1440;
+    }
+    return window.innerWidth || 1440;
+  }
+
+  get isMobileWidth() {
+    return this.viewportWidth <= 768;
+  }
+
   getDataIndex = (dataIndex) => {
     if (isArray(dataIndex)) {
       return dataIndex.join(',');
@@ -375,6 +386,39 @@ export class BaseTable extends React.Component {
     );
   };
 
+  getCellContentMaxWidth = (column) => {
+    const { width, key, dataIndex, isStatus, disableTextClamp } = column;
+    if (disableTextClamp || width || key === 'operation' || isStatus) {
+      return null;
+    }
+    const dataKey = this.getDataIndex(dataIndex);
+    if (!dataKey) {
+      return null;
+    }
+    if (dataKey === 'name' || dataKey === 'description') {
+      return this.isMobileWidth ? 180 : 320;
+    }
+    return this.isMobileWidth ? 160 : 240;
+  };
+
+  getCellContent = (column, value, record, renderFunc) => {
+    const content = columnRender(renderFunc, value, record);
+    const maxWidth = this.getCellContentMaxWidth(column);
+    if (!maxWidth) {
+      return content;
+    }
+    const title = isString(value) ? value : undefined;
+    return (
+      <div
+        className={styles['cell-content-ellipsis']}
+        style={{ maxWidth }}
+        title={title}
+      >
+        {content}
+      </div>
+    );
+  };
+
   getBaseColumns = (columns) =>
     columns.map((column) => {
       const { Paragraph } = Typography;
@@ -458,7 +502,7 @@ export class BaseTable extends React.Component {
       return {
         ...newColumn,
         render: (value, record) =>
-          columnRender(newColumn.render, value, record),
+          this.getCellContent(newColumn, value, record, newColumn.render),
       };
     });
 
@@ -913,12 +957,14 @@ export class BaseTable extends React.Component {
 
     const header = this.renderTableTitle();
     const currentColumns = this.getColumns();
-    const scroll = {
-      x: 'max-content',
-    };
+    const scroll = {};
+    if (this.isMobileWidth) {
+      scroll.x = 'max-content';
+    }
     if (scrollY > 0) {
       scroll.y = scrollY || 400;
     }
+    const tableProps = Object.keys(scroll).length ? { scroll } : {};
     return (
       <div>
         {header}
@@ -932,8 +978,7 @@ export class BaseTable extends React.Component {
           pagination={newPagination}
           rowSelection={rowSelection}
           sortDirections={['ascend', 'descend', 'ascend']}
-          scroll={scroll}
-          tableLayout="auto"
+          {...tableProps}
           showSorterTooltip={false}
           expandable={expandable}
           footer={footer}

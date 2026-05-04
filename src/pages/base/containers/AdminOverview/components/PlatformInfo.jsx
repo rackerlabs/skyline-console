@@ -67,27 +67,21 @@ export class ProjectInfo extends Component {
         bordered={false}
       >
         <Descriptions column={1}>
-          <div className="site-card-wrapper">
-            <Row>
+          <div className={styles['platform-grid']}>
+            <Row gutter={[16, 16]} align="middle">
               {this.actions.map((item) => (
-                <Col key={item.key} style={{ margin: 'auto' }}>
-                  <Link to={item.to} style={{ color: item.color }}>
-                    <Row>
-                      <Col
-                        span={24}
-                        style={{ fontSize: '40px', textAlign: 'center' }}
-                      >
-                        {platformNum[item.key]}
-                      </Col>
-                    </Row>
-                    <Row>
-                      <Col
-                        span={24}
-                        style={{ fontSize: '16px', textAlign: 'center' }}
-                      >
-                        {item.avatar} {item.label}
-                      </Col>
-                    </Row>
+                <Col xs={8} sm={8} md={8} key={item.key}>
+                  <Link
+                    to={item.to}
+                    style={{ color: item.color }}
+                    className={styles['platform-link']}
+                  >
+                    <span className={styles['platform-value']}>
+                      {platformNum[item.key]}
+                    </span>
+                    <span className={styles['platform-label']}>
+                      {item.avatar} {item.label}
+                    </span>
                   </Link>
                 </Col>
               ))}

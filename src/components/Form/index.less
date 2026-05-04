@@ -152,6 +152,11 @@
     margin-left: 8px;
 
     :global {
+      .ant-form > .ant-row > [id^='form-item-col-'] {
+        flex: 0 0 100%;
+        max-width: 100%;
+      }
+
       .ant-form-horizontal .ant-form-item .ant-form-item-label,
       .ant-form-horizontal .ant-form-item .ant-form-item-control {
         flex: 0 0 100%;
@@ -161,6 +166,51 @@
       .ant-form-item-label {
         padding-bottom: 4px;
         text-align: left;
+      }
+
+      .ant-transfer {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        width: 100%;
+      }
+
+      .ant-transfer-list {
+        width: 100% !important;
+        min-width: 0;
+        max-width: 100%;
+      }
+
+      .ant-transfer-list-content,
+      .ant-transfer-list-body,
+      .ant-transfer-list-body-customize-wrapper,
+      .ant-transfer-list .ant-table-wrapper,
+      .ant-transfer-list .ant-spin-nested-loading,
+      .ant-transfer-list .ant-spin-container {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+      }
+
+      .ant-transfer-list .ant-table-content {
+        overflow-x: auto;
+      }
+
+      .ant-transfer-operation {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        margin: 0;
+      }
+
+      .ant-transfer-operation .ant-btn {
+        margin: 0 4px;
+      }
+
+      .ant-transfer-operation .ant-btn:first-child,
+      .ant-transfer-operation .ant-btn + .ant-btn {
+        margin-bottom: 0;
       }
     }
   }

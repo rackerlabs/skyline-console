@@ -41,6 +41,23 @@ export class ResourceCircle extends Component {
     this.props.store.getVirtualResource();
   }
 
+  get circleWidth() {
+    if (typeof window === 'undefined') {
+      return 150;
+    }
+    const viewportWidth = window.innerWidth || 1440;
+    if (viewportWidth <= 480) {
+      return 108;
+    }
+    if (viewportWidth <= 768) {
+      return 124;
+    }
+    if (viewportWidth <= 1200) {
+      return 136;
+    }
+    return 150;
+  }
+
   get resourceCircle() {
     return this.props.resourceCircle || resourceCircle;
   }
@@ -65,44 +82,58 @@ export class ResourceCircle extends Component {
     }
     return (
       <Col
-        span={this.resourceCircleSpan}
-        style={{ textAlign: 'center' }}
+        xs={24}
+        sm={12}
+        md={12}
+        lg={this.resourceCircleSpan}
+        xl={this.resourceCircleSpan}
+        className={styles['resource-circle-col']}
         key={`${resource}-${index}`}
       >
-        <span className={styles.resource}>{item.label}</span>
-        <Progress
-          type="circle"
-          width={150}
-          percent={percentNum}
-          strokeColor={circleColor}
-          format={(percent) => `${percent}%`}
-        />
-        <Row className={styles.num}>
-          <Col span={12} style={{ textAlign: 'right' }}>
-            <Avatar
-              shape="square"
-              size={15}
-              style={{
-                marginBottom: 2,
-                marginRight: 2,
-                backgroundColor: circleColor,
-              }}
+        <div className={styles['resource-circle-card']}>
+          <span className={styles['resource-circle-label']}>{item.label}</span>
+          <div className={styles['resource-circle-progress']}>
+            <Progress
+              type="circle"
+              width={this.circleWidth}
+              percent={percentNum}
+              strokeColor={circleColor}
+              format={(percent) => `${percent}%`}
             />
-            {`${t('Used')}: ${used}`}
-          </Col>
-          <Col span={12} style={{ textAlign: 'left', paddingLeft: 20 }}>
-            <Avatar
-              shape="square"
-              size={15}
-              style={{
-                marginBottom: 2,
-                marginRight: 2,
-                backgroundColor: '##A3A3A3',
-              }}
-            />
-            {`${t('Available')}: ${unUsed > 0 ? unUsed : '0'}`}
-          </Col>
-        </Row>
+          </div>
+          <Row className={styles['resource-circle-meta']} gutter={[12, 8]}>
+            <Col span={12} className={styles['resource-circle-meta-item']}>
+              <Avatar
+                shape="square"
+                size={15}
+                style={{
+                  marginBottom: 2,
+                  marginRight: 2,
+                  backgroundColor: circleColor,
+                }}
+              />
+              <span className={styles['resource-circle-meta-text']}>
+                <span>{`${t('Used')}:`}</span>
+                <span>{used}</span>
+              </span>
+            </Col>
+            <Col span={12} className={styles['resource-circle-meta-item']}>
+              <Avatar
+                shape="square"
+                size={15}
+                style={{
+                  marginBottom: 2,
+                  marginRight: 2,
+                  backgroundColor: '#A3A3A3',
+                }}
+              />
+              <span className={styles['resource-circle-meta-text']}>
+                <span>{`${t('Available')}:`}</span>
+                <span>{unUsed > 0 ? unUsed : '0'}</span>
+              </span>
+            </Col>
+          </Row>
+        </div>
       </Col>
     );
   };
