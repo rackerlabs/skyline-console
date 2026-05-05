@@ -1,6 +1,9 @@
 @import '~styles/variables';
 
 .search-wrapper {
+  flex: 1 1 280px;
+  min-width: 0;
+  max-width: 100%;
   margin-bottom: 16px;
 
   :global {
@@ -41,7 +44,9 @@
       font-weight: bold;
     }
 
-    .ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled):focus-within {
+    .ant-radio-button-wrapper-checked:not(
+        .ant-radio-button-wrapper-disabled
+      ):focus-within {
       box-shadow: none;
     }
   }
@@ -79,7 +84,9 @@
 
 .search-line {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
+  align-items: flex-start;
 
   :global {
     .ant-btn-default {
@@ -91,6 +98,24 @@
     .ant-btn-default:hover {
       color: @primary-color;
       border-color: @primary-color;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .search-wrapper {
+    flex-basis: 100%;
+    margin-bottom: 0;
+  }
+
+  .search-line {
+    gap: 10px;
+    margin-bottom: 16px;
+
+    :global {
+      .ant-btn {
+        flex: 0 0 auto;
+      }
     }
   }
 }

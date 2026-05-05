@@ -50,20 +50,27 @@
   bottom: 0;
   left: 0;
   display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
   align-items: center;
   justify-content: space-between;
-  height: 48px;
+  min-height: 48px;
+  padding: 8px 0;
   background-color: #fff;
   box-shadow: 0 2px 30px 0 rgba(0, 0, 0, 9%);
 }
 
 .btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
   float: right;
   margin-right: 32px;
 
   :global {
     button {
-      margin-left: 8px;
+      margin-left: 0 !important;
     }
   }
 }
@@ -221,10 +228,26 @@
   }
 
   .footer-left {
+    flex: 1 1 auto;
+    min-width: 0;
     margin-left: 0;
   }
 
   .btns {
+    flex: 1 1 auto;
+    min-width: 0;
     margin-right: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-left,
+  .btns {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .btns {
+    justify-content: flex-end;
   }
 }

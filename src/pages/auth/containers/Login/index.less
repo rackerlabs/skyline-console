@@ -404,17 +404,24 @@
       .ant-input-password,
       .ant-select-selector {
         padding: 8px 12px !important;
-        font-size: 14px !important;
+        font-size: 16px !important;
       }
 
       // Fix mobile password input
       .ant-input-password .ant-input {
         padding: 0 !important;
+        font-size: 16px !important;
         border-radius: 0 !important;
       }
 
       .ant-select-selector {
         height: 38px !important;
+      }
+
+      .ant-input::placeholder,
+      .ant-input-password .ant-input::placeholder,
+      .ant-select-selection-placeholder {
+        font-size: 16px !important;
       }
 
       .ant-form-item-extra {
@@ -447,9 +454,34 @@
 }
 
 @media (max-width: 768px) {
+  .loginForm {
+    :global {
+      .ant-input,
+      .ant-input-password,
+      .ant-select-selector,
+      .ant-input-password .ant-input,
+      .ant-select-selection-item,
+      .ant-select-selection-placeholder {
+        font-size: 16px !important;
+      }
+
+      .ant-input::placeholder,
+      .ant-input-password .ant-input::placeholder {
+        font-size: 16px !important;
+      }
+    }
+  }
+
   .langSelector {
     top: 16px; // Top-right corner on mobile
     right: 16px;
+
+    :global {
+      .ant-select-selector,
+      .ant-select-selection-item {
+        font-size: 16px !important;
+      }
+    }
   }
 }
 
