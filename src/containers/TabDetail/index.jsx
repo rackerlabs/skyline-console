@@ -168,15 +168,13 @@ export default class DetailBase extends React.Component {
     const icon = collapsed ? <DownOutlined /> : <UpOutlined />;
     return (
       <div className={styles['detail-title']}>
-        <div className={styles['detail-title-main']}>
-          <span className={styles['title-label']}>{this.titleLabel}</span>
-          <span className={styles['header-title']}>
-            <Paragraph className={styles['title-value']} copyable>
-              {this.titleValue}
-            </Paragraph>
-          </span>
-        </div>
-        <div className={styles['detail-title-actions']}>
+        <span className={styles['title-label']}>{this.titleLabel}</span>
+        <span className={styles['header-title']}>
+          <Paragraph className={styles['title-value']} copyable>
+            {this.titleValue}
+          </Paragraph>
+        </span>
+        <span className={styles['detail-title-actions']}>
           <Divider type="vertical" className={styles['header-divider']} />
           <Button onClick={this.goBack} type="link">
             {t('Back')}
@@ -186,13 +184,13 @@ export default class DetailBase extends React.Component {
             icon={<SyncOutlined />}
             onClick={this.handleRefresh}
           />
-          <Button
-            onClick={this.handleDetailInfo}
-            icon={icon}
-            type="link"
-            className={styles['header-button']}
-          />
-        </div>
+        </span>
+        <Button
+          onClick={this.handleDetailInfo}
+          icon={icon}
+          type="link"
+          className={styles['header-button']}
+        />
       </div>
     );
   }
@@ -377,10 +375,12 @@ export default class DetailBase extends React.Component {
   renderDetailInfos() {
     const { Paragraph } = Typography;
     const { collapsed } = this.state;
+    const extra = this.renderHeaderActions();
     if (isEmpty(this.detailData)) {
       return (
         <Infos
           title={this.detailTitle}
+          extra={extra}
           descriptions={[]}
           loading={this.isLoading}
         />
@@ -423,6 +423,7 @@ export default class DetailBase extends React.Component {
     return (
       <Infos
         title={this.detailTitle}
+        extra={extra}
         descriptions={descriptions}
         loading={this.isLoading}
       />
@@ -495,6 +496,14 @@ export default class DetailBase extends React.Component {
     );
   }
 
+  renderHeaderActions() {
+    const actions = this.renderActions();
+    if (!actions) {
+      return null;
+    }
+    return <div className={styles['action-wrapper']}>{actions}</div>;
+  }
+
   render() {
     if (this.state.notFound) {
       return <NotFound title={this.name} link={this.listUrl} goList />;
@@ -502,7 +511,6 @@ export default class DetailBase extends React.Component {
 
     return (
       <div className={classnames(styles.main, this.className, 'detail-main')}>
-        <div className={styles['action-wrapper']}>{this.renderActions()}</div>
         <div className={styles.header}>{this.renderDetailInfos()}</div>
         <div className={styles.tabs}>{this.renderTabs()}</div>
       </div>

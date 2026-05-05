@@ -18,11 +18,11 @@ import PropTypes from 'prop-types';
 import { generateId } from 'utils/index';
 import styles from './index.less';
 
-const Infos = ({ title, descriptions, loading }) => {
+const Infos = ({ title, descriptions, loading, extra }) => {
   const infoColumns = {
     xxl: 3,
     xl: 3,
-    lg: 2,
+    lg: 3,
     md: 2,
     sm: 1,
     xs: 1,
@@ -43,7 +43,12 @@ const Infos = ({ title, descriptions, loading }) => {
   });
   return (
     <Skeleton loading={loading}>
-      <Descriptions colon={false} title={title} column={infoColumns}>
+      <Descriptions
+        colon={false}
+        title={title}
+        extra={extra}
+        column={infoColumns}
+      >
         {descItems}
       </Descriptions>
     </Skeleton>
@@ -59,6 +64,7 @@ Infos.propTypes = {
   title: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
   descriptions: PropTypes.arrayOf(detailProps),
   loading: PropTypes.bool,
+  extra: PropTypes.node,
 };
 
 export default Infos;

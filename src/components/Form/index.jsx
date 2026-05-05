@@ -610,10 +610,16 @@ export default class BaseForm extends React.Component {
         if (!display) {
           return '';
         }
+        const colSpan = 24 / (it.colNum || 1);
         this.codeError = false;
         return (
           <Col
-            span={24 / (it.colNum || 1)}
+            xs={24}
+            sm={24}
+            md={colSpan}
+            lg={colSpan}
+            xl={colSpan}
+            xxl={colSpan}
             key={`form-item-col-${index}`}
             id={`form-item-col-${name}`}
           >
@@ -641,10 +647,16 @@ export default class BaseForm extends React.Component {
             ? this.errorText
             : t('Unable to render form'),
       };
+      const colSpan = 24 / (it.colNum || 1);
       this.codeError = true;
       return (
         <Col
-          span={24 / (it.colNum || 1)}
+          xs={24}
+          sm={24}
+          md={colSpan}
+          lg={colSpan}
+          xl={colSpan}
+          xxl={colSpan}
           key={`form-item-col-${index}`}
           id={`form-item-col-${name}`}
         >

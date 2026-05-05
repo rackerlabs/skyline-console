@@ -1,21 +1,42 @@
 @import '~styles/variables';
 
 .table {
+  width: 100%;
+  max-width: 100%;
   overflow: hidden;
   background-color: #fff;
   border-radius: @border-radius;
   box-shadow: @base-shadow;
 
   :global {
+    .ant-table-wrapper {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .ant-spin-nested-loading,
+    .ant-spin-container,
+    .ant-table,
+    .ant-table-container,
+    .ant-table-content {
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
+    }
+
     .ant-table-container {
       box-shadow: 0 0 10px 0 rgba(0, 0, 0, 5%);
     }
 
-    .ant-table-content {
-      overflow-x: auto;
-    }
-
     .ant-table-pagination.ant-pagination {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: flex-end;
       margin: 0;
       padding: 8px 16px;
     }
@@ -28,11 +49,6 @@
 }
 
 .select-title {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-  justify-content: space-between;
   padding: 2px;
 }
 
@@ -70,27 +86,27 @@
   margin-left: 0;
 }
 
+.cell-content-ellipsis {
+  overflow: hidden;
+  white-space: normal;
+  word-break: break-word;
+}
+
 .table-header {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0 12px;
-  align-items: flex-start;
   justify-content: space-between;
 }
 
 .table-header-btns,
 .table-header-action-btns {
   position: relative;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
+  display: inline-block;
   margin-bottom: calc(@body-padding - 4px);
 
   :global {
     button {
-      margin-right: 0;
-      margin-bottom: 0;
+      margin-right: 10px;
+      margin-bottom: 4px;
     }
 
     .ant-btn[disabled] {
@@ -128,19 +144,12 @@
   }
 }
 
-.table-header-action-btns {
-  flex: 1 1 320px;
-  min-width: 0;
-}
-
 .search-row {
-  flex: 1 1 350px;
-  min-width: 240px;
+  min-width: 350px;
 }
 
 .search-input {
-  width: 100%;
-  max-width: 288px;
+  width: 288px;
   height: 32px;
 }
 
@@ -151,20 +160,9 @@
 
 .table-header-right {
   display: flex;
-  flex: 1 1 380px;
-  align-items: flex-start;
-  justify-content: flex-end;
-  min-width: 0;
-}
-
-.timer {
-  margin-bottom: calc(@body-padding - 4px);
 }
 
 .table-header-btns {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
   margin-right: 0;
   margin-left: 10px;
 
@@ -176,18 +174,67 @@
 }
 
 @media (max-width: 1200px) {
+  .table-header {
+    flex-wrap: wrap;
+    gap: 0 12px;
+    align-items: flex-start;
+  }
+
+  .table-header-action-btns,
+  .table-header-btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+
+    :global {
+      button {
+        margin-right: 0;
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  .table-header-action-btns {
+    flex: 1 1 320px;
+    min-width: 0;
+  }
+
   .table-header-right {
     flex: 1 1 100%;
+    align-items: flex-start;
     justify-content: space-between;
+    min-width: 0;
   }
 
   .search-row {
     flex: 1 1 280px;
     min-width: 200px;
   }
+
+  .search-input {
+    width: 100%;
+    max-width: 288px;
+  }
+
+  .table-header-btns {
+    justify-content: flex-end;
+  }
+
+  .timer {
+    margin-bottom: calc(@body-padding - 4px);
+  }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
+  .select-title {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    justify-content: space-between;
+  }
+
   .table-header {
     gap: 8px 0;
   }
@@ -212,13 +259,47 @@
     margin-left: 0;
   }
 
+  .search-input {
+    max-width: none;
+  }
+
   .table-header-btns,
   .table-header-action-btns {
     gap: 6px;
   }
 
+  .table {
+    :global {
+      .ant-table-wrapper {
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .ant-table-content {
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .ant-table-pagination.ant-pagination {
+        justify-content: space-between;
+      }
+    }
+  }
+
   .button,
   .create {
     min-width: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .table {
+    :global {
+      .ant-table-pagination.ant-pagination {
+        padding: 8px 12px;
+      }
+    }
   }
 }

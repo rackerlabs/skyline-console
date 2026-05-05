@@ -2,8 +2,11 @@
 
 .main {
   position: relative;
+  width: 100%;
+  max-width: 100%;
   height: 100%;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .sider {
@@ -20,6 +23,9 @@
 }
 
 .content {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
   padding-left: 374px;
 
   @media screen and (max-width: 1280px) {
@@ -84,29 +90,15 @@
 }
 
 .detail-title {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 8px;
-  align-items: center;
-  min-width: 0;
-}
-
-.detail-title-main {
-  display: flex;
-  flex: 1 1 360px;
-  align-items: center;
   min-width: 0;
 }
 
 .detail-title-actions {
-  display: flex;
-  flex: 0 0 auto;
-  align-items: center;
+  display: inline;
 }
 
 .header-title {
-  flex: 1;
-  min-width: 0;
+  display: inline-block;
   font-style: italic;
 }
 
@@ -117,14 +109,12 @@
 }
 
 .title-value {
+  display: inherit;
   margin-bottom: 0 !important;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
 }
 
 .header-button {
-  padding-right: 0;
+  float: right;
 }
 
 .header-divider {
@@ -134,36 +124,29 @@
 }
 
 .tabs {
+  max-width: 100%;
   margin-top: -42px;
 
   :global {
+    .ant-tabs {
+      max-width: 100%;
+    }
+
     .ant-tabs-bar {
       padding-right: @body-padding;
       padding-left: @body-padding;
-      overflow-x: auto;
-      overflow-y: hidden;
     }
 
     .ant-tabs-nav-wrap {
       padding-left: 30px;
-      overflow-x: auto;
-      overflow-y: hidden;
-    }
-
-    .ant-tabs-nav {
-      display: inline-flex;
-      flex-wrap: nowrap;
-      min-width: max-content;
-    }
-
-    .ant-tabs-nav-list {
-      flex-wrap: nowrap;
     }
   }
 }
 
 .tab-wrapper {
   width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 
   :global {
     .list-container {
@@ -182,6 +165,7 @@
       flex-wrap: wrap;
       gap: 8px;
       align-items: center;
+      justify-content: flex-end;
     }
 
     .ant-btn-link {
@@ -221,7 +205,82 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1200px) {
+  .header {
+    :global {
+      .ant-descriptions-header {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+
+      .ant-descriptions-title {
+        flex: 1 1 100%;
+        flex-basis: 100%;
+        min-width: 0;
+      }
+
+      .ant-descriptions-extra {
+        display: block;
+        flex-basis: 100%;
+        width: 100%;
+        margin-left: 0;
+        padding-top: 12px;
+        border-top: 1px solid @light-color04;
+      }
+    }
+  }
+
+  .action-wrapper {
+    position: static;
+    right: auto;
+    width: 100%;
+
+    :global {
+      .action-buttons {
+        justify-content: flex-start;
+      }
+    }
+  }
+
+  .detail-title {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    align-items: flex-start;
+  }
+
+  .detail-title-actions {
+    display: flex;
+    flex: 1 1 100%;
+    gap: 6px;
+    align-items: center;
+    order: 3;
+    margin-top: 2px;
+  }
+
+  .header-title {
+    display: inline-flex;
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .header-divider {
+    display: none;
+  }
+
+  .header-button {
+    order: 2;
+    float: none;
+    margin-left: auto;
+    padding-right: 0;
+  }
+}
+
+@media (max-width: 1024px) {
   .sider {
     position: relative;
     width: 100%;
@@ -237,72 +296,81 @@
     padding-left: 12px;
   }
 
-  .tabs {
-    margin-top: 0;
-
-    :global {
-      .ant-tabs-bar {
-        padding-right: 12px;
-        padding-left: 12px;
-      }
-
-      .ant-tabs-nav-wrap {
-        padding-left: 0;
-      }
-
-      .ant-tabs-nav-list {
-        flex-wrap: nowrap;
-      }
-    }
-  }
-
-  .action-wrapper {
-    position: static;
-    right: auto;
-    margin: 0 12px;
-
-    :global {
-      .action-buttons {
-        margin-bottom: 12px;
-      }
-    }
-  }
-
-  .header-divider {
-    display: none;
-  }
-
   .detail-title {
-    align-items: flex-start;
-  }
-
-  .detail-title-main,
-  .detail-title-actions {
-    flex-basis: 100%;
-  }
-
-  .detail-title-main {
-    align-items: flex-start;
-  }
-
-  .detail-title-actions {
-    flex-wrap: wrap;
-    gap: 4px;
-    justify-content: flex-start;
+    gap: 4px 8px;
   }
 
   .title-value {
+    display: block;
     white-space: normal;
     word-break: break-word;
     overflow-wrap: anywhere;
   }
 
   .header-button {
-    margin-left: auto;
+    margin-top: -2px;
+  }
+
+  .action-wrapper {
+    :global {
+      .action-buttons {
+        gap: 8px;
+      }
+    }
+  }
+
+  .tabs {
+    margin-top: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+
+    :global {
+      .ant-tabs-bar {
+        display: block;
+        padding-right: 12px;
+        padding-left: 12px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        overscroll-behavior-x: contain;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .ant-tabs-nav-container {
+        overflow: visible;
+      }
+
+      .ant-tabs-nav-wrap {
+        display: block;
+        padding-left: 0;
+        overflow-x: auto;
+        overflow-y: hidden;
+        overscroll-behavior-x: contain;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .ant-tabs-nav {
+        display: inline-flex;
+        flex-wrap: nowrap;
+        min-width: max-content;
+      }
+
+      .ant-tabs-nav-list {
+        flex-wrap: nowrap;
+      }
+
+      .ant-tabs-tab {
+        flex: 0 0 auto;
+        white-space: nowrap;
+      }
+    }
   }
 
   .nav {
     overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
     white-space: nowrap;
 
     &Item {
@@ -310,5 +378,23 @@
       margin: 0 4px;
       padding: 0 10px;
     }
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .detail-title {
+    gap: 4px 8px;
+  }
+
+  .title-value {
+    display: block;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
   }
 }
