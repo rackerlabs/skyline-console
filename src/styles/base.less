@@ -288,4 +288,46 @@
       border-color: @primary-color;
     }
   }
+
+  @media (max-width: 1024px), (hover: none) and (pointer: coarse) {
+    input,
+    select,
+    textarea,
+    .ant-input,
+    .ant-input-group .ant-input,
+    .ant-input-search .ant-input,
+    .ant-input-affix-wrapper,
+    .ant-input-affix-wrapper input,
+    .ant-input-number,
+    .ant-input-number-input,
+    .ant-input-password,
+    .ant-input-password input,
+    .ant-picker,
+    .ant-picker-input > input,
+    .ant-cascader-picker input,
+    .ant-mentions,
+    .ant-mentions textarea,
+    .ant-select,
+    .ant-select-selector,
+    .ant-select-selection-item,
+    .ant-select-selection-placeholder,
+    .ant-select-selection-search input,
+    .ant-select-selection-search-input {
+      font-size: 16px !important;
+    }
+
+    input::placeholder,
+    textarea::placeholder,
+    .ant-input::placeholder,
+    .ant-input-group .ant-input::placeholder,
+    .ant-input-search .ant-input::placeholder,
+    .ant-input-affix-wrapper input::placeholder,
+    .ant-input-password input::placeholder,
+    .ant-picker-input > input::placeholder,
+    .ant-cascader-picker input::placeholder,
+    .ant-mentions textarea::placeholder,
+    .ant-select-selection-search input::placeholder {
+      font-size: 16px !important;
+    }
+  }
 }

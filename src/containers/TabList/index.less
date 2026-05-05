@@ -33,32 +33,42 @@
   .wrapper {
     :global {
       .ant-tabs > .ant-tabs-nav {
-        display: block;
+        display: flex;
+        min-width: 0;
         max-width: 100%;
         margin-bottom: 0;
-        overflow-x: auto;
+        overflow: hidden;
         overflow-y: hidden;
-        overscroll-behavior-x: contain;
-        -webkit-overflow-scrolling: touch;
       }
 
       .ant-tabs-nav {
-        display: inline-flex;
-        min-width: max-content;
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
       }
 
       .ant-tabs-nav-wrap {
+        flex: 1 1 auto;
+        min-width: 0;
         max-width: 100%;
         padding: 0 12px;
-        overflow-x: auto;
+        overflow-x: auto !important;
         overflow-y: hidden;
         overscroll-behavior-x: contain;
         -webkit-overflow-scrolling: touch;
+
+        &::before,
+        &::after {
+          display: none;
+        }
       }
 
       .ant-tabs-nav-list {
         display: inline-flex;
+        flex: 0 0 auto;
         flex-wrap: nowrap;
+        min-width: max-content;
+        padding-right: 32px;
       }
 
       .ant-tabs-nav-operations {

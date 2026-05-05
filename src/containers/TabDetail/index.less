@@ -132,6 +132,7 @@
       max-width: 100%;
     }
 
+    .ant-tabs > .ant-tabs-nav,
     .ant-tabs-bar {
       padding-right: @body-padding;
       padding-left: @body-padding;
@@ -321,43 +322,63 @@
 
   .tabs {
     margin-top: 0;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-x: contain;
 
     :global {
+      .ant-tabs > .ant-tabs-nav,
       .ant-tabs-bar {
-        display: block;
+        display: flex;
+        min-width: 0;
+        max-width: 100%;
         padding-right: 12px;
         padding-left: 12px;
-        overflow-x: auto;
-        overflow-y: hidden;
-        overscroll-behavior-x: contain;
-        -webkit-overflow-scrolling: touch;
+        overflow: hidden;
       }
 
       .ant-tabs-nav-container {
-        overflow: visible;
+        min-width: 0;
+        max-width: 100%;
+        overflow: hidden;
       }
 
       .ant-tabs-nav-wrap {
-        display: block;
+        flex: 1 1 auto;
+        min-width: 0;
+        max-width: 100%;
         padding-left: 0;
-        overflow-x: auto;
+        overflow-x: auto !important;
         overflow-y: hidden;
         overscroll-behavior-x: contain;
         -webkit-overflow-scrolling: touch;
+
+        &::before,
+        &::after {
+          display: none;
+        }
       }
 
-      .ant-tabs-nav {
+      .ant-tabs-nav-scroll {
+        overflow: visible;
+      }
+
+      .ant-tabs > .ant-tabs-nav {
+        width: 100%;
+      }
+
+      .ant-tabs-nav-wrap > .ant-tabs-nav,
+      .ant-tabs-nav-list {
         display: inline-flex;
+        flex: 0 0 auto;
         flex-wrap: nowrap;
         min-width: max-content;
+        padding-right: 32px;
       }
 
       .ant-tabs-nav-list {
         flex-wrap: nowrap;
+      }
+
+      .ant-tabs-nav-operations {
+        display: none;
       }
 
       .ant-tabs-tab {

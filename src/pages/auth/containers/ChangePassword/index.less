@@ -68,3 +68,20 @@ h1 {
     }
   }
 }
+
+@media (max-width: 768px) {
+  .welcome {
+    white-space: normal;
+  }
+
+  .reset {
+    .between {
+      :global {
+        .ant-form-item-control-input-content {
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+      }
+    }
+  }
+}

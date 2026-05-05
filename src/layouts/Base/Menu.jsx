@@ -140,6 +140,22 @@ export class LayoutMenu extends Component {
     this.syncCollapseState(!collapsed);
   };
 
+  closeMenuOnNarrowViewport = () => {
+    const { isNarrowViewport, collapsed, hover } = this.state;
+    if (!isNarrowViewport || (collapsed && !hover)) {
+      return;
+    }
+    this.setState(
+      {
+        collapsed: true,
+        hover: false,
+      },
+      () => {
+        this.syncCollapseState(true);
+      }
+    );
+  };
+
   onMouseEnter = (e) => {
     const { collapsed } = this.state;
     if (collapsed) {
@@ -182,6 +198,7 @@ export class LayoutMenu extends Component {
 
     if (menuItem?.externalUrl) {
       window.open(menuItem.externalUrl, '_blank', 'noopener,noreferrer');
+      this.closeMenuOnNarrowViewport();
       return;
     }
     const path = getPath({ key });
@@ -189,6 +206,7 @@ export class LayoutMenu extends Component {
     if (pathname !== path) {
       this.routing.push(path);
     }
+    this.closeMenuOnNarrowViewport();
   };
 
   onClickCollapsedMenuItem = (item, event) => {
