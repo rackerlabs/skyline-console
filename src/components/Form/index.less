@@ -22,11 +22,27 @@
   padding-top: 0;
 }
 
+.wrapper-step {
+  height: auto;
+  min-height: 100%;
+
+  .form {
+    height: auto;
+    min-height: 100%;
+    padding-bottom: 0;
+    overflow: visible;
+    scroll-padding-bottom: inherit;
+  }
+}
+
 .form {
+  box-sizing: border-box;
   height: calc(100% - 48px);
   margin-right: @body-padding * 2;
   margin-left: @body-padding * 2;
+  padding-bottom: 72px;
   overflow-y: auto;
+  scroll-padding-bottom: 88px;
   background-color: #fff;
 
   :global {
@@ -157,6 +173,8 @@
   .form {
     margin-right: 8px;
     margin-left: 8px;
+    padding-bottom: 96px;
+    scroll-padding-bottom: 112px;
 
     :global {
       .ant-form > .ant-row > [id^='form-item-col-'] {
@@ -223,20 +241,37 @@
   }
 
   .footer {
-    padding-right: 8px;
-    padding-left: 8px;
+    gap: 4px 8px;
+    max-height: 112px;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    overflow-y: auto;
   }
 
   .footer-left {
     flex: 1 1 auto;
     min-width: 0;
+    height: auto;
+    min-height: 0;
     margin-left: 0;
+    font-size: 12px;
+    line-height: 28px;
   }
 
   .btns {
     flex: 1 1 auto;
+    gap: 6px;
     min-width: 0;
     margin-right: 0;
+
+    :global {
+      button {
+        height: 32px;
+        margin: 0 !important;
+        padding: 4px 8px;
+        font-size: 12px;
+        line-height: 20px;
+      }
+    }
   }
 }
 

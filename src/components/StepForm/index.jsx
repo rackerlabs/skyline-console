@@ -419,6 +419,7 @@ export default class BaseStepForm extends React.Component {
         extra={extra}
         updateContext={this.updateData}
         goStep={this.goStep}
+        isStep
         isAdminPage={this.isAdminPage}
         match={this.match}
         location={this.location}
@@ -430,7 +431,7 @@ export default class BaseStepForm extends React.Component {
     const { current } = this.state;
     const { Step } = Steps;
     return (
-      <div>
+      <div className={styles['step-body']}>
         <div className={styles.step}>
           <Steps current={current}>
             {this.steps.map((item) => (

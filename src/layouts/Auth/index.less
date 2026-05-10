@@ -4,6 +4,7 @@
   position: relative;
   display: flex;
   height: 100vh;
+  min-height: 100vh;
   overflow: hidden;
   background-color: #21242a;
 }
@@ -124,8 +125,30 @@
 
 // Responsive design - Tablet view (769px to 1024px stays desktop, below 768px goes mobile)
 @media (max-width: 768px) {
+  :global {
+    html,
+    body,
+    #app {
+      height: 100%;
+      overflow: hidden;
+      overscroll-behavior: none;
+    }
+  }
+
   .container {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
     flex-direction: column;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+    overscroll-behavior: none;
   }
 
   .leftColumn,
@@ -137,8 +160,10 @@
   .leftColumn {
     order: 2;
     height: auto; // Allow natural height
-    min-height: 60vh; // Minimum height
+    min-height: 0;
     padding: 20px 16px;
+    overflow: hidden;
+    overscroll-behavior: none;
   }
 
   .rightColumn {
@@ -173,7 +198,9 @@
 // Mobile view refinements
 @media (max-width: 768px) {
   .container {
-    min-height: 100vh; // Ensure container takes full height
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
     padding: 10px; // Add container padding for margins
   }
 
@@ -181,8 +208,10 @@
     display: flex;
     flex: 1; // Take remaining space
     flex-direction: column;
+    min-height: 0;
     margin-top: 20px; // Add gap between branding and login panel
     padding: 0;
+    overflow: hidden;
   }
 
   .rightColumn {
@@ -198,13 +227,14 @@
     display: flex;
     flex: 1; // Take available space
     flex-direction: column;
-    height: auto; // Let content determine height
-    min-height: 300px; // Minimum height for usability
-    max-height: calc(100vh - 180px); // Never exceed available space
+    height: 100%;
+    min-height: 0;
+    max-height: none;
     padding: 20px 20px 16px; // Reduced mobile padding
 
     // Ensure scrolling works when content is too tall
     overflow: hidden;
+    overscroll-behavior: none;
     border-radius: 20px;
   }
 }
@@ -221,10 +251,8 @@
   }
 
   .cardContainer {
-    min-height: 280px; // Smaller minimum for medium screens
-    max-height: calc(
-      100vh - 220px
-    ); // Conservative height accounting for all spacing
+    min-height: 0;
+    max-height: none;
   }
 }
 
@@ -240,14 +268,16 @@
   }
 
   .cardContainer {
-    min-height: 250px; // Lower minimum for very short screens
-    max-height: calc(100vh - 120px); // More space for content on short screens
+    min-height: 0;
+    max-height: none;
   }
 }
 
 @media (max-width: 480px) {
   .container {
-    min-height: 100vh; // Ensure full height
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
     padding: 8px; // Smaller container padding on small screens
   }
 
@@ -255,8 +285,10 @@
     display: flex;
     flex: 1;
     flex-direction: column;
+    min-height: 0;
     margin-top: 16px; // Smaller but adequate gap on small screens
     padding: 0; // No additional padding
+    overflow: hidden;
   }
 
   .rightColumn {
@@ -269,9 +301,9 @@
     display: flex;
     flex: 1;
     flex-direction: column;
-    height: auto; // Let content determine height
-    min-height: 280px; // Reasonable minimum for small screens
-    max-height: calc(100vh - 160px); // Conservative for small screens
+    height: 100%;
+    min-height: 0;
+    max-height: none;
     padding: 16px 16px 12px; // Further reduced padding
     overflow: hidden;
     border-radius: 16px;
@@ -290,8 +322,8 @@
   }
 
   .cardContainer {
-    min-height: 200px; // Very low minimum for tiny screens
-    max-height: calc(100vh - 100px); // Maximum space for content
+    min-height: 0;
+    max-height: none;
   }
 
   .brandingContainer {

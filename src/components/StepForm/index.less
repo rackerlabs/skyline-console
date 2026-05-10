@@ -8,16 +8,32 @@
 
   :global {
     .ant-spin-nested-loading {
+      display: flex;
+      flex-direction: column;
       height: 100%;
+      min-height: 0;
     }
 
     .ant-spin-container {
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
       height: 100%;
+      min-height: 0;
     }
   }
 }
 
+.step-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
 .step {
+  flex: 0 0 auto;
   height: 80px;
   margin-bottom: 16px;
   padding-top: 24px;
@@ -27,16 +43,23 @@
 }
 
 .form {
-  height: 100%;
-  min-height: calc(100vh - 280px);
+  flex: 1 1 auto;
+  box-sizing: border-box;
+  height: auto;
+  min-height: 0;
   padding-top: @body-padding;
+  padding-bottom: 96px;
   overflow-y: auto;
+  scroll-padding-bottom: 96px;
   background-color: #fff;
 
   :global {
     .sl-form {
-      height: calc(100vh - 219px);
-      padding-bottom: 48px;
+      height: auto;
+      min-height: 100%;
+      padding-bottom: 0;
+      overflow: visible;
+      scroll-padding-bottom: inherit;
     }
   }
 }
@@ -107,25 +130,81 @@
 @media (max-width: 1024px) {
   .step {
     height: auto;
-    min-height: 72px;
-    padding-top: 20px;
-    padding-right: 24px;
-    padding-left: 24px;
+    min-height: 58px;
+    margin-bottom: 10px;
+    padding-top: 12px;
+    padding-right: 18px;
+    padding-left: 18px;
+
+    :global {
+      .ant-steps-vertical > .ant-steps-item {
+        padding-bottom: 8px;
+      }
+
+      .ant-steps-vertical .ant-steps-item-icon {
+        width: 28px;
+        height: 28px;
+        margin-right: 10px;
+        font-size: 14px;
+        line-height: 26px;
+      }
+
+      .ant-steps-vertical .ant-steps-icon {
+        font-size: 14px;
+      }
+
+      .ant-steps-vertical .ant-steps-item-title {
+        padding-right: 10px;
+        font-size: 15px;
+        line-height: 28px;
+        white-space: normal;
+      }
+
+      .ant-steps-vertical .ant-steps-item-content {
+        min-height: 28px;
+      }
+
+      .ant-steps-vertical
+        > .ant-steps-item
+        > .ant-steps-item-container
+        > .ant-steps-item-tail {
+        top: 28px;
+        left: 14px;
+        padding-bottom: 6px;
+      }
+    }
   }
 
   .form {
-    min-height: calc(100vh - 288px);
+    min-height: 0;
+    padding-top: 12px;
+    padding-bottom: 120px;
+    scroll-padding-bottom: 136px;
 
     :global {
       .sl-form {
-        height: calc(100vh - 227px);
-        padding-bottom: 88px;
+        height: auto;
+        padding-bottom: 0;
+        scroll-padding-bottom: inherit;
+      }
+
+      .step-confirm-count.ant-form-item,
+      .step-confirm-section.ant-form-item {
+        margin-bottom: 12px;
+      }
+
+      .step-confirm-divider.ant-form-item {
+        margin-bottom: 0;
+      }
+
+      .step-confirm-divider .ant-divider {
+        margin: 10px 0 12px;
       }
     }
   }
 
   .footer {
-    padding: 8px 12px;
+    padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
   }
 
   .footer-left {
@@ -143,23 +222,143 @@
 
 @media (max-width: 768px) {
   .step {
-    padding-right: 16px;
-    padding-left: 16px;
+    min-height: 50px;
+    margin-bottom: 8px;
+    padding-top: 9px;
+    padding-right: 12px;
+    padding-left: 12px;
+
+    :global {
+      .ant-steps-vertical > .ant-steps-item {
+        padding-bottom: 4px;
+      }
+
+      .ant-steps-vertical .ant-steps-item-icon {
+        width: 24px;
+        height: 24px;
+        margin-right: 8px;
+        font-size: 13px;
+        line-height: 22px;
+      }
+
+      .ant-steps-vertical .ant-steps-icon {
+        font-size: 13px;
+      }
+
+      .ant-steps-vertical .ant-steps-item-title {
+        font-size: 13px;
+        line-height: 24px;
+      }
+
+      .ant-steps-vertical .ant-steps-item-content {
+        min-height: 24px;
+      }
+
+      .ant-steps-vertical
+        > .ant-steps-item
+        > .ant-steps-item-container
+        > .ant-steps-item-tail {
+        top: 24px;
+        left: 12px;
+        padding-bottom: 4px;
+      }
+    }
   }
 
   .form {
-    min-height: calc(100vh - 300px);
+    min-height: 0;
+    padding-top: 8px;
+    padding-bottom: 128px;
+    scroll-padding-bottom: 144px;
 
     :global {
       .sl-form {
-        height: calc(100vh - 239px);
-        padding-bottom: 128px;
+        height: auto;
+        padding-bottom: 0;
+        scroll-padding-bottom: inherit;
+      }
+
+      .step-confirm-count.ant-form-item {
+        flex-flow: row nowrap;
+        gap: 8px;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+
+      .step-confirm-count .ant-form-item-label,
+      .step-confirm-count .ant-form-item-control {
+        flex: 0 0 auto !important;
+        max-width: none !important;
+      }
+
+      .step-confirm-count .ant-form-item-label {
+        padding-bottom: 0;
+      }
+
+      .step-confirm-count .ant-form-item-control-input {
+        min-height: 24px;
+      }
+
+      .step-confirm-count .ant-form-item-control-input-content {
+        line-height: 24px;
+      }
+
+      .step-confirm-section.ant-form-item {
+        margin-bottom: 12px;
+      }
+
+      .step-confirm-section .ant-form-item-label {
+        padding-bottom: 2px;
+        line-height: 22px;
+      }
+
+      .step-confirm-section .ant-form-item-label > label {
+        height: auto;
+        font-size: 13px;
+        line-height: 22px;
+      }
+
+      .step-confirm-section .ant-form-item-control-input {
+        min-height: 0;
+      }
+
+      .step-confirm-section .ant-descriptions-title {
+        margin-bottom: 8px;
+        font-size: 14px;
+        line-height: 22px;
+      }
+
+      .step-confirm-section .ant-descriptions-row > th,
+      .step-confirm-section .ant-descriptions-row > td {
+        padding-bottom: 8px;
+        font-size: 13px;
+        line-height: 20px;
+      }
+
+      .step-confirm-section .ant-descriptions-item-label {
+        width: 88px;
+        min-width: 88px;
+        padding-right: 8px;
+      }
+
+      .step-confirm-section .ant-btn-link {
+        height: 22px;
+        padding: 0 4px;
+        line-height: 22px;
+      }
+
+      .step-confirm-divider .ant-divider {
+        margin: 8px 0;
       }
     }
   }
 
   .footer {
-    align-items: flex-start;
+    gap: 4px 8px;
+    align-items: center;
+    max-height: 112px;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    overflow-y: auto;
   }
 
   .footer-left,
@@ -171,9 +370,22 @@
   .footer-left {
     min-height: 0;
     margin-bottom: 0;
+    font-size: 12px;
+    line-height: 28px;
   }
 
   .btns {
+    gap: 6px;
     justify-content: flex-end;
+
+    :global {
+      button {
+        height: 32px;
+        margin: 0 !important;
+        padding: 4px 8px;
+        font-size: 12px;
+        line-height: 20px;
+      }
+    }
   }
 }

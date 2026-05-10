@@ -87,7 +87,9 @@ export class StepDetails extends Base {
   }
 
   getFlavorComponent() {
-    return <FlavorSelectTable onChange={this.onFlavorChange} />;
+    return (
+      <FlavorSelectTable onChange={this.onFlavorChange} hideRequirementAlert />
+    );
   }
 
   onFlavorChange = (value) => {
