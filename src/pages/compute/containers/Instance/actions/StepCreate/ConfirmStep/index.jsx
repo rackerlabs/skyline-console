@@ -269,12 +269,14 @@ export class ConfirmStep extends Base {
         name: 'confirm-count',
         label: t('Count'),
         type: 'label',
+        className: 'step-confirm-count',
         content: context.count || 1,
       },
       {
         name: 'confirm-config',
         label: t('Config Overview'),
         type: 'descriptions',
+        className: 'step-confirm-section',
         title: t('Base Config'),
         onClick: () => {
           this.goStep(0);
@@ -283,11 +285,13 @@ export class ConfirmStep extends Base {
       },
       {
         type: 'short-divider',
+        className: 'step-confirm-divider',
       },
       {
         name: 'confirm-config-network',
         label: ' ',
         type: 'descriptions',
+        className: 'step-confirm-section',
         title: t('Network Config'),
         onClick: () => {
           this.goStep(1);
@@ -312,11 +316,13 @@ export class ConfirmStep extends Base {
       },
       {
         type: 'short-divider',
+        className: 'step-confirm-divider',
       },
       {
         name: 'confirm-config-system',
         label: ' ',
         type: 'descriptions',
+        className: 'step-confirm-section',
         title: t('System Config'),
         onClick: () => {
           this.goStep(2);

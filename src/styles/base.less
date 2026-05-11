@@ -3,11 +3,23 @@
 
 :global {
   html,
-  body,
+  body {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-x: none;
+    overscroll-behavior-y: auto;
+  }
+
   #app {
     width: 100%;
     max-width: 100%;
-    overflow-x: hidden;
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior-x: none;
+    overscroll-behavior-y: auto;
   }
 
   ::selection {

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { inject, observer } from 'mobx-react';
 import { toJS } from 'mobx';
 import SelectTable from 'components/FormItem/SelectTable';
@@ -335,7 +336,7 @@ export class FlavorSelectTable extends Component {
   }
 
   render() {
-    const { value, disabledFunc } = this.props;
+    const { value, disabledFunc, hideRequirementAlert } = this.props;
     const isLoading =
       this.settingStore.list.isLoading && this.flavorStore.list.isLoading;
 
@@ -356,6 +357,7 @@ export class FlavorSelectTable extends Component {
       <div>
         <SelectTable {...props} />
         {!isLoading &&
+          !hideRequirementAlert &&
           (this.flavorStore.list.data || []).length > 0 &&
           data.length <= 0 && (
             <Alert
@@ -371,5 +373,13 @@ export class FlavorSelectTable extends Component {
     );
   }
 }
+
+FlavorSelectTable.propTypes = {
+  hideRequirementAlert: PropTypes.bool,
+};
+
+FlavorSelectTable.defaultProps = {
+  hideRequirementAlert: false,
+};
 
 export default inject('rootStore')(observer(FlavorSelectTable));

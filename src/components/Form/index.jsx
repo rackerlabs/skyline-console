@@ -156,7 +156,7 @@ export default class BaseForm extends React.Component {
   }
 
   get isStep() {
-    return false;
+    return this.props.isStep || false;
   }
 
   get isModal() {
@@ -801,7 +801,12 @@ export default class BaseForm extends React.Component {
       ) : null;
     return (
       <div
-        className={classnames(styles.wrapper, wrapperPadding, this.className)}
+        className={classnames(
+          styles.wrapper,
+          wrapperPadding,
+          this.isStep ? styles['wrapper-step'] : '',
+          this.className
+        )}
       >
         {tips}
         {onlyForm && formDiv}
