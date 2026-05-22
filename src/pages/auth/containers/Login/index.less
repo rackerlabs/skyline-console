@@ -579,3 +579,43 @@
 .signupLink {
   will-change: transform;
 }
+
+// Login page banner notification card
+.loginBanners {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 1000;
+}
+
+.loginBannerCard {
+  width: 280px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+}
+
+.loginBannerTitle {
+  margin-bottom: 8px;
+  color: #333;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.loginBannerItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.loginBannerText {
+  flex: 1;
+  overflow: hidden;
+  color: #555;
+  font-size: 12px;
+  line-height: 18px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

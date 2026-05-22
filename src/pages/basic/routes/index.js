@@ -29,6 +29,11 @@ const Network = lazy(() =>
 const Identity = lazy(() =>
   import(/* webpackChunkName: "identity" */ 'pages/identity/App')
 );
+const SystemMaintenance = lazy(() =>
+  import(
+    /* webpackChunkName: "maintenance-notifications" */ 'pages/maintenance-notifications/App'
+  )
+);
 const Configs = lazy(() =>
   import(/* webpackChunkName: "configuration" */ 'pages/configuration/App')
 );
@@ -89,6 +94,10 @@ export default [
       {
         path: `/configuration-admin`,
         component: Configs,
+      },
+      {
+        path: `/maintenance-notifications-admin`,
+        component: SystemMaintenance,
       },
       {
         path: `/management`,

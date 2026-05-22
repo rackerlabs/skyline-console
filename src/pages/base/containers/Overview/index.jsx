@@ -27,6 +27,7 @@ import styles from './style.less';
 import QuotaOverview from './components/QuotaOverview';
 import ProjectInfo from './components/ProjectInfo';
 import QuickStartNetwork from './components/QuickStartNetwork';
+import MessageBannerPanel from './components/MessageBannerPanel';
 
 const actions = [
   {
@@ -156,7 +157,7 @@ export class Overview extends Component {
   }
 
   renderExtra() {
-    return null;
+    return <MessageBannerPanel />;
   }
 
   render() {

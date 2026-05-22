@@ -20,6 +20,7 @@ import { InfoCircleFilled } from '@ant-design/icons';
 import SimpleForm from 'components/SimpleForm';
 import SelectLang from 'components/SelectLang';
 import globalSkylineStore from 'stores/skyline/skyline';
+import globalMessageBannerStore from 'stores/skyline/message-banner';
 import i18n from 'core/i18n';
 import { isEmpty } from 'lodash';
 import logo from 'asset/image/logo.png';
@@ -41,6 +42,7 @@ export class Login extends Component {
     this.getRegions();
     this.getSSO();
     this.getUserDefaultDomain();
+    this.fetchPublicBanners();
   }
 
   async getRegions() {
@@ -498,6 +500,14 @@ export class Login extends Component {
     }
   };
 
+  async fetchPublicBanners() {
+    try {
+      await globalMessageBannerStore.fetchPublic();
+    } catch (e) {
+      // no-op
+    }
+  }
+
   init() {
     this.store = globalSkylineStore;
     this.formRef = React.createRef();
@@ -521,87 +531,90 @@ export class Login extends Component {
     }`;
 
     return (
-      <div
-        className={styles.loginContainer}
-        role="article"
-        aria-label="Login form container"
-      >
-        {/* Fixed header section - Logo only */}
+      <>
         <div
-          className={styles.headerSection}
-          role="banner"
-          aria-label="Application header"
+          className={styles.loginContainer}
+          role="article"
+          aria-label="Login form container"
         >
-          <img
-            alt="Application logo"
-            className={styles.headerLogo}
-            src={logo}
-          />
-        </div>
-
-        {/* Language selector */}
-        <div
-          className={styles.langSelector}
-          role="region"
-          aria-label="Language selection"
-        >
-          <SelectLang />
-        </div>
-
-        {/* Scrollable content area */}
-        {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
-        <div
-          className={scrollableClass}
-          onKeyDown={(e) => e.key === 'Enter' && this.handleSubmit()}
-        >
-          <div role="main" aria-label="Login form content">
-            <h1
-              className={styles.welcomeMessage}
-              id="login-title"
-              aria-level="1"
-            >
-              {this.productName}
-            </h1>
-
-            <SimpleForm
-              formItems={this.formItemsWithoutSubmit}
-              name="normal_login"
-              className={styles.loginForm}
-              initialValues={this.defaultValue}
-              onFinish={this.onFinish}
-              formref={this.formRef}
-              size="large"
-              aria-labelledby="login-title"
-              aria-describedby="login-description"
+          {/* Fixed header section - Logo only */}
+          <div
+            className={styles.headerSection}
+            role="banner"
+            aria-label="Application header"
+          >
+            <img
+              alt="Application logo"
+              className={styles.headerLogo}
+              src={logo}
             />
+          </div>
 
-            {this.renderExtra()}
+          {/* Language selector */}
+          <div
+            className={styles.langSelector}
+            role="region"
+            aria-label="Language selection"
+          >
+            <SelectLang />
+          </div>
+
+          {/* Scrollable content area */}
+          {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
+          <div
+            className={scrollableClass}
+            onKeyDown={(e) => e.key === 'Enter' && this.handleSubmit()}
+          >
+            <div role="main" aria-label="Login form content">
+              <h1
+                className={styles.welcomeMessage}
+                id="login-title"
+                aria-level="1"
+              >
+                {this.productName}
+              </h1>
+
+              <SimpleForm
+                formItems={this.formItemsWithoutSubmit}
+                name="normal_login"
+                className={styles.loginForm}
+                initialValues={this.defaultValue}
+                onFinish={this.onFinish}
+                formref={this.formRef}
+                size="large"
+                aria-labelledby="login-title"
+                aria-describedby="login-description"
+              />
+
+              {/* renderExtra moved outside */}
+            </div>
+          </div>
+
+          {/* Fixed bottom section */}
+          <div
+            className={styles.bottomSection}
+            role="region"
+            aria-label="Form submission section"
+          >
+            <Button
+              loading={loading}
+              type="primary"
+              htmlType="submit"
+              className={styles.loginButton}
+              size="large"
+              block
+              onClick={this.handleSubmit}
+              aria-label={
+                loading ? window.t('Logging in...') : window.t('Log in')
+              }
+              aria-describedby="login-title"
+            >
+              {window.t('Log in')}
+            </Button>
           </div>
         </div>
-
-        {/* Fixed bottom section */}
-        <div
-          className={styles.bottomSection}
-          role="region"
-          aria-label="Form submission section"
-        >
-          <Button
-            loading={loading}
-            type="primary"
-            htmlType="submit"
-            className={styles.loginButton}
-            size="large"
-            block
-            onClick={this.handleSubmit}
-            aria-label={
-              loading ? window.t('Logging in...') : window.t('Log in')
-            }
-            aria-describedby="login-title"
-          >
-            {window.t('Log in')}
-          </Button>
-        </div>
-      </div>
+        {this.renderExtra()}
+      </>
     );
   }
 }
