@@ -90,6 +90,7 @@ export const policyMap = {
     'backup:index',
     'backup:show',
   ],
+  blazar: ['osreservations:'],
 };
 
 export const convertPolicyMap = (map) => {

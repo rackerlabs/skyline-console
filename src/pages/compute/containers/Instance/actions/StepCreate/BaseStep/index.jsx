@@ -22,6 +22,7 @@ import globalImageStore from 'stores/glance/image';
 import globalInstanceSnapshotStore from 'stores/glance/instance-snapshot';
 import globalVolumeTypeStore from 'stores/cinder/volume-type';
 import globalAvailabilityZoneStore from 'stores/nova/zone';
+import globalLeaseStore from 'stores/blazar/lease';
 import { VolumeStore } from 'stores/cinder/volume';
 import {
   canImageCreateInstance,
@@ -34,6 +35,11 @@ import {
 import Base from 'components/Form';
 import InstanceVolume from 'components/FormItem/InstanceVolume';
 import { isGpuCategory } from 'resources/nova/flavor';
+import {
+  isBlazarInternalAvailabilityZone,
+  getUsableLeaseReservations,
+  RESERVATION_TYPES,
+} from 'resources/blazar/reservation';
 import {
   volumeTypes,
   getDiskInfo,
@@ -48,12 +54,14 @@ export class BaseStep extends Base {
     this.volumeStore = new VolumeStore();
     this.volumeTypeStore = globalVolumeTypeStore;
     this.instanceSnapshotStore = globalInstanceSnapshotStore;
+    this.leaseStore = globalLeaseStore;
     this.getAvailZones();
     this.getImages();
     this.getVolumeTypes();
     this.getVolumes();
     this.getInstanceSnapshots();
     this.initSourceChange();
+    this.getHostReservations();
   }
 
   get title() {
@@ -69,7 +77,7 @@ export class BaseStep extends Base {
   }
 
   get defaultValue() {
-    const { volume, snapshot } = this.locationParams;
+    const { flavor, volume, snapshot } = this.locationParams;
     let source = this.imageSourceType;
     if (volume) {
       source = this.volumeSourceType;
@@ -85,12 +93,28 @@ export class BaseStep extends Base {
     if (source.value === 'image') {
       values.bootFromVolume = true;
     }
+    if (flavor) {
+      values.flavor = {
+        selectedRowKeys: [flavor],
+        selectedRows: [],
+      };
+    }
+    const { reservation } = this.locationParams;
+    if (reservation) {
+      values.hostReservation = {
+        selectedRowKeys: [reservation],
+        selectedRows: this.hostReservations.filter(
+          (it) => it.id === reservation
+        ),
+      };
+    }
     return values;
   }
 
   get availableZones() {
     return (globalAvailabilityZoneStore.list.data || [])
       .filter((it) => it.zoneState.available)
+      .filter((it) => !isBlazarInternalAvailabilityZone(it.zoneName))
       .map((it) => ({
         value: it.zoneName,
         label: it.zoneName,
@@ -208,6 +232,56 @@ export class BaseStep extends Base {
     if (this.availableZones.length) {
       this.updateFormValue('availableZone', this.availableZones[0]);
     }
+  }
+
+  get enableBlazar() {
+    return this.props.rootStore.checkEndpoint('blazar');
+  }
+
+  get hostReservations() {
+    if (!this.enableBlazar) {
+      return [];
+    }
+    const leases = this.leaseStore.list.data || [];
+    return leases.reduce((results, lease) => {
+      const reservations = getUsableLeaseReservations(lease)
+        .filter((r) => r.resource_type === RESERVATION_TYPES.HOST)
+        .map((r) => ({ ...r, key: r.id, name: r.id }));
+      return [...results, ...reservations];
+    }, []);
+  }
+
+  get hasHostReservationSelected() {
+    // Only true when arriving from the lease detail page (?reservation=<id>).
+    const { reservation } = this.locationParams;
+    return !!reservation;
+  }
+
+  get hostReservationFormItem() {
+    const { reservation } = this.locationParams;
+
+    // Only show when arriving from the lease detail page (?reservation=<id>).
+    // In the normal create instance flow there is no host reservation input.
+    if (!reservation) {
+      return { name: 'hostReservation', hidden: true };
+    }
+
+    // Show as a read-only label — same pattern as the Project field.
+    const displayText = reservation;
+    return {
+      name: 'hostReservation',
+      label: t('Host Reservation'),
+      type: 'label',
+      content: displayText,
+    };
+  }
+
+  async getHostReservations() {
+    if (!this.enableBlazar) {
+      return;
+    }
+    await this.leaseStore.fetchList();
+    this.updateDefaultValue();
   }
 
   async getImages() {
@@ -791,12 +865,14 @@ export class BaseStep extends Base {
         type: 'select',
         placeholder: t('Please select'),
         isWrappedValue: true,
-        required: true,
+        required: !this.hasHostReservationSelected,
+        hidden: this.hasHostReservationSelected,
         options: this.availableZones,
         tip: t(
           'Availability zone refers to a physical area where power and network are independent of each other in the same area. In the same region, the availability zone and the availability zone can communicate with each other in the intranet, and the available zones can achieve fault isolation.'
         ),
       },
+      this.hostReservationFormItem,
       {
         type: 'divider',
       },

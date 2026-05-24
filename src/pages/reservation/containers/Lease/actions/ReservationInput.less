@@ -1,0 +1,70 @@
+// Ant Design 4 injects .ant-*-status-error directly onto inputs inside a
+// has-error Form.Item. Override those classes so inputs inside the reservation
+// block don't show red borders/shadows on focus or hover.
+:global {
+  .reservation-block {
+    // InputNumber
+    .ant-input-number-status-error,
+    .ant-input-number-status-error:not(.ant-input-number-disabled):not(
+        .ant-input-number-borderless
+      ).ant-input-number,
+    .ant-input-number-status-error:not(.ant-input-number-disabled):not(
+        .ant-input-number-borderless
+      ).ant-input-number:hover,
+    .ant-input-number-status-error:not(.ant-input-number-disabled):not(
+        .ant-input-number-borderless
+      ).ant-input-number:focus,
+    .ant-input-number-status-error.ant-input-number-focused {
+      border-color: #d9d9d9 !important;
+      box-shadow: none !important;
+    }
+
+    // Select
+    .ant-select-status-error.ant-select:not(.ant-select-disabled):not(
+        .ant-select-customize-input
+      )
+      .ant-select-selector,
+    .ant-select-status-error.ant-select:not(.ant-select-disabled):not(
+        .ant-select-customize-input
+      ).ant-select-open
+      .ant-select-selector,
+    .ant-select-status-error.ant-select:not(.ant-select-disabled):not(
+        .ant-select-customize-input
+      ).ant-select-focused
+      .ant-select-selector {
+      border-color: #d9d9d9 !important;
+      box-shadow: none !important;
+    }
+
+    // Textarea / Input
+    .ant-input-status-error:not(.ant-input-disabled):not(
+        .ant-input-borderless
+      ).ant-input,
+    .ant-input-status-error:not(.ant-input-disabled):not(
+        .ant-input-borderless
+      ).ant-input:hover,
+    .ant-input-status-error:not(.ant-input-disabled):not(
+        .ant-input-borderless
+      ).ant-input:focus,
+    .ant-input-status-error:not(.ant-input-disabled):not(
+        .ant-input-borderless
+      ).ant-input-focused,
+    .ant-input-affix-wrapper-status-error:not(
+        .ant-input-affix-wrapper-disabled
+      ):not(.ant-input-affix-wrapper-borderless).ant-input-affix-wrapper,
+    .ant-input-affix-wrapper-status-error:not(
+        .ant-input-affix-wrapper-disabled
+      ):not(.ant-input-affix-wrapper-borderless).ant-input-affix-wrapper:hover,
+    .ant-input-affix-wrapper-status-error:not(
+        .ant-input-affix-wrapper-disabled
+      ):not(.ant-input-affix-wrapper-borderless).ant-input-affix-wrapper:focus,
+    .ant-input-affix-wrapper-status-error:not(
+        .ant-input-affix-wrapper-disabled
+      ):not(
+        .ant-input-affix-wrapper-borderless
+      ).ant-input-affix-wrapper-focused {
+      border-color: #d9d9d9 !important;
+      box-shadow: none !important;
+    }
+  }
+}

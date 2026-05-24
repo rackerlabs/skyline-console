@@ -27,6 +27,7 @@ import {
   DeploymentUnitOutlined,
   BookOutlined,
   PlayCircleOutlined,
+  CalendarOutlined,
 } from '@ant-design/icons';
 
 const renderMenu = (t) => {
@@ -1093,6 +1094,36 @@ const renderMenu = (t) => {
               key: 'masakariNotificationDetailAdmin',
               level: 2,
               routePath: '/ha/notifications-admin/detail/:id',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      path: '/reservation',
+      name: t('Reservation'),
+      key: 'reservationAdmin',
+      endpoints: 'blazar',
+      icon: <CalendarOutlined />,
+      children: [
+        {
+          path: '/reservation/lease',
+          name: t('Leases'),
+          key: 'leaseAdmin',
+          level: 1,
+          children: [
+            {
+              path: '/reservation/lease/create',
+              name: t('Create Lease'),
+              key: 'leaseCreateAdmin',
+              level: 2,
+            },
+            {
+              path: /^\/reservation\/lease\/detail\/.[^/]+$/,
+              name: t('Lease Detail'),
+              key: 'leaseDetailAdmin',
+              level: 2,
+              routePath: '/reservation/lease/detail/:id',
             },
           ],
         },

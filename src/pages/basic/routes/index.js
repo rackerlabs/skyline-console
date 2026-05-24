@@ -65,6 +65,9 @@ const E404 = lazy(() =>
 const InstanceHA = lazy(() =>
   import(/* webpackChunkName: "Inctance-HA" */ 'pages/ha/App')
 );
+const Reservation = lazy(() =>
+  import(/* webpackChunkName: "reservation" */ 'pages/reservation/App')
+);
 const PATH = '/';
 
 export default [
@@ -129,6 +132,10 @@ export default [
       {
         path: `/ha`,
         component: InstanceHA,
+      },
+      {
+        path: `/reservation`,
+        component: Reservation,
       },
       { path: '*', component: E404 },
     ],
