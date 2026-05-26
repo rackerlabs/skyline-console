@@ -363,7 +363,6 @@
   position: relative;
   width: 550px;
   max-width: calc(100vw - 32px);
-  height: 100px;
   padding: 10px 14px;
   overflow: hidden;
   background: rgba(255, 255, 255, 95%);
@@ -412,7 +411,7 @@
 }
 
 .publicBannerMessage {
-  max-height: 30px;
+  max-height: 90px;
   overflow-y: auto;
   color: #555;
   font-size: 12px;
@@ -420,9 +419,9 @@
   white-space: pre-line;
   word-break: break-word;
 
-  // Thin scrollbar
+  // Scrollbar
   &::-webkit-scrollbar {
-    width: 2px;
+    width: 6px;
   }
 
   &::-webkit-scrollbar-track {
@@ -430,22 +429,30 @@
   }
 
   &::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 20%);
-    border-radius: 2px;
+    background: rgba(0, 0, 0, 40%);
+    border-radius: 3px;
 
     &:hover {
-      background: rgba(0, 0, 0, 35%);
+      background: rgba(0, 0, 0, 60%);
     }
   }
 
   scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, 20%) transparent;
+  scrollbar-color: rgba(0, 0, 0, 40%) transparent;
 }
 
 .publicBannerMeta {
-  margin-top: 4px;
-  color: #888;
+  margin-top: 6px;
+  padding-top: 6px;
+  color: #9ca3af;
   font-size: 11px;
+  border-top: 1px solid #f0f0f0;
+
+  & + & {
+    margin-top: 2px;
+    padding-top: 0;
+    border-top: none;
+  }
 }
 
 .publicBannerNav {
