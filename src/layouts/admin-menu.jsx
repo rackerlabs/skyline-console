@@ -23,6 +23,7 @@ import {
   HomeOutlined,
   SwitcherOutlined,
   ContainerOutlined,
+  BellOutlined,
   DatabaseFilled,
   DeploymentUnitOutlined,
   BookOutlined,
@@ -956,6 +957,20 @@ const renderMenu = (t) => {
               routePath: '/configuration-admin/metadata/detail/:id',
             },
           ],
+        },
+      ],
+    },
+    {
+      path: '/maintenance-notifications-admin',
+      name: t('System Maintenance'),
+      key: 'maintenanceNotificationsAdmin',
+      icon: <BellOutlined />,
+      children: [
+        {
+          path: '/maintenance-notifications-admin/banners',
+          name: t('System Maintenance'),
+          key: 'maintNotifBannersAdmin',
+          level: 1,
         },
       ],
     },

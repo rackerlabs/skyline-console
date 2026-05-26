@@ -120,6 +120,21 @@ export class SkylineClient extends Base {
         ],
       },
       {
+        name: 'messageBanner',
+        key: 'message-banners',
+        responseKey: 'message_banner',
+        extendOperations: [
+          {
+            key: 'active',
+            isDetail: false,
+          },
+          {
+            key: 'public',
+            isDetail: false,
+          },
+        ],
+      },
+      {
         key: 'query',
       },
       {

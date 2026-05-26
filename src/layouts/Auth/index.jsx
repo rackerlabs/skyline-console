@@ -14,7 +14,11 @@
 
 import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
+import { Tag } from 'antd';
+import { BellOutlined, ToolOutlined } from '@ant-design/icons';
 import renderRoutes from 'utils/RouterConfig';
+import globalMessageBannerStore from 'stores/skyline/message-banner';
+import { getMessageTypeLabel } from 'resources/skyline/message-banner';
 
 import loginFullImageWebp from 'asset/image/login-full.webp';
 import loginFullImagePng from 'asset/image/login-full.png';
@@ -27,7 +31,24 @@ export class AuthLayout extends Component {
   constructor(props) {
     super(props);
     this.routes = props.route.routes;
-    this.state = { backgroundLoaded: false };
+    this.state = { backgroundLoaded: false, currentSlide: 0 };
+  }
+
+  componentDidMount() {
+    globalMessageBannerStore.fetchPublic().catch(() => {});
+    this.autoSlideTimer = setInterval(() => {
+      if (this.paused) return;
+      const banners = globalMessageBannerStore.publicBanners || [];
+      if (banners.length > 1) {
+        this.setState((prevState) => ({
+          currentSlide: ((prevState.currentSlide || 0) + 1) % banners.length,
+        }));
+      }
+    }, 5000);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.autoSlideTimer);
   }
 
   markBackgroundLoaded = () => {
@@ -39,6 +60,55 @@ export class AuthLayout extends Component {
   handleBackgroundImageRef = (img) => {
     if (img?.complete) this.markBackgroundLoaded();
   };
+
+  renderPublicBanners() {
+    const banners = globalMessageBannerStore.publicBanners || [];
+    if (!banners.length) {
+      return null;
+    }
+    const currentSlide = this.state.currentSlide || 0;
+    const banner = banners[currentSlide];
+    return (
+      <div className={styles.publicBanners}>
+        <div
+          className={styles.publicBannerCard}
+          onMouseEnter={() => {
+            this.paused = true;
+          }}
+          onMouseLeave={() => {
+            this.paused = false;
+          }}
+        >
+          <div className={styles.publicBannerContent}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                marginBottom: 3,
+              }}
+            >
+              {banner.type === 'maintenance' ? (
+                <ToolOutlined style={{ fontSize: 12, color: '#666' }} />
+              ) : (
+                <BellOutlined style={{ fontSize: 12, color: '#666' }} />
+              )}
+              <Tag
+                color={banner.type === 'maintenance' ? 'blue' : 'orange'}
+                style={{ fontSize: 10, margin: 0 }}
+              >
+                {getMessageTypeLabel(banner.type)}
+              </Tag>
+            </div>
+            <div className={styles.publicBannerItemTitle}>
+              {banner.title || '-'}
+            </div>
+            <div className={styles.publicBannerMessage}>{banner.message}</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   render() {
     const { backgroundLoaded } = this.state;
@@ -118,6 +188,7 @@ export class AuthLayout extends Component {
             </p>
           </div>
         </div>
+        {this.renderPublicBanners()}
       </div>
     );
   }

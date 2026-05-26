@@ -350,3 +350,132 @@
     }
   }
 }
+
+// Public banner notifications on login page
+.publicBanners {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 100;
+}
+
+.publicBannerCard {
+  position: relative;
+  width: 550px;
+  max-width: calc(100vw - 32px);
+  height: 100px;
+  padding: 10px 14px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 95%);
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 15%);
+}
+
+.publicBannerTitle {
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  color: #333;
+  font-weight: 600;
+  font-size: 13px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.publicBannerBody {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  height: 100%;
+}
+
+.publicBannerContent {
+  flex: 1;
+  overflow: hidden;
+}
+
+.publicBannerNavTop {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  display: flex;
+  gap: 4px;
+}
+
+.publicBannerSlider {
+  min-height: 100px;
+}
+
+.publicBannerItemTitle {
+  margin-bottom: 4px;
+  color: #333;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.publicBannerMessage {
+  max-height: 30px;
+  overflow-y: auto;
+  color: #555;
+  font-size: 12px;
+  line-height: 18px;
+  white-space: pre-line;
+  word-break: break-word;
+
+  // Thin scrollbar
+  &::-webkit-scrollbar {
+    width: 2px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 20%);
+    border-radius: 2px;
+
+    &:hover {
+      background: rgba(0, 0, 0, 35%);
+    }
+  }
+
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 20%) transparent;
+}
+
+.publicBannerMeta {
+  margin-top: 4px;
+  color: #888;
+  font-size: 11px;
+}
+
+.publicBannerNav {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.publicBannerDots {
+  color: #999;
+  font-size: 11px;
+}
+
+.publicBannerItem {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.publicBannerText {
+  flex: 1;
+  overflow: hidden;
+  color: #555;
+  font-size: 12px;
+  line-height: 18px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
