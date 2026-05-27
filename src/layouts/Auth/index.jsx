@@ -18,7 +18,10 @@ import { Tag } from 'antd';
 import { BellOutlined, ToolOutlined } from '@ant-design/icons';
 import renderRoutes from 'utils/RouterConfig';
 import globalMessageBannerStore from 'stores/skyline/message-banner';
-import { getMessageTypeLabel } from 'resources/skyline/message-banner';
+import {
+  getMessageTypeLabel,
+  formatUtcTime,
+} from 'resources/skyline/message-banner';
 
 import loginFullImageWebp from 'asset/image/login-full.webp';
 import loginFullImagePng from 'asset/image/login-full.png';
@@ -104,6 +107,24 @@ export class AuthLayout extends Component {
               {banner.title || '-'}
             </div>
             <div className={styles.publicBannerMessage}>{banner.message}</div>
+            {banner.expires_at && (
+              <div className={styles.publicBannerMeta}>
+                {banner.type === 'maintenance' ? (
+                  <>
+                    <strong>{t('Start')}:</strong>{' '}
+                    {banner.start_at ? formatUtcTime(banner.start_at) : '-'}
+                    {' | '}
+                    <strong>{t('End')}:</strong>{' '}
+                    {formatUtcTime(banner.expires_at)}
+                  </>
+                ) : (
+                  <>
+                    <strong>{t('End')}:</strong>{' '}
+                    {formatUtcTime(banner.expires_at)}
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
