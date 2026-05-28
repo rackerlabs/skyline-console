@@ -26,6 +26,7 @@ import {
   LockOutlined,
   BookOutlined,
   PlayCircleOutlined,
+  CalendarOutlined,
 } from '@ant-design/icons';
 
 const renderMenu = (t) => {
@@ -709,6 +710,36 @@ const renderMenu = (t) => {
               key: 'stackEdit',
               level: 2,
               routePath: '/heat/stack/edit/:id/:name',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      path: '/reservation',
+      name: t('Reservation'),
+      key: 'reservation',
+      endpoints: 'blazar',
+      icon: <CalendarOutlined />,
+      children: [
+        {
+          path: '/reservation/lease',
+          name: t('Leases'),
+          key: 'lease',
+          level: 1,
+          children: [
+            {
+              path: '/reservation/lease/create',
+              name: t('Create Lease'),
+              key: 'leaseCreate',
+              level: 2,
+            },
+            {
+              path: /^\/reservation\/lease\/detail\/.[^/]+$/,
+              name: t('Lease Detail'),
+              key: 'leaseDetail',
+              level: 2,
+              routePath: '/reservation/lease/detail/:id',
             },
           ],
         },

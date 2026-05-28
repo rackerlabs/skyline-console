@@ -95,13 +95,12 @@ export class SystemStep extends Base {
     return !!servergroup && more;
   }
 
-  get inputHelp() {
-    const { input = '' } = this.state;
-    const maxCount = 1000;
-    return t(
-      'Entered: {length, plural, =1 {one character} other {# characters} }(maximum {maxCount} characters)',
-      { length: input.length, maxCount }
-    );
+  // Host reservation is selected in BaseStep (below the AZ field).
+  // Read it from shared context so physicalNode fields can hide correctly.
+  get hasHostReservationSelected() {
+    const { context = {} } = this.props;
+    const { hostReservation: { selectedRowKeys = [] } = {} } = context;
+    return selectedRowKeys.length > 0;
   }
 
   get sourceInfo() {
@@ -118,10 +117,8 @@ export class SystemStep extends Base {
     }
     if (source.value === 'bootableVolume') {
       const { selectedRows = [] } = bootableVolume;
-      // create instance from instance list
       const originData =
         (selectedRows.length && selectedRows[0].origin_data) || {};
-      // create instance from volume list
       const volumeImageMetadata =
         selectedRows.length && selectedRows[0].volume_image_metadata;
       return originData.volume_image_metadata || volumeImageMetadata;
@@ -256,6 +253,7 @@ export class SystemStep extends Base {
 
   get formItems() {
     const { more = false, physicalNodeType } = this.state;
+    const hasHostReservation = this.hasHostReservationSelected;
     const isManually = physicalNodeType === physicalNodeTypes[1].value;
 
     const { initKeyPair } = this.state;
@@ -335,7 +333,7 @@ export class SystemStep extends Base {
         name: 'physicalNodeType',
         label: t('Physical Node'),
         type: 'radio',
-        hidden: !more || !this.hasAdminRole,
+        hidden: !more || !this.hasAdminRole || hasHostReservation,
         options: physicalNodeTypes,
         isWrappedValue: true,
       },
@@ -343,8 +341,9 @@ export class SystemStep extends Base {
         name: 'physicalNode',
         label: t('Specify Physical Node'),
         type: 'select-table',
-        hidden: !this.hasAdminRole || !more || !isManually,
-        required: isManually,
+        hidden:
+          !this.hasAdminRole || !more || !isManually || hasHostReservation,
+        required: isManually && !hasHostReservation,
         data: this.hypervisors,
         isLoading: this.hypervisorStore.list.isLoading,
         extra: t(
@@ -361,7 +360,6 @@ export class SystemStep extends Base {
         data: this.serverGroups,
         isLoading: this.serverGroupStore.list.isLoading,
         required: this.serverGroupRequired,
-        // onChange: this.onServerGroupChange,
         extra: t(
           'Using server groups, you can create cloud hosts on the same/different physical nodes as much as possible to meet the affinity/non-affinity requirements of business applications.'
         ),

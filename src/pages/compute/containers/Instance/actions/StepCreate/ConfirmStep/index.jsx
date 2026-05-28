@@ -195,6 +195,16 @@ export class ConfirmStep extends Base {
     return serverGroup.selectedRows[0].name;
   }
 
+  getHostReservation() {
+    const { context } = this.props;
+    const { hostReservation } = context;
+    const { selectedRowKeys = [] } = hostReservation || {};
+    if (!selectedRowKeys.length) {
+      return null;
+    }
+    return selectedRowKeys[0];
+  }
+
   getIso() {
     const { context } = this.props;
     const { iso } = context;
@@ -212,6 +222,12 @@ export class ConfirmStep extends Base {
 
   get defaultValue() {
     return {};
+  }
+
+  getAvailableZone() {
+    const { context } = this.props;
+    const { availableZone } = context;
+    return (availableZone && availableZone.label) || '-';
   }
 
   get formItems() {
@@ -236,7 +252,7 @@ export class ConfirmStep extends Base {
       },
       {
         label: t('Available Zone'),
-        value: context.availableZone.label,
+        value: this.getAvailableZone(),
       },
       {
         label: t('Start Source Name'),
@@ -255,6 +271,14 @@ export class ConfirmStep extends Base {
         label: t('Flavor'),
         value: this.getFlavor(),
       },
+      ...(this.getHostReservation()
+        ? [
+            {
+              label: t('Host Reservation'),
+              value: this.getHostReservation(),
+            },
+          ]
+        : []),
     ];
     if (!this.enableCinder) {
       baseItems = baseItems.filter(

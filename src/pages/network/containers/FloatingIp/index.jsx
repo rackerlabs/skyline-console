@@ -323,6 +323,10 @@ export class FloatingIps extends Base {
         name: 'status',
         options: getOptions(floatingIpStatus),
       },
+      {
+        label: t('Reservation Tag'),
+        name: 'tags',
+      },
     ];
     return filters;
   }

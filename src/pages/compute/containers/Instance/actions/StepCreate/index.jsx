@@ -703,10 +703,13 @@ export class StepCreate extends StepAction {
       flavor,
       userData = '',
       serverGroup,
+      hostReservation,
       name,
       count = 1,
       bootFromVolume = true,
     } = values;
+    const hasHostReservation =
+      hostReservation && hostReservation.selectedRowKeys.length > 0;
     if (hasIp && count > 1) {
       this.ipBatchError = true;
       return null;
@@ -719,9 +722,14 @@ export class StepCreate extends StepAction {
       })),
       name,
       flavorRef: flavor.selectedRowKeys[0],
-      availability_zone: availableZone.value,
       networks,
     };
+    // Only set availability_zone when no host reservation is selected.
+    // When a reservation is used, Nova is directed via the scheduler hint
+    // instead; sending both causes a conflict.
+    if (!hasHostReservation && availableZone && availableZone.value) {
+      server.availability_zone = availableZone.value;
+    }
     if (this.enableCinder) {
       server.block_device_mapping_v2 = volumes;
     }
@@ -738,7 +746,7 @@ export class StepCreate extends StepAction {
       server.max_count = count;
       server.return_reservation_id = true;
     }
-    if (physicalNodeType.value !== 'smart') {
+    if (!hasHostReservation && physicalNodeType.value !== 'smart') {
       server.hypervisor_hostname =
         physicalNode.selectedRows[0].hypervisor_hostname;
     }
@@ -752,10 +760,18 @@ export class StepCreate extends StepAction {
       server,
     };
 
+    const schedulerHints = {};
     if (serverGroup && serverGroup.selectedRowKeys.length > 0) {
-      body['OS-SCH-HNT:scheduler_hints'] = {
-        group: serverGroup.selectedRowKeys[0],
-      };
+      schedulerHints.group = serverGroup.selectedRowKeys[0];
+    }
+    // When a host reservation is selected, send the reservation scheduler hint.
+    // Do NOT also send availability_zone — sending both causes Nova to reject
+    // the request with "No valid host was found".
+    if (hasHostReservation) {
+      schedulerHints.reservation = hostReservation.selectedRowKeys[0];
+    }
+    if (!isEmpty(schedulerHints)) {
+      body['OS-SCH-HNT:scheduler_hints'] = schedulerHints;
     }
     return body;
   }
