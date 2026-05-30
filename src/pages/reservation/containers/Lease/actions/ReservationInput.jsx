@@ -267,20 +267,22 @@ class ReservationInput extends Component {
     }
     return (
       <div style={{ marginTop: 4, color: '#888', fontSize: 12 }}>
-        {t('{count} host(s) available', { count: hostCount })}
+        {t('{count} host(s) available in freepool', { count: hostCount })}
       </div>
     );
   }
 
   renderHostFields(reservation, index) {
     const { disabled } = this.props;
-    const { availabilityZoneLoading, availabilityZones } = this.state;
+    const { availabilityZoneLoading, availabilityZones, hostCount } =
+      this.state;
     return (
       <>
         <Col span={8}>
           {this.renderLabel(t('Minimum Hosts'))}
           <InputNumber
             min={1}
+            max={hostCount !== null ? hostCount : undefined}
             value={reservation.min}
             disabled={disabled}
             onChange={(value) => this.updateReservation(index, { min: value })}
@@ -292,6 +294,7 @@ class ReservationInput extends Component {
           {this.renderLabel(t('Maximum Hosts'))}
           <InputNumber
             min={reservation.min || 1}
+            max={hostCount !== null ? hostCount : undefined}
             value={reservation.max}
             disabled={disabled}
             onChange={(value) => this.updateReservation(index, { max: value })}
@@ -412,14 +415,14 @@ class ReservationInput extends Component {
             rows={4}
             value={reservation.extra_specs}
             disabled={disabled}
-            placeholder={`Example\nkey=value\ngpu=True`}
+            placeholder={`Example\nkey=value`}
             onChange={(e) =>
               this.updateReservation(index, { extra_specs: e.target.value })
             }
           />
           <div style={{ marginTop: 4, color: '#888', fontSize: 12 }}>
             {t(
-              'One key=value per line (no commas). Keys are custom capabilities set on hosts via "openstack reservation host set --extra <key>=<value>". Example: gpu=True'
+              'One key=value per line (no commas). Keys must be custom capabilities already registered on hosts by an admin via "openstack reservation host set --extra <key>=<value>". Using an unregistered key will cause a 500 error.'
             )}
           </div>
         </Col>

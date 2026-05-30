@@ -369,7 +369,7 @@ export const validateBeforeEndDate = (
   return '';
 };
 
-export const HYPERVISOR_OPERATORS = ['>=', '<=', '='];
+export const HYPERVISOR_OPERATORS = ['>=', '<=', '>', '<', '='];
 
 const addNumberCondition = (conditions, key, value, operator = '>=') => {
   if ([undefined, null, ''].includes(value)) {
@@ -436,7 +436,7 @@ export const parseQueryText = (queryText) => {
       }
       const cleanKey = key.replace('$', '');
       if (
-        ['>=', '<=', '='].includes(op) &&
+        ['>=', '<=', '>', '<', '='].includes(op) &&
         ['vcpus', 'memory_mb', 'local_gb'].includes(cleanKey)
       ) {
         values[cleanKey] = Number(value);
