@@ -48,6 +48,11 @@ const parseBlazarError = (responseData) => {
       'Invalid lease dates. Ensure the start time is before the end time and both are in the future.'
     );
   }
+  if (/BlazarDBNotFound/i.test(msg) || /database error occurred/i.test(msg)) {
+    return t(
+      'One or more host capability keys in Extra Specs do not exist in Blazar. An admin must first register the capability on a host with: openstack reservation host set --extra <key>=<value> <hostname>'
+    );
+  }
   return msg || null;
 };
 
