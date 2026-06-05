@@ -746,6 +746,56 @@ const renderMenu = (t) => {
       ],
     },
     {
+      path: '/scheduled-actions',
+      name: t('Scheduled Actions'),
+      key: 'scheduledActions',
+      icon: <CalendarOutlined />,
+      children: [
+        {
+          path: '/scheduled-actions/schedule',
+          name: t('Schedules'),
+          key: 'qonosSchedule',
+          level: 1,
+          children: [
+            {
+              path: '/scheduled-actions/schedule/create',
+              name: t('Create Schedule'),
+              key: 'qonosScheduleCreate',
+              level: 2,
+            },
+            {
+              path: /^\/scheduled-actions\/schedule\/detail\/.[^/]+$/,
+              name: t('Schedule Detail'),
+              key: 'qonosScheduleDetail',
+              level: 2,
+              routePath: '/scheduled-actions/schedule/detail/:id',
+            },
+          ],
+        },
+        {
+          path: '/scheduled-actions/execution-profile',
+          name: t('Execution Profiles'),
+          key: 'qonosExecutionProfile',
+          level: 1,
+        },
+        {
+          path: '/scheduled-actions/job',
+          name: t('Jobs'),
+          key: 'qonosJob',
+          level: 1,
+          children: [
+            {
+              path: /^\/scheduled-actions\/job\/detail\/.[^/]+$/,
+              name: t('Job Detail'),
+              key: 'qonosJobDetail',
+              level: 2,
+              routePath: '/scheduled-actions/job/detail/:id',
+            },
+          ],
+        },
+      ],
+    },
+    {
       path: '/database',
       name: t('Database'),
       key: 'database',
