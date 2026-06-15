@@ -17,8 +17,16 @@ import { RouterStore } from 'mobx-react-router';
 import { parse } from 'qs';
 import client from 'client';
 import { getQueryString } from 'utils/index';
-import { setLocalStorageItem, clearLocalStorage } from 'utils/local-storage';
+import {
+  setLocalStorageItem,
+  getLocalStorageItem,
+  clearLocalStorage,
+} from 'utils/local-storage';
 import { isEmpty, values } from 'lodash';
+
+// Keys must match the ones written by the Login page on SSO sign-in.
+const FEDERATION_LOGIN_KEY = 'is_federation_login';
+const FEDERATION_KEYSTONE_BASE_KEY = 'federation_keystone_base';
 
 export class RootStore {
   @observable
@@ -182,6 +190,10 @@ export class RootStore {
 
   @action
   async logout() {
+    // Capture federation state before clearData() wipes local storage.
+    const isFederated = !!getLocalStorageItem(FEDERATION_LOGIN_KEY);
+    const keystoneBase = getLocalStorageItem(FEDERATION_KEYSTONE_BASE_KEY);
+
     await this.client.logout();
     this.clearData();
     this.user = null;
@@ -192,6 +204,16 @@ export class RootStore {
     this.version = '';
     this.noticeCount = 0;
     this.noticeCountWaitRemove = 0;
+
+    if (isFederated && keystoneBase) {
+      // Redirect to Keystone / Shibboleth logout so the IdP session is
+      // also terminated. Otherwise the next click on the SSO login link
+      // would silently re-authenticate the user.
+      const base = String(keystoneBase).replace(/\/+$/, '');
+      window.location.href = `${base}/Shibboleth.sso/Logout`;
+      return;
+    }
+
     this.goToLoginPage();
   }
 
