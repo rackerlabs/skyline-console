@@ -24,7 +24,12 @@ import globalMessageBannerStore from 'stores/skyline/message-banner';
 import i18n from 'core/i18n';
 import { isEmpty } from 'lodash';
 import logo from 'asset/image/logo.png';
+import { setLocalStorageItem } from 'utils/local-storage';
 import styles from './index.less';
+
+// Key used to remember that the active session was started via
+export const FEDERATION_LOGIN_KEY = 'is_federation_login';
+export const FEDERATION_KEYSTONE_BASE_KEY = 'federation_keystone_base';
 
 export class Login extends Component {
   constructor(props) {
@@ -380,8 +385,22 @@ export class Login extends Component {
 
   onFinish = (values) => {
     if (this.currentLoginType === 'sso') {
+      setLocalStorageItem(FEDERATION_LOGIN_KEY, true);
+      try {
+        const ssoUrl = this.currentSSOLink;
+        if (ssoUrl) {
+          const { origin } = new URL(ssoUrl);
+          setLocalStorageItem(FEDERATION_KEYSTONE_BASE_KEY, origin);
+        }
+      } catch (e) {}
       document.location.href = this.currentSSOLink;
       return;
+    }
+    try {
+      localStorage.removeItem(FEDERATION_LOGIN_KEY);
+      localStorage.removeItem(FEDERATION_KEYSTONE_BASE_KEY);
+    } catch (e) {
+      // ignore storage errors
     }
     this.setState({
       loading: true,
