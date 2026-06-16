@@ -28,8 +28,9 @@ import { setLocalStorageItem } from 'utils/local-storage';
 import styles from './index.less';
 
 // Key used to remember that the active session was started via
+// federation / SSO. Used by logout to redirect to the IdP logout URL
+// instead of falling back to the local login page.
 export const FEDERATION_LOGIN_KEY = 'is_federation_login';
-export const FEDERATION_KEYSTONE_BASE_KEY = 'federation_keystone_base';
 
 export class Login extends Component {
   constructor(props) {
@@ -385,22 +386,16 @@ export class Login extends Component {
 
   onFinish = (values) => {
     if (this.currentLoginType === 'sso') {
+      // Mark this session as federated so logout can redirect to the
+      // IdP logout URL. The actual URL is owned by the logout flow.
       setLocalStorageItem(FEDERATION_LOGIN_KEY, true);
-      try {
-        const ssoUrl = this.currentSSOLink;
-        if (ssoUrl) {
-          const { origin } = new URL(ssoUrl);
-          setLocalStorageItem(FEDERATION_KEYSTONE_BASE_KEY, origin);
-        }
-      } catch (e) {}
+      // eslint-disable-next-line no-console
+      console.log('[login][sso] saved federation marker', {
+        FEDERATION_LOGIN_KEY,
+        ssoUrl: this.currentSSOLink,
+      });
       document.location.href = this.currentSSOLink;
       return;
-    }
-    try {
-      localStorage.removeItem(FEDERATION_LOGIN_KEY);
-      localStorage.removeItem(FEDERATION_KEYSTONE_BASE_KEY);
-    } catch (e) {
-      // ignore storage errors
     }
     this.setState({
       loading: true,
