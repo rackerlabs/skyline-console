@@ -24,12 +24,34 @@ import {
 } from 'utils/local-storage';
 import { isEmpty, values } from 'lodash';
 
-// Key written by the Login page on SSO sign-in.
+// Keys written by the Login page on SSO sign-in. Kept dynamic so the
+// logout chain works on any environment (dev, staging, prod) without
+// hardcoded hosts.
 const FEDERATION_LOGIN_KEY = 'is_federation_login';
-// Where to send users after a federated logout. Skyline still calls
-// the local /logout API first to clear its own session/cookies, then
-// the browser is redirected here so the IdP session is also dropped.
-const FEDERATION_LOGOUT_URL = 'https://login.rackspace.com/logout';
+const FEDERATION_KEYSTONE_BASE_KEY = 'federation_keystone_base';
+// IdP logout endpoint used as the second hop of federated logout. The
+// SP (Apache mod_shib) won't allow `return=` URLs outside its own
+// allowlist, so we can't chain straight to the IdP from
+// /Shibboleth.sso/Logout. Instead, the SP returns to Skyline with an
+// `afterLogout=idp` marker, and the login page navigates here itself.
+// const IDP_LOGOUT_URL = 'https://login.rackspace.com/logout';
+// Query marker the login page reads to know it should perform the
+// final IdP logout hop after the SP has cleared its session.
+const AFTER_LOGOUT_MARKER = 'afterLogout=idp';
+
+const buildSpLogoutUrl = (keystoneBase, skylineOrigin) => {
+  // SP logout's `return=` must point at Skyline (the relying party).
+  // Anything else (e.g. the IdP host) gets blocked by mod_shib's
+  // redirect allowlist with `opensaml::SecurityPolicyException`.
+  const ksBase = String(keystoneBase).replace(/\/+$/, '');
+  const skylineReturn = `${skylineOrigin.replace(
+    /\/+$/,
+    ''
+  )}/auth/login?${AFTER_LOGOUT_MARKER}`;
+  return `${ksBase}/Shibboleth.sso/Logout?return=${encodeURIComponent(
+    skylineReturn
+  )}`;
+};
 
 export class RootStore {
   @observable
@@ -195,10 +217,13 @@ export class RootStore {
   async logout() {
     // Capture federation state before clearData() wipes local storage.
     const isFederated = !!getLocalStorageItem(FEDERATION_LOGIN_KEY);
+    const keystoneBase = getLocalStorageItem(FEDERATION_KEYSTONE_BASE_KEY);
     // eslint-disable-next-line no-console
-    console.log('[logout] read federation marker', {
+    console.log('[logout] read federation markers', {
       FEDERATION_LOGIN_KEY,
+      FEDERATION_KEYSTONE_BASE_KEY,
       isFederated,
+      keystoneBase,
     });
 
     // Always call /logout so Skyline clears its own session/token state
@@ -214,15 +239,18 @@ export class RootStore {
     this.noticeCount = 0;
     this.noticeCountWaitRemove = 0;
 
-    if (isFederated) {
-      // Federated sessions need an extra step: redirect the browser so
-      // the IdP session is also terminated. Without this, the next
-      // click on the SSO login link silently re-authenticates the user.
+    if (isFederated && keystoneBase) {
+      // Federated sessions: tear down the SP session at Keystone first,
+      // bouncing back to Skyline's login page. The login page will
+      // then perform the IdP logout step. We can't chain SP -> IdP
+      // directly because the SP only allows `return=` URLs that point
+      // at the relying party (Skyline).
+      const target = buildSpLogoutUrl(keystoneBase, window.location.origin);
       // eslint-disable-next-line no-console
-      console.log('[logout] federated session, redirecting', {
-        target: FEDERATION_LOGOUT_URL,
+      console.log('[logout] federated session, redirecting to SP logout', {
+        target,
       });
-      window.location.href = FEDERATION_LOGOUT_URL;
+      window.location.href = target;
       return;
     }
 
