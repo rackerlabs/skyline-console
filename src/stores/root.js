@@ -24,9 +24,12 @@ import {
 } from 'utils/local-storage';
 import { isEmpty, values } from 'lodash';
 
-// Keys must match the ones written by the Login page on SSO sign-in.
+// Key written by the Login page on SSO sign-in.
 const FEDERATION_LOGIN_KEY = 'is_federation_login';
-const FEDERATION_KEYSTONE_BASE_KEY = 'federation_keystone_base';
+// Where to send users after a federated logout. Skyline still calls
+// the local /logout API first to clear its own session/cookies, then
+// the browser is redirected here so the IdP session is also dropped.
+const FEDERATION_LOGOUT_URL = 'https://login.rackspace.com/logout';
 
 export class RootStore {
   @observable
@@ -192,8 +195,14 @@ export class RootStore {
   async logout() {
     // Capture federation state before clearData() wipes local storage.
     const isFederated = !!getLocalStorageItem(FEDERATION_LOGIN_KEY);
-    const keystoneBase = getLocalStorageItem(FEDERATION_KEYSTONE_BASE_KEY);
+    // eslint-disable-next-line no-console
+    console.log('[logout] read federation marker', {
+      FEDERATION_LOGIN_KEY,
+      isFederated,
+    });
 
+    // Always call /logout so Skyline clears its own session/token state
+    // and revokes the Keystone token, regardless of login type.
     await this.client.logout();
     this.clearData();
     this.user = null;
@@ -205,15 +214,20 @@ export class RootStore {
     this.noticeCount = 0;
     this.noticeCountWaitRemove = 0;
 
-    if (isFederated && keystoneBase) {
-      // Redirect to Keystone / Shibboleth logout so the IdP session is
-      // also terminated. Otherwise the next click on the SSO login link
-      // would silently re-authenticate the user.
-      const base = String(keystoneBase).replace(/\/+$/, '');
-      window.location.href = `${base}/Shibboleth.sso/Logout`;
+    if (isFederated) {
+      // Federated sessions need an extra step: redirect the browser so
+      // the IdP session is also terminated. Without this, the next
+      // click on the SSO login link silently re-authenticates the user.
+      // eslint-disable-next-line no-console
+      console.log('[logout] federated session, redirecting', {
+        target: FEDERATION_LOGOUT_URL,
+      });
+      window.location.href = FEDERATION_LOGOUT_URL;
       return;
     }
 
+    // Non-federated (Keystone) sessions keep the original behavior:
+    // back to the local login page.
     this.goToLoginPage();
   }
 
