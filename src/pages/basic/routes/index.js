@@ -73,6 +73,11 @@ const InstanceHA = lazy(() =>
 const Reservation = lazy(() =>
   import(/* webpackChunkName: "reservation" */ 'pages/reservation/App')
 );
+const ScheduledActions = lazy(() =>
+  import(
+    /* webpackChunkName: "scheduled-actions" */ 'pages/scheduled-actions/App'
+  )
+);
 const PATH = '/';
 
 export default [
@@ -145,6 +150,10 @@ export default [
       {
         path: `/reservation`,
         component: Reservation,
+      },
+      {
+        path: `/scheduled-actions`,
+        component: ScheduledActions,
       },
       { path: '*', component: E404 },
     ],

@@ -40,6 +40,10 @@ export class HttpRequest {
     if (response) {
       const { status } = response;
       if (status === 401) {
+        const { url = '' } = response.config || {};
+        if (url.indexOf('/v2/') === 0) {
+          return;
+        }
         const currentPath = window.location.pathname;
         if (currentPath.indexOf('login') < 0) {
           this.goToLoginPage(currentPath);
