@@ -27,6 +27,7 @@ import {
   BookOutlined,
   PlayCircleOutlined,
   CalendarOutlined,
+  MessageOutlined,
 } from '@ant-design/icons';
 
 const renderMenu = (t) => {
@@ -802,6 +803,23 @@ const renderMenu = (t) => {
               routePath: '/database/configurations/detail/:id',
             },
           ],
+        },
+      ],
+    },
+    {
+      path: '/zaqar',
+      name: t('Messaging'),
+      key: 'zaqar',
+      icon: <MessageOutlined />,
+      endpoints: 'zaqar',
+      children: [
+        {
+          path: '/zaqar/queues',
+          name: t('Queues'),
+          key: 'zaqarQueues',
+          endpoints: 'zaqar',
+          level: 1,
+          children: [],
         },
       ],
     },

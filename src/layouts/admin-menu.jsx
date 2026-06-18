@@ -29,6 +29,7 @@ import {
   BookOutlined,
   PlayCircleOutlined,
   CalendarOutlined,
+  MessageOutlined,
 } from '@ant-design/icons';
 
 const renderMenu = (t) => {
@@ -972,6 +973,23 @@ const renderMenu = (t) => {
           name: t('System Maintenance'),
           key: 'maintNotifBannersAdmin',
           level: 1,
+        },
+      ],
+    },
+    {
+      path: '/zaqar-admin',
+      name: t('Messaging'),
+      key: 'zaqarAdmin',
+      icon: <MessageOutlined />,
+      endpoints: 'zaqar',
+      children: [
+        {
+          path: '/zaqar-admin/queues',
+          name: t('Queues'),
+          key: 'zaqarQueuesAdmin',
+          endpoints: 'zaqar',
+          level: 1,
+          children: [],
         },
       ],
     },

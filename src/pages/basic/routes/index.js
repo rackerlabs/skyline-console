@@ -73,6 +73,9 @@ const InstanceHA = lazy(() =>
 const Reservation = lazy(() =>
   import(/* webpackChunkName: "reservation" */ 'pages/reservation/App')
 );
+const ZaqarApp = lazy(() =>
+  import(/* webpackChunkName: "zaqar" */ 'pages/zaqar/App')
+);
 const PATH = '/';
 
 export default [
@@ -145,6 +148,14 @@ export default [
       {
         path: `/reservation`,
         component: Reservation,
+      },
+      {
+        path: `/zaqar-admin`,
+        component: ZaqarApp,
+      },
+      {
+        path: `/zaqar`,
+        component: ZaqarApp,
       },
       { path: '*', component: E404 },
     ],
