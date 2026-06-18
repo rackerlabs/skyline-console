@@ -31,6 +31,7 @@ import magnum from './magnum';
 import masakari from './masakari';
 import designate from './designate';
 import blazar from './blazar';
+import zaqar from './zaqar';
 
 const client = {
   skyline,
@@ -52,6 +53,7 @@ const client = {
   masakari,
   designate,
   blazar,
+  zaqar,
 };
 
 window.client = client;
