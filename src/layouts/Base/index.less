@@ -504,3 +504,19 @@
     height: calc(100dvh - @header-height);
   }
 }
+
+@media (max-width: 768px) {
+  .base-layout-sider {
+    z-index: 20;
+  }
+
+  .base-layout-right,
+  .base-layout-right-collapsed,
+  .base-layout-sider-hover + .base-layout-right.base-layout-right-collapsed {
+    left: @sider-collapsed-width;
+  }
+
+  .breadcrumb {
+    padding-left: 12px;
+  }
+}
