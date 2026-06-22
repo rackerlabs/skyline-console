@@ -1242,6 +1242,7 @@
   "Identity": "",
   "If \"Enable\" fails to roll back, the resource will be deleted after the creation fails; if \"Disable\" fails to roll back, the resource will be retained after the creation fails.": "만약 \"사용\"이 롤백에 실패하면 리소스는 생성 실패 후 삭제되고 \"사용 안 함\"이 롤백에 실패하면 리소스는 생성 실패 후에도 보존됩니다.",
   "If OS is Linux, system will reset root password, if OS is Windows, system will reset Administrator password.": "OS가 Linux인 경우 시스템은 루트 암호를 재설정하고, OS가 Windows인 경우 시스템은 관리자 암호를 재설정합니다.",
+  "The system will reset the password for the {user}.": "시스템이 {user}의 암호를 재설정합니다.",
   "If an instance is using this flavor, deleting it will cause the instance's flavor data to be missing. Are you sure to delete {name}?": "인스턴스가 해당 flavor를 사용하는 경우, 삭제하면 인스턴스의 flavor 정보가 유실됩니다. {name}을(를) 삭제하시겠습니까?",
   "If checked, the network will be enable.": "이 옵션을 체크하면 네트워크가 활성화됩니다.",
   "If exposed port is specified, this parameter will be ignored.": "노출된 포트가 지정된 경우 이 매개 변수는 무시됩니다.",

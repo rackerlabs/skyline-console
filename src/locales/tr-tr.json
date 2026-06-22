@@ -1242,6 +1242,7 @@
   "Identity": "Kimlik",
   "If \"Enable\" fails to roll back, the resource will be deleted after the creation fails; if \"Disable\" fails to roll back, the resource will be retained after the creation fails.": "\"Etkin\" işlemi geri alınamazsa, kaynak oluşturma başarısız olduktan sonra kaynak silinecektir; \"Etkin Değil\" işlemi geri alınamazsa, kaynak oluşturma başarısız olduktan sonra kaynak korunacaktır.",
   "If OS is Linux, system will reset root password, if OS is Windows, system will reset Administrator password.": "Eğer işletim sistemi Linux ise sistem, kök parolasını sıfırlayacaktır. Eğer işletim sistemi Windows ise sistem, yönetici parolasını sıfırlayacaktır.",
+  "The system will reset the password for the {user}.": "Sistem {user} için parolayı sıfırlayacaktır.",
   "If an instance is using this flavor, deleting it will cause the instance's flavor data to be missing. Are you sure to delete {name}?": "Eğer bir sanal makine bu şablonu kullanıyorsa, şablonu silmek sanal makinenin şablon verilerinin kaybolmasına neden olacaktır. {name}'i silmek istediğinize emin misiniz?",
   "If checked, the network will be enable.": "Seçili ise, ağ etkinleştirilecektir.",
   "If exposed port is specified, this parameter will be ignored.": "Açık ağ adaptörü belirtilirse, bu parametre göz ardı edilecektir.",

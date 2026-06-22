@@ -1242,6 +1242,7 @@
   "Identity": "身份管理",
   "If \"Enable\" fails to roll back, the resource will be deleted after the creation fails; if \"Disable\" fails to roll back, the resource will be retained after the creation fails.": "若“启用”失败回滚，创建失败后会删除资源；若“禁用”失败回滚，创建失败后会保留资源。",
   "If OS is Linux, system will reset root password, if OS is Windows, system will reset Administrator password.": "如果操作系统是Linux，系统会修改root用户密码，如果是Windows，系统会修改Administrator用户密码。",
+  "The system will reset the password for the {user}.": "系统将重置 {user} 的密码。",
   "If an instance is using this flavor, deleting it will cause the instance's flavor data to be missing. Are you sure to delete {name}?": "若有云主机正在使用此 flavor，删除会导致云主机的 flavor 数据缺失，确定删除 {name} ？",
   "If checked, the network will be enable.": "如果选中，那么网络将被启用。",
   "If exposed port is specified, this parameter will be ignored.": "如果指定了服务端口，这个参数将被忽略。",

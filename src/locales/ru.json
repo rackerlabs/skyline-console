@@ -1242,6 +1242,7 @@
   "Identity": "Идентификация",
   "If \"Enable\" fails to roll back, the resource will be deleted after the creation fails; if \"Disable\" fails to roll back, the resource will be retained after the creation fails.": "Если \"Включение\" не удается откатить, ресурс будет удален после неудачного создания; если \"Отключение\" не удается откатить, ресурс останется после неудачного создания.",
   "If OS is Linux, system will reset root password, if OS is Windows, system will reset Administrator password.": "Если ОС - Linux, система сбросит пароль root, если ОС - Windows, система сбросит пароль Администратора.",
+  "The system will reset the password for the {user}.": "Система сбросит пароль для {user}.",
   "If an instance is using this flavor, deleting it will cause the instance's flavor data to be missing. Are you sure to delete {name}?": "Если инстанс использует этот флейвор, его удаление приведет к отсутствию данных о флейворе у инстанса. Вы уверены, что хотите удалить {name}?",
   "If checked, the network will be enable.": "Если отмечено, сеть будет включена.",
   "If exposed port is specified, this parameter will be ignored.": "Если указан выставленный порт, этот параметр будет проигнорирован.",

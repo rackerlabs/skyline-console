@@ -36,6 +36,12 @@ export class ChangePassword extends ModalAction {
   }
 
   get tips() {
+    const osAdminUser = this.item?.image_os_admin_user || '';
+    if (osAdminUser) {
+      return t('The system will reset the password for the {user}.', {
+        user: osAdminUser,
+      });
+    }
     return t(
       'If OS is Linux, system will reset root password, if OS is Windows, system will reset Administrator password.'
     );

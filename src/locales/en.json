@@ -1242,6 +1242,7 @@
   "Identity": "Identity",
   "If \"Enable\" fails to roll back, the resource will be deleted after the creation fails; if \"Disable\" fails to roll back, the resource will be retained after the creation fails.": "If \"Enable\" fails to roll back, the resource will be deleted after the creation fails; if \"Disable\" fails to roll back, the resource will be retained after the creation fails.",
   "If OS is Linux, system will reset root password, if OS is Windows, system will reset Administrator password.": "If OS is Linux, system will reset root password, if OS is Windows, system will reset Administrator password.",
+  "The system will reset the password for the {user}.": "The system will reset the password for the {user}.",
   "If an instance is using this flavor, deleting it will cause the instance's flavor data to be missing. Are you sure to delete {name}?": "If an instance is using this flavor, deleting it will cause the instance's flavor data to be missing. Are you sure to delete {name}?",
   "If checked, the network will be enable.": "If checked, the network will be enable.",
   "If exposed port is specified, this parameter will be ignored.": "If exposed port is specified, this parameter will be ignored.",
