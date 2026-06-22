@@ -861,10 +861,11 @@ export class BaseStep extends Base {
       },
       {
         name: 'availableZone',
-        label: t('Available Zone'),
+        label: t('Availability Zone'),
         type: 'select',
         placeholder: t('Please select'),
         isWrappedValue: true,
+        autoSelectFirst: true,
         required: !this.hasHostReservationSelected,
         hidden: this.hasHostReservationSelected,
         options: this.availableZones,

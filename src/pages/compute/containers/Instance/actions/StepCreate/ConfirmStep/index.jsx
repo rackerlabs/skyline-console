@@ -251,7 +251,7 @@ export class ConfirmStep extends Base {
         key: 'deleteVolume',
       },
       {
-        label: t('Available Zone'),
+        label: t('Availability Zone'),
         value: this.getAvailableZone(),
       },
       {
