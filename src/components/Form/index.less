@@ -169,7 +169,78 @@
   border-left: solid 2px @gray-2;
 }
 
+.modal-right-extra-overlay {
+  display: none;
+}
+
 @media (max-width: 768px) {
+  .right-top-extra-wrapper {
+    top: 8px;
+    right: 8px;
+    max-width: calc(100vw - 32px);
+
+    :global {
+      .content-wrapper,
+      .ant-card {
+        max-width: calc(100vw - 32px);
+      }
+
+      .ant-card-body {
+        max-height: calc(100vh - 220px);
+        padding: 12px;
+        overflow-y: auto;
+      }
+    }
+  }
+
+  .modal-inner-with-quota {
+    position: relative;
+    display: block;
+  }
+
+  .modal-form-col {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
+
+  .modal-quota-col {
+    position: absolute;
+    top: 0;
+    right: 8px;
+    z-index: 3;
+    flex: 0 0 auto !important;
+    width: auto !important;
+    max-width: none !important;
+    pointer-events: none;
+  }
+
+  .modal-right-extra-wrapper {
+    border-left: 0;
+    pointer-events: auto;
+  }
+
+  .modal-right-extra-inline {
+    display: none;
+  }
+
+  .modal-right-extra-overlay {
+    display: block;
+    max-width: calc(100vw - 56px);
+
+    :global {
+      .content-wrapper,
+      .ant-card {
+        max-width: calc(100vw - 56px);
+      }
+
+      .ant-card-body {
+        max-height: calc(100vh - 260px);
+        padding: 12px;
+        overflow-y: auto;
+      }
+    }
+  }
+
   .form {
     margin-right: 8px;
     margin-left: 8px;

@@ -758,7 +758,20 @@ export default class BaseForm extends React.Component {
     if (!content) {
       return null;
     }
-    return <div className={styles['modal-right-extra-wrapper']}>{content}</div>;
+    const checkValue = JSON.stringify(this.quotaInfo);
+    return (
+      <div className={styles['modal-right-extra-wrapper']}>
+        <div className={styles['modal-right-extra-inline']}>{content}</div>
+        <div className={styles['modal-right-extra-overlay']}>
+          <InfoButton
+            content={this.renderQuota()}
+            checkValue={checkValue}
+            defaultCollapsed
+            ableAuto={false}
+          />
+        </div>
+      </div>
+    );
   }
 
   render() {
@@ -794,9 +807,17 @@ export default class BaseForm extends React.Component {
     const { left, right } = this.getRightExtraSpan();
     const modalInner =
       this.isModal && !onlyForm ? (
-        <Row justify="space-between" align="top">
-          <Col span={left}>{formDiv}</Col>
-          <Col span={right}>{this.renderModalRightExtra()}</Col>
+        <Row
+          justify="space-between"
+          align="top"
+          className={styles['modal-inner-with-quota']}
+        >
+          <Col span={left} className={styles['modal-form-col']}>
+            {formDiv}
+          </Col>
+          <Col span={right} className={styles['modal-quota-col']}>
+            {this.renderModalRightExtra()}
+          </Col>
         </Row>
       ) : null;
     return (
