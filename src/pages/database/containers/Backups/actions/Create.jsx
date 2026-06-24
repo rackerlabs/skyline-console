@@ -71,6 +71,7 @@ export class Create extends ModalAction {
         label: t('Database Instance'),
         type: 'select',
         options: this.listInstanceName,
+        autoSelectFirst: true,
         required: true,
       },
       {

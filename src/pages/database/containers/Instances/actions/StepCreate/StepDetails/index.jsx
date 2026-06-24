@@ -114,6 +114,7 @@ export class StepDetails extends Base {
         type: 'select',
         placeholder: t('Please select'),
         options: this.availableZones,
+        autoSelectFirst: true,
         required: true,
       },
       {
@@ -150,6 +151,7 @@ export class StepDetails extends Base {
         label: t('Datastore Type'),
         type: 'select',
         options: this.datastores,
+        autoSelectFirst: true,
         onChange: () => {
           this.resetFormValue(['datastore_version']);
         },
@@ -160,6 +162,7 @@ export class StepDetails extends Base {
         label: t('Datastore Version'),
         type: 'select',
         options: this.datastoresVersion,
+        autoSelectFirst: true,
         required: true,
       },
       {

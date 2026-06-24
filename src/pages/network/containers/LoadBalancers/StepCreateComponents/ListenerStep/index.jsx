@@ -123,6 +123,7 @@ export class ListenerStep extends Base {
         options: this.isOVN
           ? listenerProtocols.filter((it) => ['TCP', 'UDP'].includes(it.value))
           : listenerProtocols,
+        autoSelectFirst: true,
         onChange: () => {
           this.updateContext({
             pool_protocol: '',
