@@ -7,18 +7,19 @@ import globalNetworkStore, { NetworkStore } from 'stores/neutron/network';
 import { nameTypeValidate, ipValidate } from 'utils/validate';
 import { has } from 'lodash';
 import { networkStatus } from 'resources/neutron/network';
+import networkUtil from 'src/pages/network/containers/Network/actions/networkUtil';
 
 const { isIpCidr, isIPv6Cidr } = ipValidate;
 const { nameValidateWithoutChinese } = nameTypeValidate;
+const {
+  getDefaultDns: getDefaultDnsByRegion,
+  getDnsExtra,
+  getDnsTip,
+} = networkUtil;
 
 const DEFAULT_CIDR = {
   ipv4: '192.168.0.0/24',
   ipv6: '1001:1001::/64',
-};
-
-const DEFAULT_DNS = {
-  ipv4: '1.1.1.1',
-  ipv6: '1001:1001::2',
 };
 
 const IP_VERSION_OPTIONS = [
@@ -155,11 +156,18 @@ export class QuickStartNetwork extends ModalAction {
     return ipVersion === 'ipv4';
   }
 
+  get currentRegion() {
+    return this.currentUser?.region;
+  }
+
+  getDefaultDns = (ipVersion = 'ipv4') =>
+    getDefaultDnsByRegion(ipVersion, this.currentRegion);
+
   get defaultValue() {
     const ipVersion = this.state.ipVersion || 'ipv4';
     const defaultCidr = DEFAULT_CIDR[ipVersion];
     const defaultGatewayIp = getFirstIpFromCidr(defaultCidr);
-    const defaultDns = DEFAULT_DNS[ipVersion];
+    const defaultDns = this.getDefaultDns(ipVersion);
 
     const gatewayIp =
       ipVersion === 'ipv6' && !defaultGatewayIp
@@ -218,7 +226,7 @@ export class QuickStartNetwork extends ModalAction {
     if (this.formRef?.current) {
       const defaultCidr = DEFAULT_CIDR[value];
       const defaultGatewayIp = getFirstIpFromCidr(defaultCidr);
-      const defaultDns = DEFAULT_DNS[value];
+      const defaultDns = this.getDefaultDns(value);
 
       this.formRef.current.setFieldsValue({
         subnetCidr: defaultCidr,
@@ -247,7 +255,7 @@ export class QuickStartNetwork extends ModalAction {
       }
 
       const ipVersion = this.state.ipVersion || 'ipv4';
-      const defaultDns = DEFAULT_DNS[ipVersion];
+      const defaultDns = this.getDefaultDns(ipVersion);
       if (defaultDns) {
         this.formRef.current.setFieldsValue({
           dns: defaultDns,
@@ -352,10 +360,9 @@ export class QuickStartNetwork extends ModalAction {
         name: 'dns',
         label: t('DNS'),
         type: 'textarea',
-        extra: t('One entry per line(e.g. {ip})', {
-          ip: DEFAULT_DNS[ipVersion],
-        }),
-        placeholder: DEFAULT_DNS[ipVersion],
+        extra: getDnsExtra(ipVersion, this.currentRegion),
+        placeholder: this.getDefaultDns(ipVersion),
+        tip: getDnsTip(),
       },
       {
         name: 'createRouter',
