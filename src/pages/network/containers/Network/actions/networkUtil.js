@@ -25,6 +25,75 @@ const segmentationNetworkArray = ['vxlan', 'vlan', 'gre'];
 
 const segmentationNetworkRequireArray = ['vlan', 'gre'];
 
+const RACKSPACE_DNS_BY_REGION = {
+  dfw3: ['72.3.128.240', '72.3.128.241'],
+  iad3: ['69.20.0.164', '69.20.0.196'],
+  sjc3: ['216.109.154.188', '216.109.154.189'],
+};
+
+const PUBLIC_DNS_OPTIONS = {
+  google: ['8.8.8.8', '8.8.4.4'],
+  cloudflare: ['1.1.1.1', '1.0.0.1'],
+};
+
+const DEFAULT_RACKSPACE_DNS_REGION = 'dfw3';
+
+const formatDnsServers = (servers = []) => servers.join('\n');
+
+const DEFAULT_DNS = {
+  ipv4: formatDnsServers(RACKSPACE_DNS_BY_REGION[DEFAULT_RACKSPACE_DNS_REGION]),
+  ipv6: '',
+};
+
+const normalizeRegion = (region) => `${region || ''}`.toLowerCase();
+
+const getRackspaceDnsRegion = (region) => {
+  const regionKey = normalizeRegion(region);
+  return RACKSPACE_DNS_BY_REGION[regionKey]
+    ? regionKey
+    : DEFAULT_RACKSPACE_DNS_REGION;
+};
+
+const getRackspaceDnsServers = (region) =>
+  RACKSPACE_DNS_BY_REGION[getRackspaceDnsRegion(region)];
+
+const getDefaultDns = (ipVersion = 'ipv4', region) => {
+  if (ipVersion !== 'ipv4') {
+    return DEFAULT_DNS.ipv6;
+  }
+  return formatDnsServers(getRackspaceDnsServers(region));
+};
+
+const getDnsExample = (ipVersion = 'ipv4', region) => {
+  if (ipVersion !== 'ipv4') {
+    return '1001:1001::';
+  }
+  return getRackspaceDnsServers(region).join(', ');
+};
+
+const getDnsExtra = (ipVersion = 'ipv4', region) => {
+  const base = t('One entry per line(e.g. {ip})', {
+    ip: getDnsExample(ipVersion, region),
+  });
+  if (ipVersion !== 'ipv4') {
+    return base;
+  }
+  return t('{base}. Rackspace DNS servers for {region}: {rackspaceDns}.', {
+    base,
+    region: getRackspaceDnsRegion(region).toUpperCase(),
+    rackspaceDns: getRackspaceDnsServers(region).join(', '),
+  });
+};
+
+const getDnsTip = () =>
+  t(
+    'Popular public DNS alternatives: Google {googleDns}; Cloudflare {cloudflareDns}.',
+    {
+      googleDns: PUBLIC_DNS_OPTIONS.google.join(', '),
+      cloudflareDns: PUBLIC_DNS_OPTIONS.cloudflare.join(', '),
+    }
+  );
+
 const checkAllocation_pools = (rule, value) => {
   if (value && isString(value)) {
     const lines = value.trim().split(/\s*[\r\n]+\s*/g);
@@ -319,6 +388,13 @@ const getHostRoutesIntoLines = (host_routes) => {
 };
 
 export default {
+  DEFAULT_DNS,
+  RACKSPACE_DNS_BY_REGION,
+  PUBLIC_DNS_OPTIONS,
+  getDefaultDns,
+  getDnsExample,
+  getDnsExtra,
+  getDnsTip,
   physicalNetworkArray,
   segmentationNetworkArray,
   segmentationNetworkRequireArray,

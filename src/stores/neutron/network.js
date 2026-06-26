@@ -309,7 +309,7 @@ export class NetworkStore extends Base {
       project_id,
       network_id,
       subnet_name,
-      enable_dhcp,
+      enable_dhcp = true,
       ip_version,
       ipv6_address_mode,
       ipv6_ra_mode,
