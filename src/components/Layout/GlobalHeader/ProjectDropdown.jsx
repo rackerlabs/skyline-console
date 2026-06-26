@@ -14,13 +14,35 @@
 
 import React from 'react';
 import { inject, observer } from 'mobx-react';
-import { Spin, Divider } from 'antd';
+import { Spin, Tooltip } from 'antd';
 import { AppstoreOutlined, SwapOutlined } from '@ant-design/icons';
 import ItemActionButtons from 'components/Tables/Base/ItemActionButtons';
+import globalUserStore from 'stores/keystone/user';
+import globalTagStore from 'stores/keystone/tag';
 import styles from './index.less';
 import ProjectSelect from './ProjectTable';
 
 export class ProjectDropdown extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      projectTags: [],
+      showTooltip: false,
+    };
+  }
+
+  componentDidMount() {
+    this.loadProjectTags();
+  }
+
+  componentDidUpdate(prevProps) {
+    const prevProjectId = prevProps.rootStore?.user?.project?.id;
+    const projectId = this.props.rootStore?.user?.project?.id;
+    if (projectId && projectId !== prevProjectId) {
+      this.loadProjectTags();
+    }
+  }
+
   get user() {
     const { user } = this.props.rootStore;
     return user;
@@ -41,6 +63,50 @@ export class ProjectDropdown extends React.Component {
     };
   }
 
+  hideTooltip = () => {
+    this.setState({ showTooltip: false });
+  };
+
+  normalizeTags = (tags = []) => {
+    if (!Array.isArray(tags)) {
+      return [];
+    }
+    return tags
+      .map((item) => {
+        if (typeof item === 'string') {
+          return item.trim();
+        }
+        return (item.name || item.value || '').trim();
+      })
+      .filter(Boolean);
+  };
+
+  loadProjectTags = async () => {
+    const { projectId } = this.project;
+    if (!projectId) {
+      this.setState({ projectTags: [] });
+      return;
+    }
+
+    try {
+      await globalUserStore.getUserProjects();
+      const project = (globalUserStore.userProjects.data || []).find(
+        (item) => item.id === projectId
+      );
+      if (project?.tags?.length) {
+        this.setState({ projectTags: this.normalizeTags(project.tags) });
+        return;
+      }
+
+      await globalTagStore.fetchList({ project_id: projectId });
+      this.setState({
+        projectTags: this.normalizeTags(globalTagStore.list.data),
+      });
+    } catch (e) {
+      this.setState({ projectTags: [] });
+    }
+  };
+
   render() {
     if (!this.user) {
       return (
@@ -55,18 +121,71 @@ export class ProjectDropdown extends React.Component {
       );
     }
     const { projectName, userDomainName } = this.project;
+    const { projectTags } = this.state;
+    const projectTag = projectTags.join(', ');
+
+    const compactPrefixDisplay = projectTag
+      ? `DDI: ${projectTag} | ${projectName}`
+      : projectName;
+
+    const mobileDisplay = projectTag ? `DDI: ${projectTag}` : projectName;
+
+    const tooltipTitle = (
+      <>
+        <div>Project Name: {projectName}</div>
+        {userDomainName && <div>Domain: {userDomainName}</div>}
+        <div className={styles['project-tooltip-hint']}>
+          {t('Click to switch project')}
+        </div>
+      </>
+    );
+
     return (
-      <div className={styles.project} id="project-switch">
-        <ItemActionButtons
-          actions={{ moreActions: [{ action: ProjectSelect }] }}
-        />
-        <AppstoreOutlined className={styles['project-icon']} />
-        <span className={styles['project-name']} title={projectName}>
-          {projectName}
-        </span>
-        <SwapOutlined className={styles['project-toggle']} />
-        <Divider type="vertical" className={styles['project-divider']} />
-        <span className={styles.domain}>{userDomainName}</span>
+      <div
+        className={styles['project-wrap']}
+        onMouseEnter={() => this.setState({ showTooltip: true })}
+        onMouseLeave={this.hideTooltip}
+        onMouseDown={this.hideTooltip}
+      >
+        <Tooltip
+          visible={this.state.showTooltip}
+          title={tooltipTitle}
+          overlayClassName={styles['project-tooltip']}
+          destroyTooltipOnHide
+        >
+          <div className={styles.project} id="project-switch">
+            <ItemActionButtons
+              actions={{ moreActions: [{ action: ProjectSelect }] }}
+              onClickAction={this.hideTooltip}
+            />
+            <AppstoreOutlined className={styles['project-icon']} />
+            <div className={styles['project-info']}>
+              <span className={styles['project-name']}>
+                <span className={styles['project-name-desktop']}>
+                  {compactPrefixDisplay}
+                  {userDomainName ? (
+                    <>
+                      {' '}
+                      <SwapOutlined className={styles['project-toggle']} />
+                      <span className={styles['project-domain']}>
+                        {` ${userDomainName}`}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      {' '}
+                      <SwapOutlined className={styles['project-toggle']} />
+                    </>
+                  )}
+                </span>
+                <span className={styles['project-name-mobile']}>
+                  {mobileDisplay}{' '}
+                  <SwapOutlined className={styles['project-toggle']} />
+                </span>
+              </span>
+            </div>
+          </div>
+        </Tooltip>
       </div>
     );
   }
