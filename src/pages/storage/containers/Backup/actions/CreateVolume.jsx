@@ -138,6 +138,9 @@ export class CreateVolume extends ModalAction {
         options: this.availableZones,
         required: true,
         placeholder: t('Please select availability zone'),
+        tip: t(
+          'A logical grouping of resources that controls resource placement. Availability zones help isolate workloads and improve fault tolerance.'
+        ),
       },
     ];
   }

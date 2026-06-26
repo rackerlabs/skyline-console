@@ -115,20 +115,48 @@
   }
 }
 
+.project-wrap {
+  float: left;
+  min-width: 0;
+  max-width: calc(100% - 360px);
+}
+
+.project-tooltip {
+  :global {
+    .ant-tooltip-inner {
+      text-align: left;
+    }
+  }
+
+  .project-tooltip-hint {
+    margin-top: 6px;
+    padding-top: 6px;
+    font-size: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 20%);
+    opacity: 0.85;
+  }
+}
+
 .project {
   position: relative;
   display: flex;
   align-items: center;
-  float: left;
   min-width: 0;
-  max-width: calc(100% - 360px);
   font-size: 14px;
   line-height: @header-height;
   cursor: pointer;
 
   .project-icon {
+    flex-shrink: 0;
     margin-right: 10px;
     color: @layout-text-color;
+  }
+
+  .project-info {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    overflow: hidden;
   }
 
   .project-name {
@@ -139,9 +167,15 @@
     text-overflow: ellipsis;
   }
 
+  .project-name-mobile {
+    display: none;
+  }
+
   .project-toggle {
-    margin-left: 24px;
+    flex-shrink: 0;
+    margin: 0 4px;
     color: #a3a3a3;
+    vertical-align: middle;
   }
 
   :global {
@@ -262,8 +296,19 @@
     width: 120px;
   }
 
-  .project {
+  .project-wrap {
     max-width: calc(100% - 286px);
+  }
+
+  .project-tooltip {
+    :global {
+      .ant-tooltip-inner {
+        max-width: calc(100vw - 48px);
+      }
+    }
+  }
+
+  .project {
     font-size: 12px;
 
     .project-icon {
@@ -271,16 +316,15 @@
     }
 
     .project-name {
-      max-width: 92px;
+      max-width: 140px;
     }
 
-    .project-toggle {
-      margin-left: 8px;
+    .project-name-desktop {
+      display: none;
     }
 
-    .project-divider {
-      margin-right: 8px;
-      margin-left: 8px;
+    .project-name-mobile {
+      display: inline;
     }
   }
 
@@ -336,11 +380,13 @@
     width: 96px;
   }
 
-  .project {
+  .project-wrap {
     max-width: calc(100% - 270px);
+  }
 
+  .project {
     .project-name {
-      max-width: 48px;
+      max-width: 100px;
     }
   }
 

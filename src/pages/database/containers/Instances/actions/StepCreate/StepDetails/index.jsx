@@ -115,7 +115,11 @@ export class StepDetails extends Base {
         placeholder: t('Please select'),
         options: this.availableZones,
         autoSelectFirst: true,
+        disableWhenSingleOption: true,
         required: true,
+        tip: t(
+          'A logical grouping of resources that controls resource placement. Availability zones help isolate workloads and improve fault tolerance.'
+        ),
       },
       {
         name: 'instance_name',

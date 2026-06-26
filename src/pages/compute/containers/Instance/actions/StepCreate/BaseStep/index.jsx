@@ -42,6 +42,8 @@ import {
 } from 'resources/blazar/reservation';
 import {
   volumeTypes,
+  getDefaultVolumeTypeOption,
+  getMinVolumeSizeFromType,
   getDiskInfo,
   getInstanceSnapshotDataDisk,
 } from 'resources/cinder/snapshot';
@@ -176,20 +178,69 @@ export class BaseStep extends Base {
       }));
   }
 
-  get defaultVolumeType() {
-    const data = {
-      size: 10,
-      deleteType: 1,
+  getDefaultVolumeDiskItem(deleteType) {
+    const defaultType = getDefaultVolumeTypeOption();
+    const disk = {
+      size: defaultType ? getMinVolumeSizeFromType(defaultType) : 1,
+      deleteType,
     };
-    return data;
+    if (defaultType) {
+      disk.type = defaultType.value;
+      disk.typeOption = defaultType;
+    }
+    return disk;
   }
 
-  getDefaultSystemDisk() {
-    return {
-      size: 1,
-      deleteType: 1,
-    };
+  get defaultVolumeType() {
+    return this.getDefaultVolumeDiskItem(1);
   }
+
+  setDefaultSystemDiskType() {
+    const { bootFromVolume = true } = this.state;
+    if (!bootFromVolume) {
+      return;
+    }
+    const systemDisk = this.getDefaultSystemDisk(this.state.image);
+    this.updateFormValue('systemDisk', systemDisk);
+    this.updateContext({ systemDisk });
+  }
+
+  getDefaultSystemDisk(image) {
+    const disk = this.getDefaultVolumeDiskItem(0);
+    const imageData =
+      image === undefined
+        ? this.sourceTypeIsImage
+          ? this.state.image
+          : null
+        : image;
+    disk.size = this.getSystemDiskMinSize(disk.typeOption, imageData);
+    return disk;
+  }
+
+  syncSystemDiskSize(image) {
+    const { bootFromVolume = true } = this.state;
+    if (!bootFromVolume || !image) {
+      return;
+    }
+    const currentDisk =
+      this.props.context.systemDisk || this.getDefaultVolumeDiskItem(0);
+    const typeOption = currentDisk.typeOption || getDefaultVolumeTypeOption();
+    const systemDisk = {
+      ...currentDisk,
+      type: typeOption?.value ?? currentDisk.type,
+      typeOption: typeOption ?? currentDisk.typeOption,
+      size: this.getSystemDiskMinSize(typeOption, image),
+    };
+    this.updateFormValue('systemDisk', systemDisk);
+    this.updateContext({ systemDisk });
+  }
+
+  onImageChange = (value) => {
+    const image = value?.selectedRows?.[0];
+    if (image) {
+      this.syncSystemDiskSize(image);
+    }
+  };
 
   get sourceTypes() {
     const { image, snapshot, volume } = this.locationParams;
@@ -299,6 +350,7 @@ export class BaseStep extends Base {
   async getVolumeTypes() {
     if (this.enableCinder) {
       await this.volumeTypeStore.fetchList();
+      this.setDefaultSystemDiskType();
     }
   }
 
@@ -365,7 +417,7 @@ export class BaseStep extends Base {
       return Promise.reject('');
     }
     if (!size) {
-      return Promise.reject(new Error(t('Please set the system disk size!')));
+      return Promise.reject(new Error(t('Please set the boot disk size!')));
     }
     if (size < minSize) {
       return Promise.reject(
@@ -434,10 +486,10 @@ export class BaseStep extends Base {
     return minSize;
   }
 
-  getSystemDiskMinSize() {
+  getSystemDiskMinSize(typeOption, image) {
     const { systemDisk } = this.props.context;
-    const selectedVolumeTypeSpecs =
-      systemDisk?.typeOption?.originData?.extra_specs;
+    const selectedVolumeTypeSpecs = (typeOption || systemDisk?.typeOption)
+      ?.originData?.extra_specs;
     const minVolumeSize =
       selectedVolumeTypeSpecs?.['provisioning:min_vol_size'];
 
@@ -452,13 +504,14 @@ export class BaseStep extends Base {
       }
     }
 
-    // Compare with image min_disk and virtual_size if image source is selected
-    if (this.sourceTypeIsImage) {
-      const {
-        min_disk = 0,
-        size = 0,
-        virtual_size = 0,
-      } = this.state.image || {};
+    let imageData = image;
+    if (imageData === undefined) {
+      imageData = this.sourceTypeIsImage ? this.state.image : null;
+    }
+
+    // Compare with image min_disk and virtual_size when an image is available
+    if (imageData) {
+      const { min_disk = 0, size = 0, virtual_size = 0 } = imageData;
 
       const imageMinSize = this.getMaxOfImageOrSnapshot(
         min_disk,
@@ -502,6 +555,34 @@ export class BaseStep extends Base {
     return '';
   }
 
+  get operatingSystemTip() {
+    return (
+      <span>
+        <a
+          href="https://docs.rackspacecloud.com/openstack-glance-images/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {t('More about images')}
+        </a>
+      </span>
+    );
+  }
+
+  get instanceResourcesTip() {
+    return (
+      <span>
+        <a
+          href="https://docs.rackspacecloud.com/openstack-flavors/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {t('Help me choose a flavor')}
+        </a>
+      </span>
+    );
+  }
+
   initSourceChange() {
     const { snapshot, volume } = this.locationParams;
     if (snapshot) {
@@ -526,6 +607,10 @@ export class BaseStep extends Base {
     if (!value) {
       newData.dataDisk = [];
       this.updateFormValue('dataDisk', []);
+    } else {
+      const systemDisk = this.getDefaultSystemDisk();
+      this.updateFormValue('systemDisk', systemDisk);
+      newData.systemDisk = systemDisk;
     }
     this.updateContext(newData);
   };
@@ -701,7 +786,16 @@ export class BaseStep extends Base {
   };
 
   get imageColumns() {
-    return getImageColumns(this);
+    const hiddenDataIndexes = [
+      'min_disk',
+      'min_ram',
+      'visibility',
+      'size',
+      'virtual_size',
+    ];
+    return getImageColumns(this).filter(
+      (col) => !hiddenDataIndexes.includes(col.dataIndex)
+    );
   }
 
   get instanceSnapshotColumns() {
@@ -790,11 +884,11 @@ export class BaseStep extends Base {
     return [
       {
         value: true,
-        label: t('Yes - Create a new system disk'),
+        label: t('Yes'),
       },
       {
         value: false,
-        label: t('No - Do not create a new system disk'),
+        label: t('No'),
       },
     ];
   }
@@ -866,11 +960,12 @@ export class BaseStep extends Base {
         placeholder: t('Please select'),
         isWrappedValue: true,
         autoSelectFirst: true,
+        disableWhenSingleOption: true,
         required: !this.hasHostReservationSelected,
         hidden: this.hasHostReservationSelected,
         options: this.availableZones,
         tip: t(
-          'Availability zone refers to a physical area where power and network are independent of each other in the same area. In the same region, the availability zone and the availability zone can communicate with each other in the intranet, and the available zones can achieve fault isolation.'
+          'A logical grouping of compute hosts that controls where instances are deployed. Availability zones help isolate workloads and improve fault tolerance.'
         ),
       },
       this.hostReservationFormItem,
@@ -879,13 +974,14 @@ export class BaseStep extends Base {
       },
       {
         name: 'source',
-        label: t('Start Source'),
+        label: t('Boot Source'),
         type: 'radio',
         options: this.sourceTypes,
         required: true,
         isWrappedValue: true,
+        nowrap: true,
         tip: t(
-          'The start source is a template used to create an instance. You can choose an image or a bootable volume.'
+          'The boot source is a template used to create an instance. You can choose an image or a bootable volume.'
         ),
         onChange: (value) => {
           this.onSourceChange(value);
@@ -894,6 +990,7 @@ export class BaseStep extends Base {
       {
         name: 'image',
         label: t('Operating System'),
+        tip: this.operatingSystemTip,
         type: 'select-table',
         data: this.images,
         isLoading: imageLoading,
@@ -911,6 +1008,7 @@ export class BaseStep extends Base {
         tabs: filteredTabs,
         defaultTabValue: this.locationParams.os_distro || filteredTabs[0].value,
         selectedLabel: t('Image'),
+        onChange: this.onImageChange,
         onTabChange: this.onImageTabChange,
         validateTrigger: [],
       },
@@ -969,17 +1067,25 @@ export class BaseStep extends Base {
           },
         },
         options: this.bootFromVolumeOptions,
+        tip: t(
+          'When set to Yes, a new boot volume is created from the selected image and the instance boots from that volume. When set to No, the instance boots from the image on the flavor local disk and no boot volume is created.'
+        ),
       },
       {
         name: 'systemDisk',
-        label: t('System Disk'),
+        label: t('Boot Disk'),
         type: 'instance-volume',
         options: this.volumeTypes,
         required: this.showSystemDiskByBootFromVolume,
         hidden: !this.showSystemDiskByBootFromVolume,
         validator: this.checkSystemDisk,
         minSize: this.getSystemDiskMinSize(),
+        getSizeForTypeChange: (typeOption) =>
+          this.getSystemDiskMinSize(typeOption, this.state.image),
         extra: t('Disk size is limited by the min disk of flavor, image, etc.'),
+        tip: t(
+          'The boot disk stores the operating system. When booting from an image, you can create a new volume and set its type and size here.'
+        ),
         onChange: this.onSystemDiskChange,
         dependencies: ['flavor', 'image', 'instanceSnapshot', 'bootFromVolume'],
       },
@@ -991,7 +1097,7 @@ export class BaseStep extends Base {
       },
       {
         name: 'instanceSnapshotDisk',
-        label: t('System Disk'),
+        label: t('Boot Disk'),
         hidden: this.hideInstanceSnapshotSystemDisk,
         component: this.renderSnapshotDisk(),
       },
@@ -1012,6 +1118,9 @@ export class BaseStep extends Base {
         minCount: 0,
         addTextTips: t('Data Disks'),
         addText: t('Add Data Disks'),
+        tip: t(
+          'Additional volumes attached to the instance for data storage. You can add multiple disks and configure type, size, and delete behavior for each.'
+        ),
         extra: t(
           'Too many disks mounted on the instance will affect the read and write performance. It is recommended not to exceed 16 disks.'
         ),
@@ -1023,7 +1132,8 @@ export class BaseStep extends Base {
       },
       {
         name: 'flavor',
-        label: t('Specification'),
+        label: t('Instance Resources'),
+        tip: this.instanceResourcesTip,
         type: 'select-table',
         component: this.getFlavorComponent({
           size: this.getMinDiskSizeForFlavor(),

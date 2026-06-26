@@ -90,12 +90,19 @@ export default class index extends Component {
       checkBoxInfo,
       allowClear = true,
       showSearch = true,
+      disabled,
+      disableWhenSingleOption,
+      options,
       ...rest
     } = this.props;
+    const selectDisabled =
+      disabled || (disableWhenSingleOption && options?.length === 1);
     if (isUndefined(value) || isNull(value)) {
       return (
         <Select
           {...rest}
+          options={options}
+          disabled={selectDisabled}
           allowClear={allowClear}
           showSearch={showSearch}
           placeholder={placeholder}
@@ -104,7 +111,6 @@ export default class index extends Component {
       );
     }
     if (checkOptions) {
-      const { options } = this.props;
       const { selectAll } = this.state;
       const box = (
         <Checkbox onChange={this.onCheckChange} checked={selectAll}>
@@ -116,6 +122,7 @@ export default class index extends Component {
           <Col span={12}>
             <Select
               {...rest}
+              disabled={selectDisabled}
               allowClear={allowClear}
               showSearch={showSearch}
               placeholder={placeholder}
@@ -133,6 +140,8 @@ export default class index extends Component {
     return (
       <Select
         {...rest}
+        options={options}
+        disabled={selectDisabled}
         allowClear={allowClear}
         showSearch={showSearch}
         placeholder={placeholder}

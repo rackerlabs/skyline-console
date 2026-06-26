@@ -30,6 +30,39 @@ export const volumeTypes = () => {
   }));
 };
 
+export const getDefaultVolumeTypeOption = () => {
+  const types = volumeTypes();
+  const metadataDefaultType = types.find((it) =>
+    Object.entries(it.originData?.extra_specs || {}).some(([key, value]) => {
+      const normalizedKey = key.replace(/^:/, '').toLowerCase();
+      const normalizedValue = String(value).toLowerCase();
+      return (
+        normalizedKey === 'default' &&
+        (normalizedValue === 'true' || normalizedValue === '<is> true')
+      );
+    })
+  );
+  return (
+    metadataDefaultType ||
+    types.find((it) => it.label === 'HA-Performance') ||
+    types[0] ||
+    null
+  );
+};
+
+export const getMinVolumeSizeFromType = (volumeTypeOption) => {
+  const minVolumeSize =
+    volumeTypeOption?.originData?.extra_specs?.['provisioning:min_vol_size'];
+  let minSize = 1;
+  if (minVolumeSize) {
+    const volTypeMinSize = parseInt(minVolumeSize, 10);
+    if (!Number.isNaN(volTypeMinSize)) {
+      minSize = Math.max(minSize, volTypeMinSize);
+    }
+  }
+  return minSize;
+};
+
 export const getDiskInfo = (detail) => {
   const {
     snapshotDetail: { size = 0 } = {},

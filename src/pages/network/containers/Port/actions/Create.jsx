@@ -308,7 +308,7 @@ export class CreateAction extends ModalAction {
         label: t('Port Security'),
         type: 'switch',
         tip: t(
-          'Disabling port security will turn off the security group policy protection and anti-spoofing protection on the port. General applicable scenarios: NFV or operation and maintenance Debug.'
+          'When enabled, security groups and anti-spoofing protection are applied to this port. Disable only for specific use cases, such as NFV workloads or troubleshooting.'
         ),
         onChange: (e) => {
           this.setState({

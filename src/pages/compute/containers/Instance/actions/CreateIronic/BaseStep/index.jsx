@@ -159,10 +159,12 @@ export class BaseStep extends Base {
         type: 'select',
         placeholder: t('Please select'),
         isWrappedValue: true,
+        autoSelectFirst: true,
+        disableWhenSingleOption: true,
         required: true,
         options: this.availableZones,
         tip: t(
-          'Availability zone refers to a physical area where power and network are independent of each other in the same area. In the same region, the availability zone and the availability zone can communicate with each other in the intranet, and the available zones can achieve fault isolation.'
+          'A logical grouping of compute hosts that controls where instances are deployed. Availability zones help isolate workloads and improve fault tolerance.'
         ),
       },
       {
@@ -170,7 +172,7 @@ export class BaseStep extends Base {
       },
       {
         name: 'flavor',
-        label: t('Specification'),
+        label: t('Instance Resources'),
         type: 'select-table',
         component: (
           <FlavorSelectTable isIronic="true" onChange={this.onFlavorChange} />

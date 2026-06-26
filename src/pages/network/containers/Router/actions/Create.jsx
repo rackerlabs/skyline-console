@@ -58,7 +58,7 @@ export class Create extends ModalAction {
 
   get aZones() {
     return (globalNeutronStore.availableZones || [])
-      .filter((it) => it.state === 'available' && it.resource === 'router')
+      .filter((it) => it.state === 'available')
       .map((it) => ({
         ...it,
         id: it.name,

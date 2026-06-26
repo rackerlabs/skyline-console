@@ -15,6 +15,7 @@
 import React from 'react';
 import { Select, Checkbox, Row, Col, Form, InputNumber } from 'antd';
 import PropTypes from 'prop-types';
+import { getMinVolumeSizeFromType } from 'resources/cinder/snapshot';
 import styles from './index.less';
 
 export default class InstanceVolume extends React.Component {
@@ -22,6 +23,7 @@ export default class InstanceVolume extends React.Component {
     options: PropTypes.array,
     value: PropTypes.any,
     minSize: PropTypes.number,
+    getSizeForTypeChange: PropTypes.func,
   };
 
   static defaultProps = {
@@ -43,18 +45,22 @@ export default class InstanceVolume extends React.Component {
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
-    if (
-      nextProps.options !== prevState.options ||
-      nextProps.minSize !== prevState.minSize
-    ) {
-      const { options, value, minSize } = nextProps;
-      return {
-        options,
-        type: value.type,
-        minSize,
-      };
-    }
-    return null;
+    const { options, value = {}, minSize } = nextProps;
+    const { type, size, deleteType } = value;
+    const canSyncByType = type === undefined || type === prevState.type;
+    const shouldSync =
+      options !== prevState.options ||
+      minSize !== prevState.minSize ||
+      (canSyncByType && size !== prevState.size) ||
+      (canSyncByType && deleteType !== prevState.deleteType);
+    if (!shouldSync) return null;
+    return {
+      options,
+      minSize,
+      ...(type !== undefined && prevState.type === undefined ? { type } : {}),
+      ...(canSyncByType && size !== undefined ? { size } : {}),
+      ...(canSyncByType && deleteType !== undefined ? { deleteType } : {}),
+    };
   }
 
   componentDidMount() {
@@ -103,29 +109,36 @@ export default class InstanceVolume extends React.Component {
   };
 
   onSelectChange = (value) => {
+    const {
+      options = [],
+      minSize: propMinSize = 0,
+      getSizeForTypeChange,
+    } = this.props;
+    const typeOption = options.find((it) => it.value === value);
     this.setState(
-      {
+      ({ size }) => ({
         type: value,
-      },
+        size: !typeOption
+          ? size
+          : getSizeForTypeChange
+          ? getSizeForTypeChange(typeOption)
+          : Math.max(propMinSize, getMinVolumeSizeFromType(typeOption)),
+      }),
       this.onChange
     );
+  };
+
+  updateAndNotify = (statePatch) => {
+    this.setState(statePatch, this.onChange);
   };
 
   onInputChange = (value) => {
-    this.setState(
-      {
-        size: value,
-      },
-      this.onChange
-    );
+    this.updateAndNotify({ size: value });
   };
 
   onDeleteChange = () => {
-    const { deleteType } = this.state;
     this.setState(
-      {
-        deleteType: 1 - deleteType,
-      },
+      ({ deleteType }) => ({ deleteType: 1 - deleteType }),
       this.onChange
     );
   };
@@ -161,9 +174,8 @@ export default class InstanceVolume extends React.Component {
         onInput={(e) => this.onInputChange(e * 1)}
       />
     );
-    const deleteValue = deleteType === 1;
     const checkbox = showDelete ? (
-      <Checkbox onChange={this.onDeleteChange} checked={deleteValue}>
+      <Checkbox onChange={this.onDeleteChange} checked={deleteType === 1}>
         {t('Deleted with the instance')}
       </Checkbox>
     ) : null;

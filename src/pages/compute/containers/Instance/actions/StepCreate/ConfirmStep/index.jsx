@@ -238,11 +238,11 @@ export class ConfirmStep extends Base {
       //   value: context.resource,
       // },
       {
-        label: t('Start Source'),
+        label: t('Boot Source'),
         value: context.source.label,
       },
       {
-        label: t('System Disk'),
+        label: t('Boot Disk'),
         value: this.getSystemDisk(),
       },
       {
@@ -255,7 +255,7 @@ export class ConfirmStep extends Base {
         value: this.getAvailableZone(),
       },
       {
-        label: t('Start Source Name'),
+        label: t('Boot Source Name'),
         value: this.getSourceValue(),
       },
       {
@@ -282,7 +282,7 @@ export class ConfirmStep extends Base {
     ];
     if (!this.enableCinder) {
       baseItems = baseItems.filter(
-        (it) => ![t('System Disk'), t('Data Disk')].includes(it.label)
+        (it) => ![t('Boot Disk'), t('Data Disk')].includes(it.label)
       );
     }
     if (context.source.value.toUpperCase() !== 'BOOTABLEVOLUME') {

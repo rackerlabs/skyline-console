@@ -244,13 +244,13 @@ export class Rebuild extends ModalAction {
       },
       {
         name: 'source',
-        label: t('Start Source'),
+        label: t('Boot Source'),
         type: 'radio',
         options: this.sourceTypes,
         required: true,
         isWrappedValue: true,
         tip: t(
-          'The start source is a template used to rebuild an instance. You can choose an image or an instance snapshot.'
+          'The boot source is a template used to rebuild an instance. You can choose an image or an instance snapshot.'
         ),
         onChange: this.onSourceChange,
       },

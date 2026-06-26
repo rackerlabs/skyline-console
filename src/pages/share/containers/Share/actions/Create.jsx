@@ -200,6 +200,11 @@ export class Create extends FormAction {
         label: t('Availability Zone'),
         type: 'select',
         options: this.shareStore.zoneOptions,
+        autoSelectFirst: true,
+        disableWhenSingleOption: true,
+        tip: t(
+          'A logical grouping of resources that controls resource placement. Availability zones help isolate workloads and improve fault tolerance.'
+        ),
       },
       {
         type: 'divider',
