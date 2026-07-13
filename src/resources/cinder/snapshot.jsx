@@ -32,19 +32,17 @@ export const volumeTypes = () => {
 
 export const getDefaultVolumeTypeOption = () => {
   const types = volumeTypes();
-  const metadataDefaultType = types.find((it) =>
-    Object.entries(it.originData?.extra_specs || {}).some(([key, value]) => {
-      const normalizedKey = key.replace(/^:/, '').toLowerCase();
-      const normalizedValue = String(value).toLowerCase();
-      return (
-        normalizedKey === 'default' &&
-        (normalizedValue === 'true' || normalizedValue === '<is> true')
-      );
-    })
-  );
   return (
-    metadataDefaultType ||
-    types.find((it) => it.label === 'HA-Performance') ||
+    types.find((it) =>
+      Object.entries(it.originData?.extra_specs || {}).some(([key, value]) => {
+        const normalizedKey = key.replace(/^:/, '').toLowerCase();
+        const normalizedValue = String(value).toLowerCase();
+        return (
+          normalizedKey === 'is_default' &&
+          (normalizedValue === 'true' || normalizedValue === '<is> true')
+        );
+      })
+    ) ||
     types[0] ||
     null
   );
