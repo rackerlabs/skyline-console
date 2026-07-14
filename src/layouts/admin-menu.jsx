@@ -1149,6 +1149,63 @@ const renderMenu = (t) => {
       ],
     },
     {
+      path: '/scheduled-actions',
+      name: t('Scheduled Actions'),
+      key: 'scheduledActionsAdmin',
+      endpoints: 'qonos',
+      icon: <CalendarOutlined />,
+      children: [
+        {
+          path: '/scheduled-actions/schedule',
+          name: t('Schedules'),
+          key: 'qonosScheduleAdmin',
+          level: 1,
+          children: [
+            {
+              path: '/scheduled-actions/schedule/create',
+              name: t('Create Schedule'),
+              key: 'qonosScheduleCreateAdmin',
+              level: 2,
+            },
+            {
+              path: /^\/scheduled-actions\/schedule\/detail\/.[^/]+$/,
+              name: t('Schedule Detail'),
+              key: 'qonosScheduleDetailAdmin',
+              level: 2,
+              routePath: '/scheduled-actions/schedule/detail/:id',
+            },
+          ],
+        },
+        {
+          path: '/scheduled-actions/execution-profile',
+          name: t('Execution Profiles'),
+          key: 'qonosExecutionProfileAdmin',
+          level: 1,
+        },
+        {
+          path: '/scheduled-actions/job',
+          name: t('Jobs'),
+          key: 'qonosJobAdmin',
+          level: 1,
+          children: [
+            {
+              path: /^\/scheduled-actions\/job\/detail\/.[^/]+$/,
+              name: t('Job Detail'),
+              key: 'qonosJobDetailAdmin',
+              level: 2,
+              routePath: '/scheduled-actions/job/detail/:id',
+            },
+          ],
+        },
+        {
+          path: '/scheduled-actions/trust-admin',
+          name: t('Trusts'),
+          key: 'qonosTrustAdmin',
+          level: 1,
+        },
+      ],
+    },
+    {
       path: '/maintenance-notifications-admin',
       name: t('System Maintenance'),
       key: 'maintenanceNotificationsAdmin',
