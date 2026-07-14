@@ -129,6 +129,11 @@ export class KeystoneClient extends Base {
         ],
       },
       {
+        key: 'OS-TRUST/trusts',
+        name: 'trusts',
+        responseKey: 'trust',
+      },
+      {
         name: 'systemGroups',
         key: 'system/groups',
         subResources: [
