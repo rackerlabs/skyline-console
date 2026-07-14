@@ -77,6 +77,8 @@ const ScheduledActions = lazy(() =>
   import(
     /* webpackChunkName: "scheduled-actions" */ 'pages/scheduled-actions/App'
   )
+const ZaqarApp = lazy(() =>
+  import(/* webpackChunkName: "zaqar" */ 'pages/zaqar/App')
 );
 const PATH = '/';
 
@@ -154,6 +156,12 @@ export default [
       {
         path: `/scheduled-actions`,
         component: ScheduledActions,
+        path: `/zaqar-admin`,
+        component: ZaqarApp,
+      },
+      {
+        path: `/zaqar`,
+        component: ZaqarApp,
       },
       { path: '*', component: E404 },
     ],

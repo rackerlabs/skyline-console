@@ -92,6 +92,7 @@ export const policyMap = {
   ],
   blazar: ['osreservations:'],
   qonos: ['qonos:'],
+  zaqar: ['messaging:'],
 };
 
 export const convertPolicyMap = (map) => {

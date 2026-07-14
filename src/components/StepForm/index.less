@@ -221,6 +221,25 @@
 }
 
 @media (max-width: 768px) {
+  .right-top-extra-wrapper {
+    top: 8px;
+    right: 8px;
+    max-width: calc(100vw - 32px);
+
+    :global {
+      .content-wrapper,
+      .ant-card {
+        max-width: calc(100vw - 32px);
+      }
+
+      .ant-card-body {
+        max-height: calc(100vh - 260px);
+        padding: 12px;
+        overflow-y: auto;
+      }
+    }
+  }
+
   .step {
     min-height: 50px;
     margin-bottom: 8px;

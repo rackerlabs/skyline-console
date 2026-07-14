@@ -51,7 +51,7 @@ export class Create extends ModalAction {
     this.shareStore = new ShareStore();
     this.groupTypeStore.fetchList();
     this.networkStore.fetchList();
-    this.getZones();
+    this.shareStore.fetchAvailableZones();
     this.state.types = [];
     this.state.showNetworks = false;
   }
@@ -66,10 +66,6 @@ export class Create extends ModalAction {
 
   getModalSize() {
     return 'large';
-  }
-
-  getZones() {
-    this.shareStore.fetchAvailableZones();
   }
 
   getShareTypes() {
@@ -139,6 +135,11 @@ export class Create extends ModalAction {
         label: t('Availability Zone'),
         type: 'select',
         options: this.shareStore.zoneOptions,
+        autoSelectFirst: true,
+        disableWhenSingleOption: true,
+        tip: t(
+          'A logical grouping of resources that controls resource placement. Availability zones help isolate workloads and improve fault tolerance.'
+        ),
       },
       {
         name: 'shareGroupType',

@@ -18,3 +18,17 @@
     }
   }
 }
+
+.nowrap {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  max-width: 100%;
+  overflow-x: auto;
+
+  :global {
+    .ant-radio-button-wrapper {
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+  }
+}

@@ -89,6 +89,7 @@ export class PoolStep extends Base {
         label: t('Pool Algorithm'),
         type: 'select',
         options: this.isOVN ? OvnPoolAlgorithm : Algorithm,
+        autoSelectFirst: true,
         onChange: this.handleAlgorithmChange,
         extra: pool_lb_algorithm && algorithmTip[pool_lb_algorithm],
         required: true,
@@ -100,6 +101,7 @@ export class PoolStep extends Base {
         options: this.isOVN
           ? this.filterOptions.filter((it) => ['TCP', 'UDP'].includes(it.value))
           : this.filterOptions,
+        autoSelectFirst: true,
         onChange: () => {
           this.updateContext({
             health_type: '',

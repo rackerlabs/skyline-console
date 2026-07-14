@@ -114,7 +114,12 @@ export class StepDetails extends Base {
         type: 'select',
         placeholder: t('Please select'),
         options: this.availableZones,
+        autoSelectFirst: true,
+        disableWhenSingleOption: true,
         required: true,
+        tip: t(
+          'A logical grouping of resources that controls resource placement. Availability zones help isolate workloads and improve fault tolerance.'
+        ),
       },
       {
         name: 'instance_name',
@@ -150,6 +155,7 @@ export class StepDetails extends Base {
         label: t('Datastore Type'),
         type: 'select',
         options: this.datastores,
+        autoSelectFirst: true,
         onChange: () => {
           this.resetFormValue(['datastore_version']);
         },
@@ -160,6 +166,7 @@ export class StepDetails extends Base {
         label: t('Datastore Version'),
         type: 'select',
         options: this.datastoresVersion,
+        autoSelectFirst: true,
         required: true,
       },
       {

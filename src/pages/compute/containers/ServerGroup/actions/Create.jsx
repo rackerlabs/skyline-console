@@ -99,6 +99,7 @@ export class Create extends ModalAction {
         type: 'select',
         placeholder: t('Please select policy'),
         options: policies,
+        autoSelectFirst: true,
         required: true,
         tip: (
           <div>
@@ -114,16 +115,16 @@ export class Create extends ModalAction {
                 'The instances in the anti-affinity group are strictly allocated to different physical machines. When there are no more physical machines to allocate, the allocation fails.'
               )}
             </p>
-            <p>{t('Affinity (not mandatory):')}</p>
+            <p>{t('Soft-Affinity (not mandatory):')}</p>
             <p>
               {t(
-                'The instances in the affinity group are allocated to the same physical machine as much as possible, and when there are no more physical machines to allocate, the normal allocation strategy is returned.'
+                'The instances in the soft-affinity group are allocated to the same physical machine as much as possible, and when there are no more physical machines to allocate, the normal allocation strategy is returned.'
               )}
             </p>
-            <p>{t('Anti-affinity (not mandatory):')}</p>
+            <p>{t('Soft-Anti-Affinity (not mandatory):')}</p>
             <p>
               {t(
-                'The instances in the anti-affinity group are allocated to different physical machines as much as possible. When there are no more physical machines to allocate, the normal allocation strategy is returned.'
+                'The instances in the soft anti-affinity group are allocated to different physical machines as much as possible. When there are no more physical machines to allocate, the normal allocation strategy is returned.'
               )}
             </p>
           </div>

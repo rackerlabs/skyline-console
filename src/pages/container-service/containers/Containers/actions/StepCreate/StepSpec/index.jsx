@@ -120,6 +120,11 @@ export class StepSpec extends Base {
         label: t('Availability Zone'),
         type: 'select',
         options: this.availabilityZoneList,
+        autoSelectFirst: true,
+        disableWhenSingleOption: true,
+        tip: t(
+          'A logical grouping of resources that controls resource placement. Availability zones help isolate workloads and improve fault tolerance.'
+        ),
       },
       {
         name: 'exitPolicy',

@@ -28,11 +28,15 @@ export class NeutronStore extends Base {
   }
 
   @action
-  async fetchAvailableZones() {
+  async fetchAvailableZones(params) {
     this.zoneLoading = true;
-    const resData = await this.zoneClient.list();
-    const { availability_zones: items = [] } = resData;
-    this.availableZones = items;
+    try {
+      const resData = await this.zoneClient.list(params);
+      const { availability_zones: items = [] } = resData || {};
+      this.availableZones = items;
+    } catch (e) {
+      this.availableZones = [];
+    }
     this.zoneLoading = false;
   }
 }

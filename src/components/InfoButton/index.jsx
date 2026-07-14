@@ -17,6 +17,10 @@ import { Button, Card, Tooltip, Switch } from 'antd';
 import { ExpandOutlined, CompressOutlined } from '@ant-design/icons';
 
 const seconds = 5;
+const MOBILE_BREAKPOINT = 768;
+
+const isMobileViewport = () =>
+  typeof window !== 'undefined' && window.innerWidth <= MOBILE_BREAKPOINT;
 
 export default function InfoButton(props) {
   const {
@@ -30,10 +34,14 @@ export default function InfoButton(props) {
     ),
     checkValue = '',
   } = props;
-  const [collapsed, setCollapsed] = useState(defaultCollapsed);
-  const [auto, setAuto] = useState(ableAuto);
+  const [isMobile, setIsMobile] = useState(isMobileViewport());
+  const [collapsed, setCollapsed] = useState(
+    isMobile ? true : defaultCollapsed
+  );
+  const [auto, setAuto] = useState(isMobile ? false : ableAuto);
   const [hover, setHover] = useState(false);
   const timer = useRef();
+  const canAuto = !isMobile && ableAuto;
 
   const clearTimer = () => {
     if (timer.current) {
@@ -91,8 +99,31 @@ export default function InfoButton(props) {
     setAuto(checked);
   };
 
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return () => {};
+    }
+    const onResize = () => {
+      setIsMobile(isMobileViewport());
+    };
+    window.addEventListener('resize', onResize);
+    return () => {
+      window.removeEventListener('resize', onResize);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isMobile) {
+      setCollapsed(true);
+      setAuto(false);
+    } else {
+      setCollapsed(defaultCollapsed);
+      setAuto(ableAuto);
+    }
+  }, [isMobile, defaultCollapsed, ableAuto]);
+
   const renderSwitch = () => {
-    if (!ableAuto) {
+    if (!canAuto) {
       return null;
     }
     return (

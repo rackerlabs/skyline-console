@@ -173,7 +173,7 @@ class MagicInput extends PureComponent {
   handleKeyUp = (e) => {
     if (e.keyCode === 8 || e.keyCode === 46) {
       const { currentFilter, tags } = this.state;
-      const { value } = this.inputRef.current.state;
+      const value = this.state.inputValue || '';
       if (currentFilter && isEmpty(value)) {
         this.setState({
           currentFilter: null,
@@ -236,7 +236,7 @@ class MagicInput extends PureComponent {
         isFocus: true,
       },
       () => {
-        this.inputRef.current.focus();
+        this.inputRef.current?.focus();
         this.onFocusChange(true);
       }
     );

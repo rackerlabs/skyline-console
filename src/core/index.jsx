@@ -75,6 +75,13 @@ const render = (component) => {
 };
 
 const getUser = async (callback) => {
+  // eslint-disable-next-line no-console
+  console.log('[boot] login markers in localStorage', {
+    is_federation_login: localStorage.getItem('is_federation_login'),
+    federation_keystone_base: localStorage.getItem('federation_keystone_base'),
+    origin: window.location.origin,
+    pathname: window.location.pathname,
+  });
   const currentPath = window.location.pathname;
   if (currentPath.indexOf('/login') < 0) {
     try {

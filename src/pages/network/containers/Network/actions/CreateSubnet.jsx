@@ -32,6 +32,9 @@ const {
   checkIpv6HostRoutes,
   getAllocationPools,
   getHostRouters,
+  getDefaultDns: getDefaultDnsByRegion,
+  getDnsExtra,
+  getDnsTip,
 } = networkUtil;
 
 const { isIpCidr, isIPv6Cidr, isIpv6 } = ipValidate;
@@ -61,9 +64,17 @@ export class CreateSubnet extends ModalAction {
     return this.item.name || this.values.subnet_name;
   }
 
+  get currentRegion() {
+    return this.currentUser?.region;
+  }
+
+  getDefaultDns = (ipVersion = 'ipv4') =>
+    getDefaultDnsByRegion(ipVersion, this.currentRegion);
+
   get defaultValue() {
     const values = {
       enable_dhcp: true,
+      dns: this.getDefaultDns('ipv4'),
       ip_version: 'ipv4',
       disable_gateway: false,
       more: false,
@@ -172,6 +183,7 @@ export class CreateSubnet extends ModalAction {
         : this.currentProjectId,
       network_id: this.network.id,
       allocation_pools: allocationPools,
+      enable_dhcp: true,
       host_routes: hostRouters,
     });
   };
@@ -212,6 +224,15 @@ export class CreateSubnet extends ModalAction {
         this.getQuota();
       }
     );
+  };
+
+  onIpVersionChange = (value) => {
+    this.setState({
+      ip_version: value,
+    });
+    this.formRef.current?.setFieldsValue({
+      dns: this.getDefaultDns(value),
+    });
   };
 
   get networkProjectId() {
@@ -270,11 +291,7 @@ export class CreateSubnet extends ModalAction {
             value: 'ipv6',
           },
         ],
-        onChange: (e) => {
-          this.setState({
-            ip_version: e,
-          });
-        },
+        onChange: this.onIpVersionChange,
         required: true,
       },
       {
@@ -394,14 +411,11 @@ export class CreateSubnet extends ModalAction {
         label: t('DHCP'),
         type: 'radio',
         optionType: 'default',
+        disabled: true,
         options: [
           {
             label: t('Enabled'),
             value: true,
-          },
-          {
-            label: t('Disabled'),
-            value: false,
           },
         ],
         hidden: !more,
@@ -420,9 +434,9 @@ export class CreateSubnet extends ModalAction {
         name: 'dns',
         label: t('DNS'),
         type: 'textarea',
-        extra: t('One entry per line(e.g. {ip})', {
-          ip: isIpv4 ? '114.114.114.114' : '1001:1001::',
-        }),
+        extra: getDnsExtra(ip_version, this.currentRegion),
+        placeholder: this.getDefaultDns(ip_version),
+        tip: getDnsTip(),
         hidden: !more,
         validator: isIpv4 ? checkDNS : checkIpv6DNS,
       },

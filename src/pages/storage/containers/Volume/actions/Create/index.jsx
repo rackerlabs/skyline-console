@@ -149,29 +149,31 @@ export class Create extends FormAction {
     return this.quotaIsLimit && this.maxSize < 10 ? this.maxSize : 10;
   }
 
+  getFirstAvailableZone() {
+    return (this.volumeStore.availabilityZones || []).find(
+      (it) => it.zoneState?.available
+    )?.zoneName;
+  }
+
   get defaultValue() {
     const { initVolumeType } = this.state;
     const values = {
       source: this.sourceTypes[0],
       size: this.defaultSize,
       project: this.currentProjectName,
-      availableZone: (this.availableZones[0] || []).value,
+      availableZone: this.getFirstAvailableZone(),
       volume_type: initVolumeType,
     };
     return values;
   }
 
   get availableZones() {
-    const availableZonesList = [{ label: t('Not select'), value: 'noSelect' }];
-    (this.volumeStore.availabilityZones || [])
+    return (this.volumeStore.availabilityZones || [])
       .filter((it) => it.zoneState.available)
-      .forEach((it) => {
-        availableZonesList.push({
-          value: it.zoneName,
-          label: it.zoneName,
-        });
-      });
-    return availableZonesList;
+      .map((it) => ({
+        value: it.zoneName,
+        label: it.zoneName,
+      }));
   }
 
   get images() {
@@ -226,8 +228,12 @@ export class Create extends FormAction {
     return left === -1 ? 1000 : left;
   }
 
-  getAvailZones() {
-    this.volumeStore.fetchAvailabilityZoneList();
+  async getAvailZones() {
+    await this.volumeStore.fetchAvailabilityZoneList();
+    const firstZone = this.getFirstAvailableZone();
+    if (firstZone) {
+      this.updateFormValue('availableZone', firstZone);
+    }
   }
 
   getImages() {
@@ -418,12 +424,14 @@ export class Create extends FormAction {
       },
       {
         name: 'availableZone',
-        label: t('Available Zone'),
+        label: t('Availability Zone'),
         type: 'select',
         placeholder: t('Please select'),
         options: this.availableZones,
+        autoSelectFirst: true,
+        disableWhenSingleOption: true,
         tip: t(
-          'Unless you know clearly which AZ to create the volume in, you do not need to fill in here.'
+          'A logical grouping of resources that controls resource placement. Availability zones help isolate workloads and improve fault tolerance.'
         ),
       },
       {
@@ -624,7 +632,7 @@ export class Create extends FormAction {
     const volume = {
       name,
       size,
-      availability_zone: availableZone !== 'noSelect' ? availableZone : null,
+      availability_zone: availableZone || null,
       multiattach: shared,
       volume_type: volume_type.selectedRowKeys[0],
     };

@@ -29,6 +29,7 @@ import {
   BookOutlined,
   PlayCircleOutlined,
   CalendarOutlined,
+  MessageOutlined,
 } from '@ant-design/icons';
 
 const renderMenu = (t) => {
@@ -846,6 +847,85 @@ const renderMenu = (t) => {
     //   ],
     // },
     {
+      path: '/container',
+      name: t('Container'),
+      key: 'containerAdmin',
+      icon: <ContainerOutlined />,
+      children: [
+        {
+          path: '/container-service/containers-admin',
+          name: t('Containers'),
+          key: 'zunContainersAdmin',
+          endpoints: 'zun',
+          level: 1,
+          children: [
+            {
+              path: /^\/container-service\/containers-admin\/detail\/.[^/]+$/,
+              name: t('Container Detail'),
+              key: 'zunContainerDetailAdmin',
+              level: 2,
+              routePath: '/container-service/containers-admin/detail/:id',
+            },
+          ],
+        },
+        {
+          path: '/container-service/hosts-admin',
+          name: t('Hosts'),
+          key: 'zunHostsAdmin',
+          endpoints: 'zun',
+          level: 1,
+          children: [
+            {
+              path: /^\/container-service\/hosts-admin\/detail\/.[^/]+$/,
+              name: t('Host Detail'),
+              key: 'zuHostsDetailAdmin',
+              level: 2,
+              routePath: '/container-service/hosts-admin/detail/:id',
+            },
+          ],
+        },
+        {
+          path: '/container-service/services-admin',
+          name: t('Services'),
+          key: 'zunServicesAdmin',
+          endpoints: 'zun',
+          level: 1,
+        },
+        {
+          path: '/container-infra/clusters-admin',
+          name: t('Clusters'),
+          key: 'containerInfraClustersAdmin',
+          endpoints: 'magnum',
+          level: 1,
+          children: [
+            {
+              path: /^\/container-infra\/clusters-admin\/detail\/.[^/]+$/,
+              name: t('Cluster Detail'),
+              key: 'containerInfraClusterDetailAdmin',
+              level: 2,
+              routePath: '/container-infra/clusters-admin/detail/:id',
+            },
+          ],
+        },
+        {
+          path: '/container-infra/cluster-template-admin',
+          name: t('Cluster Templates'),
+          key: 'clusterTemplateAdmin',
+          endpoints: 'magnum',
+          level: 1,
+          children: [
+            {
+              path: /^\/container-infra\/cluster-template-admin\/detail\/.[^/]+$/,
+              name: t('Cluster Template Detail'),
+              key: 'containerInfraClusterTemplateDetailAdmin',
+              level: 2,
+              routePath: '/container-infra/cluster-template-admin/detail/:id',
+            },
+          ],
+        },
+      ],
+    },
+    {
       path: '/database',
       name: t('Database'),
       key: 'databaseAdmin',
@@ -864,6 +944,113 @@ const renderMenu = (t) => {
               key: 'databaseInstanceDetailAdmin',
               level: 2,
               routePath: '/database/instances-admin/detail/:id',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      path: '/zaqar-admin',
+      name: t('Messaging'),
+      key: 'zaqarAdmin',
+      icon: <MessageOutlined />,
+      endpoints: 'zaqar',
+      children: [
+        {
+          path: '/zaqar-admin/queues',
+          name: t('Queues'),
+          key: 'zaqarQueuesAdmin',
+          endpoints: 'zaqar',
+          level: 1,
+          children: [],
+        },
+      ],
+    },
+    {
+      path: '/reservation',
+      name: t('Reservation'),
+      key: 'reservationAdmin',
+      endpoints: 'blazar',
+      icon: <CalendarOutlined />,
+      children: [
+        {
+          path: '/reservation/lease',
+          name: t('Leases'),
+          key: 'leaseAdmin',
+          level: 1,
+          children: [
+            {
+              path: '/reservation/lease/create',
+              name: t('Create Lease'),
+              key: 'leaseCreateAdmin',
+              level: 2,
+            },
+            {
+              path: /^\/reservation\/lease\/detail\/.[^/]+$/,
+              name: t('Lease Detail'),
+              key: 'leaseDetailAdmin',
+              level: 2,
+              routePath: '/reservation/lease/detail/:id',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      path: '/ha',
+      name: t('Instance-HA'),
+      key: 'masakari',
+      icon: <DeploymentUnitOutlined />,
+      endpoints: 'masakari',
+      children: [
+        {
+          path: '/ha/segments-admin',
+          name: t('Segments'),
+          key: 'masakariSegmentsAdmin',
+          level: 1,
+          children: [
+            {
+              path: '/ha/segments-admin/create-step-admin',
+              name: t('Create Segment'),
+              key: 'masakariSegmentsCreateAdmin',
+              level: 2,
+            },
+            {
+              path: /^\/ha\/segments-admin\/detail\/.[^/]+$/,
+              name: t('Segment Detail'),
+              key: 'masakariSegmentDetailAdmin',
+              level: 2,
+              routePath: '/ha/segments-admin/detail/:id',
+            },
+          ],
+        },
+        {
+          path: '/ha/hosts-admin',
+          name: t('Hosts'),
+          key: 'masakariHostsAdmin',
+          level: 1,
+          children: [
+            {
+              path: /^\/ha\/hosts-admin\/detail\/.[^/]+$/,
+              name: t('Host Detail'),
+              key: 'masakariHostDetailAdmin',
+              level: 2,
+              routePath: '/ha/hosts-admin/detail/:id',
+            },
+          ],
+        },
+        {
+          path: '/ha/notifications-admin',
+          name: t('Notifications'),
+          key: 'masakariNotificationsAdmin',
+          level: 1,
+          children: [
+            {
+              path: /^\/ha\/notifications-admin\/detail\/.[^/]+$/,
+              name: t('Notification Detail'),
+              key: 'masakariNotificationDetailAdmin',
+              level: 2,
+              routePath: '/ha/notifications-admin/detail/:id',
             },
           ],
         },
@@ -962,189 +1149,6 @@ const renderMenu = (t) => {
       ],
     },
     {
-      path: '/maintenance-notifications-admin',
-      name: t('System Maintenance'),
-      key: 'maintenanceNotificationsAdmin',
-      icon: <BellOutlined />,
-      children: [
-        {
-          path: '/maintenance-notifications-admin/banners',
-          name: t('System Maintenance'),
-          key: 'maintNotifBannersAdmin',
-          level: 1,
-        },
-      ],
-    },
-    {
-      path: '/container',
-      name: t('Container'),
-      key: 'containerAdmin',
-      icon: <ContainerOutlined />,
-      children: [
-        {
-          path: '/container-service/containers-admin',
-          name: t('Containers'),
-          key: 'zunContainersAdmin',
-          endpoints: 'zun',
-          level: 1,
-          children: [
-            {
-              path: /^\/container-service\/containers-admin\/detail\/.[^/]+$/,
-              name: t('Container Detail'),
-              key: 'zunContainerDetailAdmin',
-              level: 2,
-              routePath: '/container-service/containers-admin/detail/:id',
-            },
-          ],
-        },
-        {
-          path: '/container-service/hosts-admin',
-          name: t('Hosts'),
-          key: 'zunHostsAdmin',
-          endpoints: 'zun',
-          level: 1,
-          children: [
-            {
-              path: /^\/container-service\/hosts-admin\/detail\/.[^/]+$/,
-              name: t('Host Detail'),
-              key: 'zuHostsDetailAdmin',
-              level: 2,
-              routePath: '/container-service/hosts-admin/detail/:id',
-            },
-          ],
-        },
-        {
-          path: '/container-service/services-admin',
-          name: t('Services'),
-          key: 'zunServicesAdmin',
-          endpoints: 'zun',
-          level: 1,
-        },
-        {
-          path: '/container-infra/clusters-admin',
-          name: t('Clusters'),
-          key: 'containerInfraClustersAdmin',
-          endpoints: 'magnum',
-          level: 1,
-          children: [
-            {
-              path: /^\/container-infra\/clusters-admin\/detail\/.[^/]+$/,
-              name: t('Cluster Detail'),
-              key: 'containerInfraClusterDetailAdmin',
-              level: 2,
-              routePath: '/container-infra/clusters-admin/detail/:id',
-            },
-          ],
-        },
-        {
-          path: '/container-infra/cluster-template-admin',
-          name: t('Cluster Templates'),
-          key: 'clusterTemplateAdmin',
-          endpoints: 'magnum',
-          level: 1,
-          children: [
-            {
-              path: /^\/container-infra\/cluster-template-admin\/detail\/.[^/]+$/,
-              name: t('Cluster Template Detail'),
-              key: 'containerInfraClusterTemplateDetailAdmin',
-              level: 2,
-              routePath: '/container-infra/cluster-template-admin/detail/:id',
-            },
-          ],
-        },
-      ],
-    },
-    {
-      path: '/ha',
-      name: t('Instance-HA'),
-      key: 'masakari',
-      icon: <DeploymentUnitOutlined />,
-      endpoints: 'masakari',
-      children: [
-        {
-          path: '/ha/segments-admin',
-          name: t('Segments'),
-          key: 'masakariSegmentsAdmin',
-          level: 1,
-          children: [
-            {
-              path: '/ha/segments-admin/create-step-admin',
-              name: t('Create Segment'),
-              key: 'masakariSegmentsCreateAdmin',
-              level: 2,
-            },
-            {
-              path: /^\/ha\/segments-admin\/detail\/.[^/]+$/,
-              name: t('Segment Detail'),
-              key: 'masakariSegmentDetailAdmin',
-              level: 2,
-              routePath: '/ha/segments-admin/detail/:id',
-            },
-          ],
-        },
-        {
-          path: '/ha/hosts-admin',
-          name: t('Hosts'),
-          key: 'masakariHostsAdmin',
-          level: 1,
-          children: [
-            {
-              path: /^\/ha\/hosts-admin\/detail\/.[^/]+$/,
-              name: t('Host Detail'),
-              key: 'masakariHostDetailAdmin',
-              level: 2,
-              routePath: '/ha/hosts-admin/detail/:id',
-            },
-          ],
-        },
-        {
-          path: '/ha/notifications-admin',
-          name: t('Notifications'),
-          key: 'masakariNotificationsAdmin',
-          level: 1,
-          children: [
-            {
-              path: /^\/ha\/notifications-admin\/detail\/.[^/]+$/,
-              name: t('Notification Detail'),
-              key: 'masakariNotificationDetailAdmin',
-              level: 2,
-              routePath: '/ha/notifications-admin/detail/:id',
-            },
-          ],
-        },
-      ],
-    },
-    {
-      path: '/reservation',
-      name: t('Reservation'),
-      key: 'reservationAdmin',
-      endpoints: 'blazar',
-      icon: <CalendarOutlined />,
-      children: [
-        {
-          path: '/reservation/lease',
-          name: t('Leases'),
-          key: 'leaseAdmin',
-          level: 1,
-          children: [
-            {
-              path: '/reservation/lease/create',
-              name: t('Create Lease'),
-              key: 'leaseCreateAdmin',
-              level: 2,
-            },
-            {
-              path: /^\/reservation\/lease\/detail\/.[^/]+$/,
-              name: t('Lease Detail'),
-              key: 'leaseDetailAdmin',
-              level: 2,
-              routePath: '/reservation/lease/detail/:id',
-            },
-          ],
-        },
-      ],
-    },
-    {
       path: '/scheduled-actions',
       name: t('Scheduled Actions'),
       key: 'scheduledActionsAdmin',
@@ -1196,6 +1200,15 @@ const renderMenu = (t) => {
           path: '/scheduled-actions/trust-admin',
           name: t('Trusts'),
           key: 'qonosTrustAdmin',
+      path: '/maintenance-notifications-admin',
+      name: t('System Maintenance'),
+      key: 'maintenanceNotificationsAdmin',
+      icon: <BellOutlined />,
+      children: [
+        {
+          path: '/maintenance-notifications-admin/banners',
+          name: t('System Maintenance'),
+          key: 'maintNotifBannersAdmin',
           level: 1,
         },
       ],

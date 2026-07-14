@@ -24,7 +24,24 @@ import globalMessageBannerStore from 'stores/skyline/message-banner';
 import i18n from 'core/i18n';
 import { isEmpty } from 'lodash';
 import logo from 'asset/image/logo.png';
+import { setLocalStorageItem } from 'utils/local-storage';
 import styles from './index.less';
+
+// Key used to remember that the active session was started via
+// federation / SSO. Used by logout to redirect to the IdP logout URL
+// instead of falling back to the local login page.
+export const FEDERATION_LOGIN_KEY = 'is_federation_login';
+// Origin of the Keystone host used for federation. Saved at SSO login
+// time so the logout flow can build `{base}/Shibboleth.sso/Logout`
+// even after most of local storage has been cleared.
+export const FEDERATION_KEYSTONE_BASE_KEY = 'federation_keystone_base';
+// Set on the SP-logout return URL. When the login page mounts with
+// this query param it knows the SP session is dead and it should kick
+// off the IdP logout step. We cannot chain SP -> IdP directly because
+// mod_shib's `return=` allowlist blocks non-RP hosts.
+const AFTER_LOGOUT_MARKER = 'afterLogout';
+const AFTER_LOGOUT_VALUE_IDP = 'idp';
+const IDP_LOGOUT_URL = 'https://login.rackspace.com/logout';
 
 export class Login extends Component {
   constructor(props) {
@@ -39,6 +56,11 @@ export class Login extends Component {
   }
 
   componentDidMount() {
+    if (this.maybeFinishFederatedLogout()) {
+      // The page is being navigated away to the IdP logout URL; skip
+      // the rest of the bootstrap to avoid flashing the login form.
+      return;
+    }
     this.getRegions();
     this.getSSO();
     this.getUserDefaultDomain();
@@ -380,6 +402,29 @@ export class Login extends Component {
 
   onFinish = (values) => {
     if (this.currentLoginType === 'sso') {
+      // Mark this session as federated so logout can redirect to the
+      // IdP logout URL. Also persist the Keystone host (origin of the
+      // SSO URL) so logout can hit `{base}/Shibboleth.sso/Logout`
+      // without hardcoding the environment.
+      setLocalStorageItem(FEDERATION_LOGIN_KEY, true);
+      let keystoneBase = '';
+      try {
+        const ssoUrl = this.currentSSOLink;
+        if (ssoUrl) {
+          keystoneBase = new URL(ssoUrl).origin;
+          setLocalStorageItem(FEDERATION_KEYSTONE_BASE_KEY, keystoneBase);
+        }
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.log('[login][sso] failed to derive keystone base', e);
+      }
+      // eslint-disable-next-line no-console
+      console.log('[login][sso] saved federation markers', {
+        FEDERATION_LOGIN_KEY,
+        FEDERATION_KEYSTONE_BASE_KEY,
+        ssoUrl: this.currentSSOLink,
+        keystoneBase,
+      });
       document.location.href = this.currentSSOLink;
       return;
     }
@@ -499,6 +544,30 @@ export class Login extends Component {
       this.formRef.current.resetFields();
     }
   };
+
+  maybeFinishFederatedLogout() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get(AFTER_LOGOUT_MARKER) !== AFTER_LOGOUT_VALUE_IDP) {
+        return false;
+      }
+      // Strip the marker so a back-button reload doesn't loop us.
+      const cleanLogin = `${window.location.origin}/auth/login`;
+      const target = `${IDP_LOGOUT_URL}?return=${encodeURIComponent(
+        cleanLogin
+      )}`;
+      // eslint-disable-next-line no-console
+      console.log('[login] SP session cleared, navigating to IdP logout', {
+        target,
+      });
+      window.location.replace(target);
+      return true;
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log('[login] post-logout redirect failed', e);
+      return false;
+    }
+  }
 
   async fetchPublicBanners() {
     try {

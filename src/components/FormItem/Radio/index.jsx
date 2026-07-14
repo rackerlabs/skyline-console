@@ -26,6 +26,7 @@ export default class index extends Component {
     buttonStyle: PropTypes.string,
     onlyRadio: PropTypes.bool,
     isWrappedValue: PropTypes.bool,
+    nowrap: PropTypes.bool,
   };
 
   static defaultProps = {
@@ -34,6 +35,7 @@ export default class index extends Component {
     buttonStyle: 'solid',
     onlyRadio: false,
     isWrappedValue: false,
+    nowrap: false,
   };
 
   onChange = (e) => {
@@ -58,9 +60,10 @@ export default class index extends Component {
       optionType,
       buttonStyle,
       onlyRadio,
+      isWrappedValue,
+      nowrap,
       className,
       value,
-      isWrappedValue,
       ...rest
     } = this.props;
     const items = options.map((it) =>
@@ -79,7 +82,11 @@ export default class index extends Component {
         optionType={optionType}
         buttonStyle={buttonStyle}
         {...rest}
-        className={classnames(className, onlyRadio ? styles['only-radio'] : '')}
+        className={classnames(
+          className,
+          onlyRadio ? styles['only-radio'] : '',
+          nowrap ? styles.nowrap : ''
+        )}
         onChange={this.onChange}
         value={this.getValue(isWrappedValue, value)}
       >

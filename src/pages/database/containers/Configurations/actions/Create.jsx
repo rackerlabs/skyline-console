@@ -96,6 +96,7 @@ export class Create extends ModalAction {
         label: t('Datastore Type'),
         type: 'select',
         options: this.datastores,
+        autoSelectFirst: true,
         onChange: (value) => {
           this.onChangeDatastoresTypeChange(value);
         },
@@ -106,6 +107,7 @@ export class Create extends ModalAction {
         label: t('Datastore Version'),
         type: 'select',
         options: this.datastoresVersion,
+        autoSelectFirst: true,
         required: true,
       },
     ];

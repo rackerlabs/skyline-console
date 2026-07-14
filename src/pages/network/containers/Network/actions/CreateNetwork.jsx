@@ -38,6 +38,9 @@ const {
   checkIpv6HostRoutes,
   getAllocationPools,
   getHostRouters,
+  getDefaultDns: getDefaultDnsByRegion,
+  getDnsExtra,
+  getDnsTip,
 } = networkUtil;
 
 const { isIpCidr, isIPv6Cidr, isIpv6 } = ipValidate;
@@ -61,6 +64,13 @@ export class CreateNetwork extends ModalAction {
   get name() {
     return t('create network');
   }
+
+  get currentRegion() {
+    return this.currentUser?.region;
+  }
+
+  getDefaultDns = (ipVersion = 'ipv4') =>
+    getDefaultDnsByRegion(ipVersion, this.currentRegion);
 
   static get modalSize() {
     const { pathname } = window.location;
@@ -159,6 +169,7 @@ export class CreateNetwork extends ModalAction {
   get defaultValue() {
     const values = {
       enable_dhcp: true,
+      dns: this.getDefaultDns('ipv4'),
       provider_network_type: 'vxlan',
       ip_version: 'ipv4',
       disable_gateway: false,
@@ -166,6 +177,7 @@ export class CreateNetwork extends ModalAction {
       port_security_enabled: true,
       ipv6_ra_mode: 'slaac',
       ipv6_address_mode: 'slaac',
+      mtu: 1500,
     };
     if (this.isAdminPage) {
       values.project_id = {
@@ -234,6 +246,7 @@ export class CreateNetwork extends ModalAction {
     return globalNetworkStore.createAndMore(fetchData, {
       ...rest,
       allocation_pools: allocationPools,
+      enable_dhcp: true,
       host_routes: hostRouters,
     });
   };
@@ -274,7 +287,7 @@ export class CreateNetwork extends ModalAction {
 
   get availableZones() {
     return (globalNeutronStore.availableZones || [])
-      .filter((it) => it.state === 'available' && it.resource === 'network')
+      .filter((it) => it.state === 'available')
       .map((it) => ({
         value: it.name,
         label: it.name,
@@ -360,6 +373,15 @@ export class CreateNetwork extends ModalAction {
     globalNetworkStore.updateCreateWithSubnet(value);
   };
 
+  onIpVersionChange = (value) => {
+    this.setState({
+      ip_version: value,
+    });
+    this.formRef.current?.setFieldsValue({
+      dns: this.getDefaultDns(value),
+    });
+  };
+
   get formItems() {
     const {
       more,
@@ -399,10 +421,15 @@ export class CreateNetwork extends ModalAction {
       },
       {
         name: 'availableZone',
-        label: t('Available Zone'),
+        label: t('Availability Zone'),
         type: 'select',
         placeholder: t('Please select'),
         options: this.availableZones,
+        autoSelectFirst: true,
+        disableWhenSingleOption: true,
+        tip: t(
+          'A logical grouping of resources that controls resource placement. Availability zones help isolate workloads and improve fault tolerance.'
+        ),
       },
       {
         name: 'mtu',
@@ -411,12 +438,18 @@ export class CreateNetwork extends ModalAction {
         min: 68,
         max: 9000,
         extra: t('Minimum value is 68 for IPv4, and 1280 for IPv6.'),
+        tip: t(
+          'The Maximum Transmission Unit (MTU) specifies the largest packet size that can be transmitted on the network without fragmentation. The minimum supported value is 68 for IPv4 and 1280 for IPv6.'
+        ),
       },
       {
         name: 'create_subnet',
         label: t('Create Subnet'),
         type: 'check',
         onChange: this.onCreateSubnetChange,
+        tip: t(
+          'If checked, a subnet will be created for this network. Additional subnet configuration options will be displayed below.'
+        ),
       },
       {
         name: 'shared',
@@ -429,6 +462,9 @@ export class CreateNetwork extends ModalAction {
         label: t('Port Security Enabled'),
         type: 'switch',
         required: true,
+        tip: t(
+          'When enabled, security groups and anti-spoofing protection are applied to ports on this network. Disable only for specific use cases, such as NFV workloads or troubleshooting.'
+        ),
       },
       // {
       //   name: 'admin_state_up',
@@ -516,11 +552,7 @@ export class CreateNetwork extends ModalAction {
             value: 'ipv6',
           },
         ],
-        onChange: (e) => {
-          this.setState({
-            ip_version: e,
-          });
-        },
+        onChange: this.onIpVersionChange,
         required: true,
         hidden: !create_subnet,
       },
@@ -667,14 +699,11 @@ export class CreateNetwork extends ModalAction {
         label: t('DHCP'),
         type: 'radio',
         optionType: 'default',
+        disabled: true,
         options: [
           {
             label: t('Enabled'),
             value: true,
-          },
-          {
-            label: t('Disabled'),
-            value: false,
           },
         ],
         hidden: !(create_subnet && more),
@@ -694,9 +723,9 @@ export class CreateNetwork extends ModalAction {
         name: 'dns',
         label: t('DNS'),
         type: 'textarea',
-        extra: t('One entry per line(e.g. {ip})', {
-          ip: isIpv4 ? '114.114.114.114' : '1001:1001::/64',
-        }),
+        extra: getDnsExtra(ip_version, this.currentRegion),
+        placeholder: this.getDefaultDns(ip_version),
+        tip: getDnsTip(),
         hidden: !(create_subnet && more),
         validator: isIpv4 ? checkDNS : checkIpv6DNS,
       },
