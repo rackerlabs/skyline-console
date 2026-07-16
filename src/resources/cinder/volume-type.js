@@ -44,7 +44,8 @@ const getDefaultIOPS = (volumeTypeName) => {
   return defaultIOPSValues[volumeTypeName] || null;
 };
 
-export const getVolumeTypeColumns = (data) => {
+export const getVolumeTypeColumns = (data, options = {}) => {
+  const { hidePublic = false } = options;
   const hasPricing =
     data &&
     data.some((volumeType) => {
@@ -126,11 +127,13 @@ export const getVolumeTypeColumns = (data) => {
     });
   }
 
-  columns.push({
-    title: t('Public'),
-    dataIndex: 'is_public',
-    valueRender: 'yesNo',
-  });
+  if (!hidePublic) {
+    columns.push({
+      title: t('Public'),
+      dataIndex: 'is_public',
+      valueRender: 'yesNo',
+    });
+  }
 
   return columns;
 };

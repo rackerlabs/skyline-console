@@ -146,7 +146,12 @@ export class Create extends FormAction {
   }
 
   get defaultSize() {
-    return this.quotaIsLimit && this.maxSize < 10 ? this.maxSize : 10;
+    const base = this.quotaIsLimit && this.maxSize < 10 ? this.maxSize : 10;
+    const volTypeMin = this.getVolumeTypeMinSize();
+    if (volTypeMin > 0) {
+      return Math.min(Math.max(base, volTypeMin), this.maxSize);
+    }
+    return base;
   }
 
   getFirstAvailableZone() {
@@ -253,11 +258,12 @@ export class Create extends FormAction {
       this.setState(
         {
           initVolumeType,
-          volume_type: defaultType,
+          volume_type: initVolumeType,
         },
         () => {
           this.updateFormValue('volume_type', initVolumeType);
           this.updateDefaultValue();
+          this.syncSizeToVolumeTypeMin();
         }
       );
     }
@@ -342,10 +348,54 @@ export class Create extends FormAction {
         });
       }
     }
-    this.setState({
-      multiattach: multiattach === '<is> True',
-    });
+    this.setState(
+      {
+        multiattach: multiattach === '<is> True',
+        volume_type: value,
+      },
+      () => this.syncSizeToVolumeTypeMin(selectedRows[0])
+    );
   };
+
+  validateSize = (rule, value) => {
+    const minVolTypeSize = this.getVolumeTypeMinSize();
+    if (minVolTypeSize > 0 && value !== undefined && value < minVolTypeSize) {
+      const selected = this.getSelectedVolumeType();
+      const name = selected?.name;
+      const message = name
+        ? t('Size must be at least {size} GiB for volume type "{name}".', {
+            size: minVolTypeSize,
+            name,
+          })
+        : t('Size must be at least {size} GiB for the selected volume type.', {
+            size: minVolTypeSize,
+          });
+      return Promise.reject(new Error(message));
+    }
+    return Promise.resolve();
+  };
+
+  syncSizeToVolumeTypeMin(volumeType) {
+    const selected = volumeType || this.getSelectedVolumeType();
+    if (!selected) {
+      return;
+    }
+    const raw = selected?.extra_specs?.['provisioning:min_vol_size'];
+    if (!raw) {
+      return;
+    }
+    const minVolTypeSize = parseInt(raw, 10);
+    if (Number.isNaN(minVolTypeSize) || minVolTypeSize <= 0) {
+      return;
+    }
+    const nextSize = Math.min(
+      Math.max(minVolTypeSize, this.getDiskMinSize()),
+      this.maxSize
+    );
+    this.updateFormValue('size', nextSize);
+    setCreateVolumeSize(nextSize);
+    this.setState({ size: nextSize });
+  }
 
   get sourceTypeIsImage() {
     const { source } = this.state;
@@ -355,6 +405,27 @@ export class Create extends FormAction {
   get sourceTypeIsSnapshot() {
     const { source } = this.state;
     return source === this.sourceTypes[2].value;
+  }
+
+  getSelectedVolumeType() {
+    const { volume_type } = this.state;
+    const selectedRows = volume_type?.selectedRows || [];
+    if (selectedRows.length) {
+      return selectedRows[0];
+    }
+    const { initVolumeType } = this.state;
+    const initRows = initVolumeType?.selectedRows || [];
+    return initRows[0] || null;
+  }
+
+  getVolumeTypeMinSize() {
+    const selected = this.getSelectedVolumeType();
+    const raw = selected?.extra_specs?.['provisioning:min_vol_size'];
+    if (!raw) {
+      return 0;
+    }
+    const parsed = parseInt(raw, 10);
+    return Number.isNaN(parsed) ? 0 : parsed;
   }
 
   getDiskMinSize() {
@@ -444,6 +515,9 @@ export class Create extends FormAction {
         options: this.sourceTypes,
         required: true,
         isWrappedValue: true,
+        tip: t(
+          'Blank Volume: create an empty volume that you can attach to an instance and format. Image: create a volume pre-populated with the contents of a selected image so it can boot or be used as a data disk. Volume Snapshot: create a new volume from a point-in-time snapshot of an existing volume.'
+        ),
       },
       {
         name: 'image',
@@ -522,7 +596,7 @@ export class Create extends FormAction {
         tip: t(
           'The volume type needs to set "multiattach" in the metadata to support shared volume attributes.'
         ),
-        columns: getVolumeTypeColumns(this.volumeTypes),
+        columns: getVolumeTypeColumns(this.volumeTypes, { hidePublic: true }),
         filterParams: volumeTypeFilters,
         data: this.volumeTypes,
         isLoading: this.volumeTypeStore.list.isLoading,
@@ -533,7 +607,7 @@ export class Create extends FormAction {
       },
       {
         name: 'size',
-        label: t('Capacity (GiB)'),
+        label: t('Size (GiB)'),
         type: 'slider-input',
         max: this.maxSize,
         min: minSize,
@@ -541,15 +615,17 @@ export class Create extends FormAction {
         required: this.quotaIsLimit,
         hidden: !this.quotaIsLimit,
         onChange: onVolumeSizeChange,
+        validator: this.validateSize,
       },
       {
         name: 'size',
-        label: t('Capacity (GiB)'),
+        label: t('Size (GiB)'),
         type: 'input-int',
         min: minSize,
         hidden: this.quotaIsLimit,
         required: !this.quotaIsLimit,
         onChange: onVolumeSizeChange,
+        validator: this.validateSize,
       },
       {
         type: 'divider',
