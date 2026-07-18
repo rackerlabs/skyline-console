@@ -520,3 +520,17 @@
     padding-left: 12px;
   }
 }
+
+// Basic-mode help entries (Documentation, Getting Started) at the
+// bottom of the sidebar. Slightly grey background so they read as
+// secondary compared to the resource sections above.
+.menu-item-basic-help {
+  :global(.ant-menu-item) {
+    background-color: rgba(0, 0, 0, 3%);
+    border-radius: 6px;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 6%);
+    }
+  }
+}

@@ -16,6 +16,7 @@ import BaseLayout from 'layouts/Basic';
 import E404 from '../containers/404';
 import Overview from '../containers/Overview';
 import AdminOverview from '../containers/AdminOverview';
+import BasicHome from '../containers/BasicHome';
 
 const PATH = '/base';
 export default [
@@ -25,6 +26,7 @@ export default [
     routes: [
       { path: `${PATH}/overview`, component: Overview, exact: true },
       { path: `${PATH}/overview-admin`, component: AdminOverview, exact: true },
+      { path: `${PATH}/basic-home`, component: BasicHome, exact: true },
       { path: '*', component: E404 },
     ],
   },
