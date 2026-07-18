@@ -13,20 +13,22 @@
 // limitations under the License.
 
 import BaseLayout from 'layouts/Basic';
-import E404 from '../containers/404';
-import Overview from '../containers/Overview';
-import AdminOverview from '../containers/AdminOverview';
-import BasicHome from '../containers/BasicHome';
+import E404 from 'pages/base/containers/404';
+import BasicVolume from 'pages/basic/containers/Storage/Volume';
+import BasicVolumeCreate from 'pages/basic/containers/Storage/Volume/Create';
 
-const PATH = '/base';
+const PATH = '/basic/storage';
 export default [
   {
     path: PATH,
     component: BaseLayout,
     routes: [
-      { path: `${PATH}/overview`, component: Overview, exact: true },
-      { path: `${PATH}/overview-admin`, component: AdminOverview, exact: true },
-      { path: `${PATH}/basic-home`, component: BasicHome, exact: true },
+      { path: `${PATH}/volume`, component: BasicVolume, exact: true },
+      {
+        path: `${PATH}/volume/create`,
+        component: BasicVolumeCreate,
+        exact: true,
+      },
       { path: '*', component: E404 },
     ],
   },

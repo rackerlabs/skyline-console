@@ -24,6 +24,12 @@ const Basic = lazy(() =>
   import(/* webpackChunkName: "basic" */ 'pages/basic/App')
 );
 
+const ModeSelect = lazy(() =>
+  import(
+    /* webpackChunkName: "mode-select" */ 'pages/auth/containers/ModeSelect'
+  )
+);
+
 export default [
   {
     component: BlankLayout,
@@ -39,6 +45,11 @@ export default [
       {
         path: '/auth',
         component: Auth,
+      },
+      {
+        path: '/mode-select',
+        component: ModeSelect,
+        exact: true,
       },
       {
         path: '/',

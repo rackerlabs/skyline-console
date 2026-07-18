@@ -81,6 +81,15 @@ const ScheduledActions = lazy(() =>
 const ZaqarApp = lazy(() =>
   import(/* webpackChunkName: "zaqar" */ 'pages/zaqar/App')
 );
+const BasicCompute = lazy(() =>
+  import(/* webpackChunkName: "basic-compute" */ 'pages/basic/compute/App')
+);
+const BasicStorage = lazy(() =>
+  import(/* webpackChunkName: "basic-storage" */ 'pages/basic/storage/App')
+);
+const BasicNetworkApp = lazy(() =>
+  import(/* webpackChunkName: "basic-network" */ 'pages/basic/network/App')
+);
 const PATH = '/';
 
 export default [
@@ -90,10 +99,22 @@ export default [
     routes: [
       { path: `/base`, component: Base },
       {
+        path: `/basic/compute`,
+        component: BasicCompute,
+      },
+      {
         path: `/compute`,
         component: Compute,
       },
+      {
+        path: `/basic/storage`,
+        component: BasicStorage,
+      },
       { path: `/storage`, component: Storage },
+      {
+        path: `/basic/network`,
+        component: BasicNetworkApp,
+      },
       {
         path: `/network`,
         component: Network,
