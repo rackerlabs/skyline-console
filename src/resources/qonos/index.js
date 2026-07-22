@@ -1,5 +1,7 @@
 export const ACTION_TYPES = {
   SERVER_SNAPSHOT: 'server_snapshot',
+  VOLUME_BACKUP_FULL: 'volume_backup_full',
+  VOLUME_BACKUP_INCREMENTAL: 'volume_backup_incremental',
 };
 
 export const actionTypeOptions = [
@@ -7,7 +9,45 @@ export const actionTypeOptions = [
     label: t('Server Snapshot'),
     value: ACTION_TYPES.SERVER_SNAPSHOT,
   },
+  {
+    label: t('Volume Backup Full'),
+    value: ACTION_TYPES.VOLUME_BACKUP_FULL,
+  },
+  {
+    label: t('Volume Backup Incremental'),
+    value: ACTION_TYPES.VOLUME_BACKUP_INCREMENTAL,
+  },
 ];
+
+export const isServerSnapshotAction = (actionType) =>
+  actionType === ACTION_TYPES.SERVER_SNAPSHOT;
+
+export const isVolumeBackupAction = (actionType) =>
+  actionType === ACTION_TYPES.VOLUME_BACKUP_FULL ||
+  actionType === ACTION_TYPES.VOLUME_BACKUP_INCREMENTAL;
+
+export const getScheduleCreatePath = (isAdminPage) =>
+  isAdminPage
+    ? '/scheduled-actions/schedule-admin/create'
+    : '/scheduled-actions/schedule/create';
+
+export const executionProfileColumns = [
+  { title: t('Name'), dataIndex: 'name' },
+  { title: t('Trust ID'), dataIndex: 'trust_id' },
+  { title: t('Enabled'), dataIndex: 'enabled', valueRender: 'yesNo' },
+];
+
+export const mapActionTarget = (data = {}) => {
+  const actionParameters = data.action_parameters || {};
+  return {
+    server_id: actionParameters.server_id,
+    volume_id: actionParameters.volume_id,
+    target_id: actionParameters.server_id || actionParameters.volume_id,
+  };
+};
+
+const toSelected = (id) =>
+  id ? { selectedRowKeys: [id], selectedRows: [{ id, name: id }] } : undefined;
 
 export const cronPresetOptions = [
   {
@@ -67,12 +107,22 @@ export const validateCronExpression = (value) => {
 };
 
 export const buildRetentionPolicy = (values = {}) => {
-  const { retention_count_enabled, retention_count } = values;
-  const { retention_age_enabled, retention_age_days } = values;
-  if (retention_count_enabled && retention_count) {
+  const {
+    retention_type,
+    retention_count_enabled,
+    retention_count,
+    retention_age_enabled,
+    retention_age_days,
+  } = values;
+  const type =
+    retention_type ||
+    (retention_count_enabled && 'count') ||
+    (retention_age_enabled && 'age') ||
+    'none';
+  if (type === 'count' && retention_count) {
     return { type: 'count', value: Number(retention_count) };
   }
-  if (retention_age_enabled && retention_age_days) {
+  if (type === 'age' && retention_age_days) {
     return { type: 'age', max_age_days: Number(retention_age_days) };
   }
   return undefined;
@@ -104,13 +154,26 @@ const getRetentionAgeDays = (policy) => {
   return undefined;
 };
 
+export const retentionTypeOptions = [
+  { label: t('None'), value: 'none' },
+  { label: t('Count'), value: 'count' },
+  { label: t('Age'), value: 'age' },
+];
+
 export const parseRetentionPolicy = (policy) => {
   const count = getRetentionCount(policy);
   const ageDays = getRetentionAgeDays(policy);
+  let retention_type = 'none';
+  if (count != null) {
+    retention_type = 'count';
+  } else if (ageDays != null) {
+    retention_type = 'age';
+  }
   return {
-    retention_count_enabled: !!count,
+    retention_type,
+    retention_count_enabled: retention_type === 'count',
     retention_count: count,
-    retention_age_enabled: !!ageDays,
+    retention_age_enabled: retention_type === 'age',
     retention_age_days: ageDays,
   };
 };
@@ -121,7 +184,7 @@ export const formatRetentionPolicy = (policy) => {
   }
   const count = getRetentionCount(policy);
   if (count != null) {
-    return t('Keep last {count}', { count });
+    return t('Keep last {count} snapshot(s)/backup(s)', { count });
   }
   const days = getRetentionAgeDays(policy);
   if (days != null) {
@@ -147,22 +210,25 @@ export const buildExecutionProfileBody = (values = {}) => {
 };
 
 export const buildScheduleBody = (values = {}, isEdit = false) => {
-  const serverId = getSelectedId(values.server);
-  const executionProfileId = getSelectedId(values.execution_profile);
   const body = {
     name: values.name,
     description: values.description,
     cron_expression: values.cron_expression,
-    action_parameters: {
-      server_id: serverId || values.server_id,
-    },
     webhook_url: values.webhook_url,
     retention_policy: buildRetentionPolicy(values),
-    execution_profile_id: executionProfileId || values.execution_profile_id,
-    enabled: values.enabled,
   };
   if (!isEdit) {
-    body.action_type = ACTION_TYPES.SERVER_SNAPSHOT;
+    const serverId = getSelectedId(values.server);
+    const volumeId = getSelectedId(values.volume);
+    const executionProfileId = getSelectedId(values.execution_profile);
+    const actionType = values.action_type || ACTION_TYPES.SERVER_SNAPSHOT;
+    body.action_type = actionType;
+    body.action_parameters = isVolumeBackupAction(actionType)
+      ? { volume_id: volumeId || values.volume_id }
+      : { server_id: serverId || values.server_id };
+    body.execution_profile_id =
+      executionProfileId || values.execution_profile_id;
+    body.enabled = values.enabled;
   }
   Object.keys(body).forEach((key) => {
     if (body[key] === undefined || body[key] === '') {
@@ -174,36 +240,24 @@ export const buildScheduleBody = (values = {}, isEdit = false) => {
 
 export const getScheduleDefaultValue = (item = {}) => {
   const { action_parameters: actionParameters = {} } = item;
+  const actionType = item.action_type || ACTION_TYPES.SERVER_SNAPSHOT;
   const serverId = actionParameters.server_id;
-  const retention = parseRetentionPolicy(item.retention_policy);
+  const volumeId = actionParameters.volume_id;
   return {
     name: item.name,
     description: item.description,
-    action_type: ACTION_TYPES.SERVER_SNAPSHOT,
+    action_type: actionType,
     cron_preset: getCronPreset(item.cron_expression),
     cron_expression: item.cron_expression,
-    server: serverId
-      ? {
-          selectedRowKeys: [serverId],
-          selectedRows: [{ id: serverId, name: serverId }],
-        }
-      : undefined,
+    server: toSelected(serverId),
     server_id: serverId,
-    execution_profile: item.execution_profile_id
-      ? {
-          selectedRowKeys: [item.execution_profile_id],
-          selectedRows: [
-            {
-              id: item.execution_profile_id,
-              name: item.execution_profile_id,
-            },
-          ],
-        }
-      : undefined,
+    volume: toSelected(volumeId),
+    volume_id: volumeId,
+    execution_profile: toSelected(item.execution_profile_id),
     execution_profile_id: item.execution_profile_id,
     webhook_url: item.webhook_url,
     enabled: item.enabled === undefined ? true : item.enabled,
-    ...retention,
+    ...parseRetentionPolicy(item.retention_policy),
   };
 };
 
@@ -233,7 +287,3 @@ export const buildTrustBody = (values = {}, currentUser = {}) => {
     trust,
   };
 };
-
-export const buildRunNowBody = (schedule) => ({
-  schedule_id: schedule.id,
-});

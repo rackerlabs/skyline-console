@@ -1,7 +1,7 @@
 import { action } from 'mobx';
 import client from 'client';
 import Base from 'stores/base';
-import { formatRetentionPolicy } from 'resources/qonos';
+import { formatRetentionPolicy, mapActionTarget } from 'resources/qonos';
 
 export class ScheduleStore extends Base {
   get client() {
@@ -22,7 +22,7 @@ export class ScheduleStore extends Base {
   get mapper() {
     return (data) => ({
       ...data,
-      server_id: (data.action_parameters || {}).server_id,
+      ...mapActionTarget(data),
       retention: formatRetentionPolicy(data.retention_policy),
     });
   }

@@ -45,7 +45,6 @@ export class BaseStep extends Base {
         label: t('Action Type'),
         type: 'select',
         options: actionTypeOptions,
-        disabled: true,
         required: true,
       },
     ];

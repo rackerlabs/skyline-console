@@ -1,14 +1,11 @@
 import { inject, observer } from 'mobx-react';
 import { ModalAction } from 'containers/Action';
 import globalScheduleStore from 'stores/qonos/schedule';
-import { ExecutionProfileStore } from 'stores/qonos/execution-profile';
-import { ServerStore } from 'stores/nova/instance';
-import { instanceSelectTablePropsBackend } from 'resources/nova/instance';
 import {
-  actionTypeOptions,
   buildScheduleBody,
   cronPresetOptions,
   getScheduleDefaultValue,
+  retentionTypeOptions,
   validateCronExpression,
 } from 'resources/qonos';
 
@@ -23,19 +20,8 @@ export class Edit extends ModalAction {
 
   static allowed = () => Promise.resolve(true);
 
-  static get modalSize() {
-    return 'large';
-  }
-
-  getModalSize() {
-    return 'large';
-  }
-
   init() {
     this.store = globalScheduleStore;
-    this.profileStore = new ExecutionProfileStore();
-    this.serverStore = new ServerStore();
-    this.profileStore.fetchList();
   }
 
   get name() {
@@ -46,22 +32,14 @@ export class Edit extends ModalAction {
     return getScheduleDefaultValue(this.item);
   }
 
-  get profileColumns() {
-    return [
-      {
-        title: t('Name'),
-        dataIndex: 'name',
-      },
-      {
-        title: t('Trust ID'),
-        dataIndex: 'trust_id',
-      },
-      {
-        title: t('Enabled'),
-        dataIndex: 'enabled',
-        valueRender: 'yesNo',
-      },
-    ];
+  get nameForStateUpdate() {
+    return ['retention_type', 'cron_preset'];
+  }
+
+  get currentRetentionType() {
+    return (
+      this.state.retention_type || this.defaultValue.retention_type || 'none'
+    );
   }
 
   cronValidator = (rule, value) => {
@@ -77,13 +55,17 @@ export class Edit extends ModalAction {
   };
 
   onValuesChange = (changedFields) => {
-    const { cron_preset } = changedFields;
+    const { cron_preset, retention_type } = changedFields;
     if (cron_preset && cron_preset !== 'custom') {
       this.updateFormValue('cron_expression', cron_preset);
+    }
+    if (retention_type !== undefined) {
+      this.setState({ retention_type });
     }
   };
 
   get formItems() {
+    const retentionType = this.currentRetentionType;
     return [
       {
         name: 'name',
@@ -97,42 +79,6 @@ export class Edit extends ModalAction {
         label: t('Description'),
         type: 'textarea',
         rows: 3,
-      },
-      {
-        name: 'enabled',
-        label: t('Enabled'),
-        type: 'switch',
-      },
-      {
-        name: 'action_type',
-        label: t('Action Type'),
-        type: 'select',
-        options: actionTypeOptions,
-        disabled: true,
-        required: true,
-      },
-      {
-        name: 'server',
-        label: t('Instance'),
-        type: 'select-table',
-        backendPageStore: this.serverStore,
-        backendPageFunc: 'fetchListByPage',
-        rowKey: 'id',
-        required: true,
-        selectedLabel: t('Instance'),
-        ...instanceSelectTablePropsBackend,
-      },
-      {
-        name: 'execution_profile',
-        label: t('Execution Profile'),
-        type: 'select-table',
-        data: this.profileStore.list.data,
-        isLoading: this.profileStore.list.isLoading,
-        columns: this.profileColumns,
-        filterParams: [{ label: t('Name'), name: 'name' }],
-        disabledFunc: (record) => !record.enabled,
-        required: true,
-        selectedLabel: t('Execution Profile'),
       },
       {
         type: 'divider',
@@ -161,28 +107,33 @@ export class Edit extends ModalAction {
         type: 'divider',
       },
       {
-        name: 'retention_count_enabled',
-        label: t('Retention Count'),
-        type: 'switch',
+        name: 'retention_type',
+        label: t('Retention'),
+        type: 'radio',
+        options: retentionTypeOptions,
+        tip: t(
+          'Count keeps the last N snapshots/backups. Age keeps snapshots/backups for N days.'
+        ),
       },
       {
         name: 'retention_count',
-        label: t('Count'),
+        label: t('Number of Snapshots/Backups'),
         type: 'input-number',
         min: 1,
+        required: retentionType === 'count',
+        hidden: retentionType !== 'count',
         validator: this.retentionValidator,
-      },
-      {
-        name: 'retention_age_enabled',
-        label: t('Retention Age'),
-        type: 'switch',
+        tip: t('Keep the last N snapshots or backups.'),
       },
       {
         name: 'retention_age_days',
-        label: t('Days'),
+        label: t('Number of Days'),
         type: 'input-number',
         min: 1,
+        required: retentionType === 'age',
+        hidden: retentionType !== 'age',
         validator: this.retentionValidator,
+        tip: t('Keep snapshots or backups for N days.'),
       },
     ];
   }

@@ -57,43 +57,44 @@ export class Job extends Base {
     ];
   }
 
-  getColumns = () => [
-    {
-      title: t('ID'),
-      dataIndex: 'id',
-      routeName: this.getRouteName('qonosJobDetail'),
-    },
-    {
-      title: t('Schedule ID'),
-      dataIndex: 'schedule_id',
-      isHideable: true,
-    },
-    {
-      title: t('Action Type'),
-      dataIndex: 'action_type',
-    },
-    {
-      title: t('Server ID'),
-      dataIndex: 'server_id',
-      isHideable: true,
-    },
-    {
-      title: t('Status'),
-      dataIndex: 'status',
-      valueMap: jobStatus,
-    },
-    {
-      title: t('Run At'),
-      dataIndex: 'run_at',
-      valueRender: 'toLocalTime',
-    },
-    {
-      title: t('Created At'),
-      dataIndex: 'created_at',
-      valueRender: 'toLocalTime',
-      isHideable: true,
-    },
-  ];
+  getColumns() {
+    return [
+      {
+        title: t('ID'),
+        dataIndex: 'id',
+        routeName: this.getRouteName('qonosJobDetail'),
+      },
+      {
+        title: t('Schedule ID'),
+        dataIndex: 'schedule_id',
+        isHideable: true,
+      },
+      {
+        title: t('Action Type'),
+        dataIndex: 'action_type',
+      },
+      {
+        title: t('Target'),
+        dataIndex: 'target_id',
+        isHideable: true,
+      },
+      {
+        title: t('Status'),
+        dataIndex: 'status',
+        valueMap: jobStatus,
+      },
+      {
+        title: t('Run At'),
+        dataIndex: 'run_at',
+        valueRender: 'toLocalTime',
+      },
+      {
+        title: t('Created At'),
+        dataIndex: 'created_at',
+        valueRender: 'toLocalTime',
+        isHideable: true,
+      },
+    ];
+  }
 }
-
 export default inject('rootStore')(observer(Job));

@@ -1,6 +1,10 @@
 import { inject, observer } from 'mobx-react';
 import Base from 'components/Form';
-import { cronPresetOptions, validateCronExpression } from 'resources/qonos';
+import {
+  cronPresetOptions,
+  retentionTypeOptions,
+  validateCronExpression,
+} from 'resources/qonos';
 
 export class ScheduleStep extends Base {
   get name() {
@@ -17,9 +21,18 @@ export class ScheduleStep extends Base {
     return {
       cron_preset: cronPresetOptions[0].value,
       cron_expression: cronPresetOptions[0].value,
-      retention_count_enabled: false,
-      retention_age_enabled: false,
+      retention_type: 'none',
     };
+  }
+
+  get nameForStateUpdate() {
+    return ['retention_type', 'cron_preset'];
+  }
+
+  get currentRetentionType() {
+    return (
+      this.state.retention_type || this.props.context?.retention_type || 'none'
+    );
   }
 
   cronValidator = (rule, value) => {
@@ -35,13 +48,17 @@ export class ScheduleStep extends Base {
   };
 
   onValuesChange = (changedFields) => {
-    const { cron_preset } = changedFields;
+    const { cron_preset, retention_type } = changedFields;
     if (cron_preset && cron_preset !== 'custom') {
       this.updateFormValue('cron_expression', cron_preset);
+    }
+    if (retention_type !== undefined) {
+      this.setState({ retention_type });
     }
   };
 
   get formItems() {
+    const retentionType = this.currentRetentionType;
     return [
       {
         name: 'cron_preset',
@@ -67,28 +84,33 @@ export class ScheduleStep extends Base {
         type: 'divider',
       },
       {
-        name: 'retention_count_enabled',
-        label: t('Retention Count'),
-        type: 'switch',
+        name: 'retention_type',
+        label: t('Retention'),
+        type: 'radio',
+        options: retentionTypeOptions,
+        tip: t(
+          'Count keeps the last N snapshots/backups. Age keeps snapshots/backups for N days.'
+        ),
       },
       {
         name: 'retention_count',
-        label: t('Count'),
+        label: t('Number of Snapshots/Backups'),
         type: 'input-number',
         min: 1,
+        required: retentionType === 'count',
+        hidden: retentionType !== 'count',
         validator: this.retentionValidator,
-      },
-      {
-        name: 'retention_age_enabled',
-        label: t('Retention Age'),
-        type: 'switch',
+        tip: t('Keep the last N snapshots or backups.'),
       },
       {
         name: 'retention_age_days',
-        label: t('Days'),
+        label: t('Number of Days'),
         type: 'input-number',
         min: 1,
+        required: retentionType === 'age',
+        hidden: retentionType !== 'age',
         validator: this.retentionValidator,
+        tip: t('Keep snapshots or backups for N days.'),
       },
     ];
   }

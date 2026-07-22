@@ -49,6 +49,12 @@ export class ScheduleDetail extends Base {
       {
         title: t('Server ID'),
         dataIndex: 'server_id',
+        render: (value) => value || '-',
+      },
+      {
+        title: t('Volume ID'),
+        dataIndex: 'volume_id',
+        render: (value) => value || '-',
       },
       {
         title: t('Execution Profile ID'),

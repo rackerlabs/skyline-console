@@ -68,8 +68,8 @@ export class Schedule extends Base {
       dataIndex: 'action_type',
     },
     {
-      title: t('Server ID'),
-      dataIndex: 'server_id',
+      title: t('Target'),
+      dataIndex: 'target_id',
       isHideable: true,
     },
     {

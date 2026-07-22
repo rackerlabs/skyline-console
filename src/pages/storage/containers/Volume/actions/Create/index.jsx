@@ -50,6 +50,7 @@ import {
   getVolumeTypeColumns,
   volumeTypeFilters,
 } from 'resources/cinder/volume-type';
+import { getDefaultVolumeTypeOption } from 'resources/cinder/snapshot';
 import { allSettled } from 'utils';
 import styles from './index.less';
 
@@ -246,9 +247,12 @@ export class Create extends FormAction {
   }
 
   async getVolumeTypes() {
-    const types = await this.volumeTypeStore.fetchList({ showQoS: true });
+    await this.volumeTypeStore.fetchList({ showQoS: true });
+    const types = this.volumeTypes;
     if (types.length > 0) {
-      const defaultType = types[0];
+      const preferred = getDefaultVolumeTypeOption();
+      const defaultType =
+        types.find((it) => it.id === preferred?.value) || types[0];
       const { id, name } = defaultType;
       const initVolumeType = {
         selectedRowKeys: [id],

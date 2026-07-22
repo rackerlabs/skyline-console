@@ -1,7 +1,7 @@
 import { inject, observer } from 'mobx-react';
 import { StepAction } from 'containers/Action';
 import globalScheduleStore from 'stores/qonos/schedule';
-import { buildScheduleBody } from 'resources/qonos';
+import { buildScheduleBody, getScheduleCreatePath } from 'resources/qonos';
 import BaseStep from './BaseStep';
 import TargetStep from './TargetStep';
 import ScheduleStep from './ScheduleStep';
@@ -15,7 +15,8 @@ export class Create extends StepAction {
 
   static buttonType = 'primary';
 
-  static path = '/scheduled-actions/schedule/create';
+  static path = (_, containerProps) =>
+    getScheduleCreatePath(containerProps?.isAdminPage);
 
   static policy = '';
 
@@ -28,7 +29,7 @@ export class Create extends StepAction {
   }
 
   get listUrl() {
-    return '/scheduled-actions/schedule';
+    return this.getRoutePath('qonosSchedule');
   }
 
   get name() {
@@ -49,18 +50,9 @@ export class Create extends StepAction {
 
   get steps() {
     return [
-      {
-        title: t('Base Config'),
-        component: BaseStep,
-      },
-      {
-        title: t('Target Config'),
-        component: TargetStep,
-      },
-      {
-        title: t('Schedule Config'),
-        component: ScheduleStep,
-      },
+      { title: t('Base Config'), component: BaseStep },
+      { title: t('Target Config'), component: TargetStep },
+      { title: t('Schedule Config'), component: ScheduleStep },
     ];
   }
 

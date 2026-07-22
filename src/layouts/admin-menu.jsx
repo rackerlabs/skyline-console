@@ -1156,44 +1156,44 @@ const renderMenu = (t) => {
       icon: <CalendarOutlined />,
       children: [
         {
-          path: '/scheduled-actions/schedule',
+          path: '/scheduled-actions/schedule-admin',
           name: t('Schedules'),
           key: 'qonosScheduleAdmin',
           level: 1,
           children: [
             {
-              path: '/scheduled-actions/schedule/create',
+              path: '/scheduled-actions/schedule-admin/create',
               name: t('Create Schedule'),
               key: 'qonosScheduleCreateAdmin',
               level: 2,
             },
             {
-              path: /^\/scheduled-actions\/schedule\/detail\/.[^/]+$/,
+              path: /^\/scheduled-actions\/schedule-admin\/detail\/.[^/]+$/,
               name: t('Schedule Detail'),
               key: 'qonosScheduleDetailAdmin',
               level: 2,
-              routePath: '/scheduled-actions/schedule/detail/:id',
+              routePath: '/scheduled-actions/schedule-admin/detail/:id',
             },
           ],
         },
         {
-          path: '/scheduled-actions/execution-profile',
+          path: '/scheduled-actions/execution-profile-admin',
           name: t('Execution Profiles'),
           key: 'qonosExecutionProfileAdmin',
           level: 1,
         },
         {
-          path: '/scheduled-actions/job',
+          path: '/scheduled-actions/job-admin',
           name: t('Jobs'),
           key: 'qonosJobAdmin',
           level: 1,
           children: [
             {
-              path: /^\/scheduled-actions\/job\/detail\/.[^/]+$/,
+              path: /^\/scheduled-actions\/job-admin\/detail\/.[^/]+$/,
               name: t('Job Detail'),
               key: 'qonosJobDetailAdmin',
               level: 2,
-              routePath: '/scheduled-actions/job/detail/:id',
+              routePath: '/scheduled-actions/job-admin/detail/:id',
             },
           ],
         },

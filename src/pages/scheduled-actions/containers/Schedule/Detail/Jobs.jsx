@@ -1,6 +1,7 @@
 import { inject, observer } from 'mobx-react';
 import { JobStore } from 'stores/qonos/job';
-import Job from '../../Job';
+import { emptyActionConfig } from 'utils/constants';
+import { Job } from '../../Job';
 
 export class ScheduleJobs extends Job {
   init() {
@@ -16,21 +17,31 @@ export class ScheduleJobs extends Job {
     return true;
   }
 
-  get actionConfigs() {
-    return {
-      rowActions: {
-        firstAction: null,
-        moreActions: [],
-      },
-      batchActions: [],
-      primaryActions: [],
-    };
+  get searchFilters() {
+    return [];
   }
 
-  updateFetchParams = (params) => ({
-    ...params,
-    schedule_id: this.props.detail.id,
-  });
+  get actionConfigs() {
+    return emptyActionConfig;
+  }
+
+  get scheduleId() {
+    return this.props.detail?.id || this.props.match?.params?.id;
+  }
+
+  updateFetchParams = (params) => {
+    const { id, ...rest } = params;
+    return { ...rest, schedule_id: this.scheduleId };
+  };
+
+  getColumns() {
+    return super
+      .getColumns()
+      .filter(
+        (c) =>
+          !['schedule_id', 'action_type', 'target_id'].includes(c.dataIndex)
+      );
+  }
 }
 
 export default inject('rootStore')(observer(ScheduleJobs));

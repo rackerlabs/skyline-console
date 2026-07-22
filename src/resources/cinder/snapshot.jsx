@@ -38,7 +38,7 @@ export const getDefaultVolumeTypeOption = () => {
         const normalizedKey = key.replace(/^:/, '').toLowerCase();
         const normalizedValue = String(value).toLowerCase();
         return (
-          normalizedKey === 'is_default' &&
+          normalizedKey === 'preferred' &&
           (normalizedValue === 'true' || normalizedValue === '<is> true')
         );
       })

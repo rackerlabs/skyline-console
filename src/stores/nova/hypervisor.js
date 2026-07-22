@@ -43,52 +43,51 @@ export class HypervisorStore extends Base {
     };
   }
 
-  // get mapper() {
-  //   return (item) => {
-  //     item.vcpus_used_percent = ((item.vcpus_used / item.vcpus) * 100).toFixed(2);
-  //     item.memory_mb_percent = ((item.memory_mb_used / item.memory_mb) * 100).toFixed(2);
-  //     item.storage_percent = ((item.local_gb_used / item.local_gb) * 100).toFixed(2);
-  //     item.memory_mb_used_gb = getGiBValue(item.memory_mb_used);
-  //     item.memory_mb_gb = getGiBValue(item.memory_mb);
-  //     return item;
-  //   };
-  // }
+  fetchInventories = (id) =>
+    this.providerClient.inventories.list(id).catch(() => null);
+
+  applyInventoryRatios = (item, inventoryResult) => {
+    if (item.hypervisor_type === 'ironic' || !inventoryResult) {
+      return item;
+    }
+    const { VCPU, MEMORY_MB } = inventoryResult.inventories || {};
+    if (VCPU?.allocation_ratio != null) {
+      item.vcpus *= VCPU.allocation_ratio;
+    }
+    if (MEMORY_MB?.allocation_ratio != null) {
+      item.memory_mb *= MEMORY_MB.allocation_ratio;
+    }
+    return item;
+  };
+
+  applyUsageStats = (item) => {
+    item.vcpus_used_percent =
+      (item.vcpus && ((item.vcpus_used / item.vcpus) * 100).toFixed(2)) || 0;
+    item.memory_mb_percent =
+      (item.memory_mb &&
+        ((item.memory_mb_used / item.memory_mb) * 100).toFixed(2)) ||
+      0;
+    item.storage_percent =
+      (item.local_gb &&
+        ((item.local_gb_used / item.local_gb) * 100).toFixed(2)) ||
+      0;
+    item.memory_mb_used_gb = getGiBValue(item.memory_mb_used);
+    item.memory_mb_gb = getGiBValue(item.memory_mb);
+    return item;
+  };
 
   async listDidFetch(items, all_projects, filters) {
     const { simple } = filters;
     if (simple) {
       return items;
     }
-    const requestList = items.map((it) =>
-      this.providerClient.inventories.list(it.id)
+    const inventories = await Promise.all(
+      items.map((it) => this.fetchInventories(it.id))
     );
-    const inventories = await Promise.all(requestList);
-    const result = items.map((item, index) => {
-      if (item.hypervisor_type !== 'ironic') {
-        const {
-          inventories: {
-            VCPU: { allocation_ratio },
-            MEMORY_MB: { allocation_ratio: memory_ratio },
-          },
-        } = inventories[index];
-        item.vcpus *= allocation_ratio;
-        item.memory_mb *= memory_ratio;
-      }
-      item.vcpus_used_percent =
-        (item.vcpus && ((item.vcpus_used / item.vcpus) * 100).toFixed(2)) || 0;
-      item.memory_mb_percent =
-        (item.memory_mb &&
-          ((item.memory_mb_used / item.memory_mb) * 100).toFixed(2)) ||
-        0;
-      item.storage_percent =
-        (item.local_gb &&
-          ((item.local_gb_used / item.local_gb) * 100).toFixed(2)) ||
-        0;
-      item.memory_mb_used_gb = getGiBValue(item.memory_mb_used);
-      item.memory_mb_gb = getGiBValue(item.memory_mb);
-      return item;
+    return items.map((item, index) => {
+      this.applyInventoryRatios(item, inventories[index]);
+      return this.applyUsageStats(item);
     });
-    return result;
   }
 
   @action
@@ -101,31 +100,24 @@ export class HypervisorStore extends Base {
       in_tree: id,
     });
     const provider = (resource_providers || []).filter((it) => it.uuid !== id);
-    const promiseArr = [this.providerClient.inventories.list(id)];
+    const promiseArr = [this.fetchInventories(id)];
     if (provider.length) {
       // If there is a provider, the VGPU is available
       promiseArr.push(
-        this.providerClient.inventories.list(provider[0].uuid),
-        this.providerClient.usages.list(provider[0].uuid)
+        this.fetchInventories(provider[0].uuid),
+        this.providerClient.usages.list(provider[0].uuid).catch(() => null)
       );
     }
     const [inventoriesBase, inventoriesVGPU, usagesVGPU] = await Promise.all(
       promiseArr
     );
-    if (item.hypervisor_type !== 'ironic') {
-      const {
-        inventories: {
-          VCPU: { allocation_ratio },
-          MEMORY_MB: { allocation_ratio: memory_ratio },
-        },
-      } = inventoriesBase;
-      item.vcpus *= allocation_ratio;
-      item.memory_mb *= memory_ratio;
-    }
+    this.applyInventoryRatios(item, inventoriesBase);
     if (inventoriesVGPU && usagesVGPU) {
       const { inventories: { VGPU: { allocation_ratio, total } } = {} } =
         inventoriesVGPU;
-      item.vgpus = allocation_ratio * total;
+      if (allocation_ratio != null && total != null) {
+        item.vgpus = allocation_ratio * total;
+      }
       const { usages: { VGPU } = {} } = usagesVGPU;
       item.vgpus_used = VGPU;
     }
@@ -151,21 +143,11 @@ export class HypervisorStore extends Base {
       local_gb: 0,
       local_gb_used: 0,
     };
-    const requestList = hypervisors.map((it) =>
-      this.providerClient.inventories.list(it.id)
+    const inventories = await Promise.all(
+      hypervisors.map((it) => this.fetchInventories(it.id))
     );
-    const inventories = await Promise.all(requestList);
     hypervisors.forEach((item, index) => {
-      if (item.hypervisor_type !== 'ironic') {
-        const {
-          inventories: {
-            VCPU: { allocation_ratio },
-            MEMORY_MB: { allocation_ratio: memory_ratio },
-          },
-        } = inventories[index];
-        item.vcpus *= allocation_ratio;
-        item.memory_mb *= memory_ratio;
-      }
+      this.applyInventoryRatios(item, inventories[index]);
       data.vcpus += item.vcpus;
       data.vcpus_used += item.vcpus_used;
       data.memory_mb += getGiBValue(item.memory_mb);

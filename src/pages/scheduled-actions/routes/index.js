@@ -9,30 +9,23 @@ import Job from '../containers/Job';
 import JobDetail from '../containers/Job/Detail';
 
 const PATH = '/scheduled-actions';
+const dual = (name, component, suffix = '') => [
+  { path: `${PATH}/${name}${suffix}`, component, exact: true },
+  { path: `${PATH}/${name}-admin${suffix}`, component, exact: true },
+];
+
 export default [
   {
     path: PATH,
     component: BaseLayout,
     routes: [
-      { path: `${PATH}/schedule`, component: Schedule, exact: true },
-      {
-        path: `${PATH}/schedule/create`,
-        component: ScheduleCreate,
-        exact: true,
-      },
-      {
-        path: `${PATH}/schedule/detail/:id`,
-        component: ScheduleDetail,
-        exact: true,
-      },
-      {
-        path: `${PATH}/execution-profile`,
-        component: ExecutionProfile,
-        exact: true,
-      },
+      ...dual('schedule', Schedule),
+      ...dual('schedule', ScheduleCreate, '/create'),
+      ...dual('schedule', ScheduleDetail, '/detail/:id'),
+      ...dual('execution-profile', ExecutionProfile),
+      ...dual('job', Job),
+      ...dual('job', JobDetail, '/detail/:id'),
       { path: `${PATH}/trust-admin`, component: Trust, exact: true },
-      { path: `${PATH}/job`, component: Job, exact: true },
-      { path: `${PATH}/job/detail/:id`, component: JobDetail, exact: true },
       { path: '*', component: E404 },
     ],
   },
