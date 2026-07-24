@@ -18,7 +18,8 @@ import { renderFilterMap } from 'utils/index';
 import globalProjectStore from 'stores/keystone/project';
 import globalVolumeStore from 'stores/cinder/volume';
 import { isEmpty } from 'lodash';
-import { idNameColumn } from 'utils/table';
+import { idNameColumn, getIdRender, getNameRenderWithStyle } from 'utils/table';
+import MaintenanceIndicator from 'components/MaintenanceIndicator';
 
 export const volumeStatus = {
   available: t('Available'),
@@ -247,8 +248,31 @@ export const getVolumeColumnsList = (self) => {
     {
       title: t('ID/Name'),
       dataIndex: 'name',
-      routeName: self.getRouteName('volumeDetail'),
       sortKey: 'name',
+      width: 220,
+      render: (name, record) => {
+        const routeName = self.getRouteName('volumeDetail');
+        const idRender = getIdRender(record.id, true, true);
+        const nameRender = getNameRenderWithStyle(name || '-', true);
+        const idLink = self.getLinkRender(
+          routeName,
+          idRender,
+          { id: record.id },
+          {}
+        );
+        return (
+          <div>
+            <div
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
+            >
+              {idLink}
+              <MaintenanceIndicator metadata={record.metadata} />
+            </div>
+            {nameRender}
+          </div>
+        );
+      },
+      stringify: (name, record) => `${record.id} / ${name || '-'}`,
     },
     {
       title: t('Project ID/Name'),
