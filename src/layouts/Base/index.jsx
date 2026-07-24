@@ -22,8 +22,10 @@ import checkItemPolicy from 'resources/skyline/policy';
 import { Layout } from 'antd';
 import GlobalHeader from 'components/Layout/GlobalHeader';
 import { setRouteMap, getPath } from 'utils/route-map';
+import { MODE_BASIC } from 'utils/console-mode';
 import renderAdminMenu from '../admin-menu';
 import renderMenu from '../menu';
+import renderBasicMenu from '../basic-menu';
 import renderUserMenu from '../user-menu';
 import RightContext from './Right';
 import LayoutMenu from './Menu';
@@ -33,7 +35,10 @@ const { Header } = Layout;
 
 export class BaseLayout extends Component {
   autoReaction = reaction(
-    () => (this.props.rootStore.user || {}).keystone_token,
+    () => [
+      (this.props.rootStore.user || {}).keystone_token,
+      this.props.rootStore.consoleMode,
+    ],
     () => {
       setRouteMap(this.menu);
     }
@@ -89,6 +94,10 @@ export class BaseLayout extends Component {
       ret = renderUserMenu(i18n.t);
     } else if (this.isAdminPage) {
       ret = renderAdminMenu(i18n.t);
+    } else if (this.rootStore.consoleMode === MODE_BASIC) {
+      // Basic mode gets a trimmed menu; everything else falls through
+      // to the full Advanced menu.
+      ret = renderBasicMenu(i18n.t);
     } else {
       ret = renderMenu(i18n.t);
     }

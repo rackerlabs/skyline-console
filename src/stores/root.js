@@ -22,6 +22,12 @@ import {
   getLocalStorageItem,
   clearLocalStorage,
 } from 'utils/local-storage';
+import {
+  getConsoleMode,
+  setConsoleMode as persistConsoleMode,
+  isValidMode,
+  MODE_ADVANCED,
+} from 'utils/console-mode';
 import { isEmpty, values } from 'lodash';
 
 // Keys written by the Login page on SSO sign-in. Kept dynamic so the
@@ -107,6 +113,13 @@ export class RootStore {
   @observable
   neutronExtensions = [];
 
+  // Basic / Advanced console mode. Kept as an observable so the header
+  // toggle can flip the value and the Base layout re-renders with the
+  // right menu. Source of truth remains localStorage (see
+  // `utils/console-mode`); this field mirrors it for reactivity.
+  @observable
+  consoleMode = getConsoleMode() || MODE_ADVANCED;
+
   // @observable
   // menu = renderMenu(i18n.t);
 
@@ -114,6 +127,15 @@ export class RootStore {
     this.routing = new RouterStore();
     this.routing.query = this.query;
     global.navigateTo = this.routing.push;
+  }
+
+  @action
+  setConsoleMode(mode) {
+    if (!isValidMode(mode)) {
+      return;
+    }
+    this.consoleMode = mode;
+    persistConsoleMode(mode);
   }
 
   get client() {
@@ -333,6 +355,9 @@ export class RootStore {
     });
     // clear all local storage expect language
     clearLocalStorage(['lang']);
+    // Reset the in-memory console mode to Advanced so the next user
+    // starts fresh. The chooser page will overwrite this on selection.
+    this.consoleMode = MODE_ADVANCED;
   }
 }
 

@@ -16,6 +16,7 @@ import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
 import { Button, Col, Row } from 'antd';
 import Avatar from './AvatarDropdown';
+import ModeToggle from './ModeToggle';
 import styles from './index.less';
 
 export class GlobalHeaderRight extends Component {
@@ -83,6 +84,9 @@ export class GlobalHeaderRight extends Component {
             {this.renderAdministrator()}
           </Col>
           {this.renderExtra()}
+          <Col>
+            <ModeToggle />
+          </Col>
           <Col className={styles['right-avatar-col']}>
             <Avatar menu />
           </Col>

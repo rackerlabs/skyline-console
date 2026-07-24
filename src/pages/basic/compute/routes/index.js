@@ -13,20 +13,30 @@
 // limitations under the License.
 
 import BaseLayout from 'layouts/Basic';
-import E404 from '../containers/404';
-import Overview from '../containers/Overview';
-import AdminOverview from '../containers/AdminOverview';
-import BasicHome from '../containers/BasicHome';
+import E404 from 'pages/base/containers/404';
+import BasicInstance from 'pages/basic/containers/Compute/Instance';
+import BasicInstanceCreate from 'pages/basic/containers/Compute/Instance/Create';
+import BasicImage from 'pages/basic/containers/Compute/Image';
+import BasicImageCreate from 'pages/basic/containers/Compute/Image/Create';
 
-const PATH = '/base';
+const PATH = '/basic/compute';
 export default [
   {
     path: PATH,
     component: BaseLayout,
     routes: [
-      { path: `${PATH}/overview`, component: Overview, exact: true },
-      { path: `${PATH}/overview-admin`, component: AdminOverview, exact: true },
-      { path: `${PATH}/basic-home`, component: BasicHome, exact: true },
+      { path: `${PATH}/instance`, component: BasicInstance, exact: true },
+      {
+        path: `${PATH}/instance/create`,
+        component: BasicInstanceCreate,
+        exact: true,
+      },
+      { path: `${PATH}/image`, component: BasicImage, exact: true },
+      {
+        path: `${PATH}/image/create`,
+        component: BasicImageCreate,
+        exact: true,
+      },
       { path: '*', component: E404 },
     ],
   },
