@@ -18,6 +18,8 @@ import { reaction } from 'mobx';
 import ImageType from 'components/ImageType';
 import Base from 'containers/List';
 import Notify from 'components/Notify';
+import MaintenanceIndicator from 'components/MaintenanceIndicator';
+import { getIdRender, getNameRenderWithStyle } from 'utils/table';
 import {
   instanceStatus,
   transitionStatus,
@@ -171,8 +173,31 @@ export class Instance extends Base {
       {
         title: t('ID/Name'),
         dataIndex: 'name',
-        routeName: this.getRouteName('instanceDetail'),
         sortKey: 'display_name',
+        width: 220,
+        render: (name, record) => {
+          const routeName = this.getRouteName('instanceDetail');
+          const idRender = getIdRender(record.id, true, true);
+          const nameRender = getNameRenderWithStyle(name || '-', true);
+          const idLink = this.getLinkRender(
+            routeName,
+            idRender,
+            { id: record.id },
+            {}
+          );
+          return (
+            <div>
+              <div
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
+              >
+                {idLink}
+                <MaintenanceIndicator metadata={record.metadata} />
+              </div>
+              {nameRender}
+            </div>
+          );
+        },
+        stringify: (name, record) => `${record.id} / ${name || '-'}`,
       },
       {
         title: t('Project ID/Name'),
