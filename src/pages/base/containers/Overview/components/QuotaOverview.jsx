@@ -169,15 +169,15 @@ export const getVolumeTypeCards = (data) => {
       index,
       value: [
         {
-          text: t('{name} type', { name: item.name }),
+          text: t('{name} volumes', { name: item.name }),
           key: `volumes_${item.name}`,
         },
         {
-          text: t('{name} type capacity (GiB)', { name: item.name }),
+          text: t('{name} capacity (GiB)', { name: item.name }),
           key: `gigabytes_${item.name}`,
         },
         {
-          text: t('{name} type snapshots', { name: item.name }),
+          text: t('{name} snapshots', { name: item.name }),
           key: `snapshots_${item.name}`,
         },
       ],

@@ -18,12 +18,58 @@ import globalVolumeStore, { VolumeStore } from 'stores/cinder/volume';
 import globalProjectStore from 'stores/keystone/project';
 import {
   isAvailableOrInUse,
+  isInUse,
   setCreateVolumeSize,
   checkQuotaDisable,
   getQuotaInfo,
   fetchQuota,
 } from 'resources/cinder/volume';
 import { isEmpty } from 'lodash';
+import client from 'client';
+
+const ATTACHED_WITH_SNAPSHOTS_TIP = t(
+  "This volume can't be extended because it is attached to an instance and has one or more snapshots. Detach the volume or delete its snapshots, then try again."
+);
+
+const isAttachedVolume = (item = {}) =>
+  isInUse(item) || (item.attachments || []).length > 0;
+
+const isHaVolumeType = (item = {}) =>
+  String(item.volume_type || item.type || item.origin_data?.volume_type || '')
+    .trim()
+    .toUpperCase()
+    .startsWith('HA-');
+
+const hasActiveSnapshots = async (item) => {
+  const { snapshots = [] } = await client.cinder.snapshots.list({
+    volume_id: item.id,
+  });
+  return snapshots.some(
+    (s) => !['error', 'error_deleting', 'deleting'].includes(s.status)
+  );
+};
+
+const assertCanExtend = async (item, { failOpen = false } = {}) => {
+  if (!isAttachedVolume(item) || isHaVolumeType(item)) {
+    return;
+  }
+  let hasSnapshots = false;
+  try {
+    hasSnapshots = await hasActiveSnapshots(item);
+  } catch (e) {
+    if (!failOpen) {
+      throw e;
+    }
+    // eslint-disable-next-line no-console
+    console.log('Failed to check volume snapshots before extend', e);
+    return;
+  }
+  if (hasSnapshots) {
+    const error = new Error(ATTACHED_WITH_SNAPSHOTS_TIP);
+    error.response = { data: ATTACHED_WITH_SNAPSHOTS_TIP };
+    throw error;
+  }
+};
 
 export class ExtendVolume extends ModalAction {
   static id = 'extend-snapshot';
@@ -37,6 +83,8 @@ export class ExtendVolume extends ModalAction {
   static policy = 'volume:extend';
 
   static allowed = (item) => Promise.resolve(isAvailableOrInUse(item));
+
+  static checkBeforeOpen = (item) => assertCanExtend(item, { failOpen: true });
 
   init() {
     this.store = globalVolumeStore;
@@ -157,6 +205,7 @@ export class ExtendVolume extends ModalAction {
   }
 
   onSubmit = async (values) => {
+    await assertCanExtend(this.item);
     const { new_size } = values;
     const { id } = this.item;
     return this.store.extendSize(id, { new_size });
