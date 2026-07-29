@@ -19,22 +19,20 @@ import { ExclamationCircleFilled } from '@ant-design/icons';
  * MaintenanceIndicator
  *
  * Displays a red "!" icon next to a resource name when the Nova/Cinder
- * metadata property `rd-maint-notification` is set on that resource.
+ * metadata property `rxt-maintenance-notification` is set on that resource.
  *
- * The tooltip shows the value of `rxt-maintenance-notification` which
- * contains the maintenance start/end time details.
+ * If the metadata is present on the OpenStack asset (instance or volume),
+ * display the "!" icon and show its value in the tooltip.
  *
  * Usage:
  *   <MaintenanceIndicator metadata={record.metadata} />
  */
 const MaintenanceIndicator = ({ metadata }) => {
-  if (!metadata || !metadata['rd-maint-notification']) {
+  if (!metadata || !metadata['rxt-maintenance-notification']) {
     return null;
   }
 
-  const notificationText =
-    metadata['rxt-maintenance-notification'] ||
-    t('This resource is impacted by a scheduled maintenance.');
+  const notificationText = metadata['rxt-maintenance-notification'];
 
   return (
     <Tooltip title={notificationText} placement="top">

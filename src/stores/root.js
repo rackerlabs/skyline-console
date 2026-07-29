@@ -22,6 +22,13 @@ import {
   getLocalStorageItem,
   clearLocalStorage,
 } from 'utils/local-storage';
+import {
+  getConsoleMode,
+  setConsoleMode as persistConsoleMode,
+  isValidMode,
+  MODE_ADVANCED,
+  CONSOLE_MODE_KEY,
+} from 'utils/console-mode';
 import { isEmpty, values } from 'lodash';
 
 // Keys written by the Login page on SSO sign-in. Kept dynamic so the
@@ -107,6 +114,13 @@ export class RootStore {
   @observable
   neutronExtensions = [];
 
+  // Basic / Advanced console mode. Kept as an observable so the header
+  // toggle can flip the value and the Base layout re-renders with the
+  // right menu. Source of truth remains localStorage (see
+  // `utils/console-mode`); this field mirrors it for reactivity.
+  @observable
+  consoleMode = getConsoleMode() || MODE_ADVANCED;
+
   // @observable
   // menu = renderMenu(i18n.t);
 
@@ -114,6 +128,15 @@ export class RootStore {
     this.routing = new RouterStore();
     this.routing.query = this.query;
     global.navigateTo = this.routing.push;
+  }
+
+  @action
+  setConsoleMode(mode) {
+    if (!isValidMode(mode)) {
+      return;
+    }
+    this.consoleMode = mode;
+    persistConsoleMode(mode);
   }
 
   get client() {
@@ -331,8 +354,14 @@ export class RootStore {
     stores.forEach((store) => {
       store.clearData();
     });
-    // clear all local storage expect language
-    clearLocalStorage(['lang']);
+    // Clear all local storage except language and the user's console
+    // mode preference. Preserving `console_mode` on logout means a
+    // returning user doesn't see the Basic/Advanced chooser again.
+    clearLocalStorage(['lang', CONSOLE_MODE_KEY]);
+    // Keep the in-memory observable in sync with what remains in
+    // localStorage so the next session picks up the persisted choice
+    // rather than snapping back to Advanced.
+    this.consoleMode = getConsoleMode() || MODE_ADVANCED;
   }
 }
 

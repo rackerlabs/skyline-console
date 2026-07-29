@@ -286,6 +286,16 @@ export class Create extends FormAction {
     });
   };
 
+  onImageChange = (value) => {
+    const image = value?.selectedRows?.[0];
+    this.setState({ image }, () =>
+      this.syncSizeToVolumeTypeMin(
+        null,
+        image ? this.getImageMinSize(image) : 1
+      )
+    );
+  };
+
   get systemTabs() {
     const data = this.imageStore.list.data || [];
     const availableImages = data
@@ -298,6 +308,11 @@ export class Create extends FormAction {
     return tabs.filter((tab) => {
       return availableImages.some((image) => getImageOS(image) === tab.value);
     });
+  }
+
+  get imageColumns() {
+    const hide = ['min_disk', 'min_ram', 'visibility', 'size', 'virtual_size'];
+    return getImageColumns(this).filter((c) => !hide.includes(c.dataIndex));
   }
 
   getVolumeTypeExtra() {
@@ -338,12 +353,12 @@ export class Create extends FormAction {
     setCreateVolumeType(name);
     if (this.sourceTypeIsSnapshot) {
       const {
-        initVolumeType: { selectedRowKeys = [] },
+        initVolumeType: { selectedRowKeys = [] } = {},
         confirmCount = 0,
       } = this.state;
       if (id !== selectedRowKeys[0] && confirmCount < 1) {
         Confirm.warn({
-          title: t('Note: Are you sure you need to modify the volume type?'),
+          title: t('Change Volume Type?'),
           content: snapshotTypeTip,
           onCancel: this.onConfirmCancel,
         });
@@ -362,38 +377,45 @@ export class Create extends FormAction {
   };
 
   validateSize = (rule, value) => {
-    const minVolTypeSize = this.getVolumeTypeMinSize();
-    if (minVolTypeSize > 0 && value !== undefined && value < minVolTypeSize) {
-      const selected = this.getSelectedVolumeType();
-      const name = selected?.name;
-      const message = name
+    const typeMin = this.getVolumeTypeMinSize();
+    const diskMin = this.getDiskMinSize();
+    const minSize = Math.max(typeMin, diskMin);
+    if (!(minSize > 0 && value !== undefined && value < minSize)) {
+      return Promise.resolve();
+    }
+    let message;
+    if (typeMin >= diskMin && typeMin > 0) {
+      const name = this.getSelectedVolumeType()?.name;
+      message = name
         ? t('Size must be at least {size} GiB for volume type "{name}".', {
-            size: minVolTypeSize,
+            size: minSize,
             name,
           })
         : t('Size must be at least {size} GiB for the selected volume type.', {
-            size: minVolTypeSize,
+            size: minSize,
           });
-      return Promise.reject(new Error(message));
+    } else if (this.sourceTypeIsImage) {
+      message = t('Size must be at least {size} GiB for the selected image.', {
+        size: minSize,
+      });
+    } else if (this.sourceTypeIsSnapshot) {
+      message = t(
+        'Size must be at least {size} GiB for the selected snapshot.',
+        { size: minSize }
+      );
+    } else {
+      message = t('Size must be at least {size} GiB.', { size: minSize });
     }
-    return Promise.resolve();
+    return Promise.reject(new Error(message));
   };
 
-  syncSizeToVolumeTypeMin(volumeType) {
+  syncSizeToVolumeTypeMin(volumeType, diskMinSize) {
     const selected = volumeType || this.getSelectedVolumeType();
-    if (!selected) {
-      return;
-    }
     const raw = selected?.extra_specs?.['provisioning:min_vol_size'];
-    if (!raw) {
-      return;
-    }
-    const minVolTypeSize = parseInt(raw, 10);
-    if (Number.isNaN(minVolTypeSize) || minVolTypeSize <= 0) {
-      return;
-    }
+    const parsed = raw ? parseInt(raw, 10) : 0;
+    const minVolTypeSize = !Number.isNaN(parsed) && parsed > 0 ? parsed : 0;
     const nextSize = Math.min(
-      Math.max(minVolTypeSize, this.getDiskMinSize()),
+      Math.max(minVolTypeSize, diskMinSize ?? this.getDiskMinSize()),
       this.maxSize
     );
     this.updateFormValue('size', nextSize);
@@ -401,14 +423,17 @@ export class Create extends FormAction {
     this.setState({ size: nextSize });
   }
 
-  get sourceTypeIsImage() {
+  get sourceValue() {
     const { source } = this.state;
-    return source === this.sourceTypes[1].value;
+    return source?.value ?? source;
+  }
+
+  get sourceTypeIsImage() {
+    return this.sourceValue === this.sourceTypes[1].value;
   }
 
   get sourceTypeIsSnapshot() {
-    const { source } = this.state;
-    return source === this.sourceTypes[2].value;
+    return this.sourceValue === this.sourceTypes[2].value;
   }
 
   getSelectedVolumeType() {
@@ -432,52 +457,72 @@ export class Create extends FormAction {
     return Number.isNaN(parsed) ? 0 : parsed;
   }
 
+  getImageMinSize(image = {}) {
+    const { min_disk = 0, size = 0, virtual_size = 0 } = image;
+    return Math.max(
+      min_disk || 0,
+      Math.ceil(size / 1024 / 1024 / 1024),
+      Math.ceil(virtual_size / 1024 / 1024 / 1024),
+      1
+    );
+  }
+
   getDiskMinSize() {
-    let imageSize = 0;
     if (this.sourceTypeIsImage) {
-      const { min_disk = 0, size = 0 } = this.state.image || {};
-      const sizeGiB = Math.ceil(size / 1024 / 1024 / 1024);
-      imageSize = Math.max(min_disk, sizeGiB, 1);
-    } else if (this.sourceTypeIsSnapshot) {
-      const { size = 0 } = this.state.snapshot || {};
-      imageSize = size;
+      return this.getImageMinSize(this.state.image);
     }
-    return Math.max(imageSize, 1);
+    if (this.sourceTypeIsSnapshot) {
+      return Math.max(this.state.snapshot?.size || 0, 1);
+    }
+    return 1;
   }
 
   onSnapshotChange = async (value) => {
     const { selectedRows = [] } = value || {};
-    let volumeTypeId = '';
-    let volumeType = null;
-    if (selectedRows.length) {
-      const { origin_data: { volume_type_id } = {}, id } =
-        selectedRows[0] || {};
-      if (!volume_type_id) {
-        try {
-          const detail = await this.snapshotStore.fetchDetail({ id });
-          const {
-            volume: { volume_type },
-          } = detail || {};
-          volumeType = this.volumeTypes.find((it) => it.name === volume_type);
-          volumeTypeId = volumeType.id;
-        } catch (e) {
-          console.log('volume already not exist', e);
-        }
-      } else {
-        volumeTypeId = volume_type_id;
-        volumeType = this.volumeTypes.find((it) => it.id === volumeTypeId);
-      }
-      if (volumeType) {
-        const newValue = {
-          selectedRowKeys: [volumeTypeId],
-          selectedRows: [volumeType],
-          snapshotId: id,
-        };
-        this.setState({
-          initVolumeType: newValue,
-        });
+    if (!selectedRows.length) {
+      this.setState({ snapshot: null });
+      return;
+    }
+    const snapshot = selectedRows[0];
+    const snapshotSize = Math.max(snapshot?.size || 0, 1);
+    const { origin_data: { volume_type_id } = {}, id, volume_id } = snapshot;
+    let volumeType = volume_type_id
+      ? this.volumeTypes.find((it) => it.id === volume_type_id)
+      : null;
+    if (!volumeType && volume_id) {
+      try {
+        const volume = await this.volumeStore.fetchDetail({ id: volume_id });
+        volumeType = this.volumeTypes.find(
+          (it) => it.name === volume?.volume_type
+        );
+      } catch (e) {
+        console.log('volume already not exist', e);
       }
     }
+    if (!volumeType) {
+      this.setState({ snapshot }, () =>
+        this.syncSizeToVolumeTypeMin(null, snapshotSize)
+      );
+      return;
+    }
+    const newValue = {
+      selectedRowKeys: [volumeType.id],
+      selectedRows: [volumeType],
+      snapshotId: id,
+    };
+    setCreateVolumeType(volumeType.name);
+    this.setState(
+      {
+        snapshot,
+        initVolumeType: newValue,
+        volume_type: newValue,
+        confirmCount: 0,
+      },
+      () => {
+        this.updateFormValue('volume_type', newValue);
+        this.syncSizeToVolumeTypeMin(volumeType, snapshotSize);
+      }
+    );
   };
 
   get nameForStateUpdate() {
@@ -486,11 +531,11 @@ export class Create extends FormAction {
 
   get formItems() {
     const { initVolumeType } = this.state;
-    const minSize = this.getDiskMinSize();
-    const filteredTabs = this.systemTabs;
-    if (!filteredTabs || filteredTabs.length === 0) {
-      return [];
-    }
+    const minSize = Math.max(
+      this.getVolumeTypeMinSize(),
+      this.getDiskMinSize()
+    );
+    const imageTabs = this.systemTabs;
     return [
       {
         name: 'project',
@@ -531,18 +576,19 @@ export class Create extends FormAction {
         isLoading: this.imageStore.list.isLoading,
         required: this.sourceTypeIsImage,
         isMulti: false,
-        hidden: !this.sourceTypeIsImage,
+        display: this.sourceTypeIsImage && imageTabs.length > 0,
         filterParams: [
           {
             label: t('Name'),
             name: 'name',
           },
         ],
-        columns: getImageColumns(this),
-        tabs: filteredTabs,
-        defaultTabValue: this.locationParams.os_distro || filteredTabs[0].value,
+        columns: this.imageColumns,
+        tabs: imageTabs,
+        defaultTabValue: this.locationParams.os_distro || imageTabs[0]?.value,
         selectedLabel: t('Image'),
         onTabChange: this.onImageTabChange,
+        onChange: this.onImageChange,
       },
       {
         name: 'snapshot',
@@ -598,7 +644,7 @@ export class Create extends FormAction {
         label: t('Volume Type'),
         type: 'select-table',
         tip: t(
-          'The volume type needs to set "multiattach" in the metadata to support shared volume attributes.'
+          'Volume types define the storage capabilities and performance characteristics of a volume, including backend selection, QoS settings, and supported features.'
         ),
         columns: getVolumeTypeColumns(this.volumeTypes, { hidePublic: true }),
         filterParams: volumeTypeFilters,
@@ -709,6 +755,18 @@ export class Create extends FormAction {
       name,
       volume_type,
     } = data;
+    const imageId = image?.selectedRowKeys?.[0];
+    const snapshotId = snapshot?.selectedRowKeys?.[0];
+    if (this.sourceTypeIsImage && !imageId) {
+      return Promise.reject(
+        new Error(t('Please select {label}!', { label: t('Image') }))
+      );
+    }
+    if (this.sourceTypeIsSnapshot && !snapshotId) {
+      return Promise.reject(
+        new Error(t('Please select {label}!', { label: t('Volume Snapshot') }))
+      );
+    }
     const volume = {
       name,
       size,
@@ -716,26 +774,14 @@ export class Create extends FormAction {
       multiattach: shared,
       volume_type: volume_type.selectedRowKeys[0],
     };
-    if (
-      backup &&
-      Array.isArray(backup.selectedRowKeys) &&
-      backup.selectedRowKeys.length
-    ) {
+    if (backup?.selectedRowKeys?.[0]) {
       volume.backup_id = backup.selectedRowKeys[0];
     }
-    if (
-      image &&
-      Array.isArray(image.selectedRowKeys) &&
-      image.selectedRowKeys.length
-    ) {
-      volume.imageRef = image.selectedRowKeys[0];
+    if (imageId) {
+      volume.imageRef = imageId;
     }
-    if (
-      snapshot &&
-      Array.isArray(snapshot.selectedRowKeys) &&
-      snapshot.selectedRowKeys.length
-    ) {
-      volume.snapshot_id = snapshot.selectedRowKeys[0];
+    if (snapshotId) {
+      volume.snapshot_id = snapshotId;
     }
     if (count === 1) {
       return this.volumeStore.create(volume);

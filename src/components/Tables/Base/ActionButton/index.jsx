@@ -113,14 +113,15 @@ export class ActionButton extends Component {
   }
 
   onClick = () => {
-    const { actionType, onClickAction } = this.props;
+    const { actionType, onClickAction, action, item, items, isBatch } =
+      this.props;
     switch (actionType) {
       case 'confirm':
         this.onShowConfirm();
         break;
       case 'link': {
-        const { action, item, containerProps } = this.props;
         const { path } = action;
+        const { containerProps } = this.props;
         if (isFunction(path)) {
           const newPath = path(item, containerProps);
           this.routing.push(newPath);
@@ -130,12 +131,37 @@ export class ActionButton extends Component {
         break;
       }
       default:
-        this.formRef = React.createRef();
-        this.showModalAction();
+        this.openModalAction(isBatch ? items : item);
     }
     if (onClickAction) {
       onClickAction();
     }
+  };
+
+  openModalAction = (data) => {
+    const { action } = this.props;
+    const check = action.checkBeforeOpen || action.beforeOpen;
+    const open = () => {
+      this.formRef = React.createRef();
+      this.showModalAction();
+    };
+    if (!isFunction(check)) {
+      open();
+      return;
+    }
+    Promise.resolve(check(data))
+      .then(open)
+      .catch((error) => {
+        Confirm.warn({
+          title: action.title,
+          content:
+            (typeof error === 'string' && error) ||
+            error?.message ||
+            getDefaultMsg(action, data).performErrorMsg,
+          okText: t('OK'),
+          cancelButtonProps: { style: { display: 'none' } },
+        });
+      });
   };
 
   handleSubmitLoading = (flag) => {

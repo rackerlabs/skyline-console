@@ -232,12 +232,7 @@ export const snapshotTypeTip = (
   <>
     <p style={{ marginTop: 10 }}>
       {t(
-        'The volume type needs to be consistent with the volume type when the snapshot is created.'
-      )}
-    </p>
-    <p>
-      {t(
-        'If the volume associated with the snapshot has changed the volume type, please modify this option manually; if the volume associated with the snapshot keeps the volume type unchanged, please ignore this option. (no need to change).'
+        "Volumes created from a snapshot use the snapshot's original volume type by default. You can choose a different volume type, but the change may fail if the selected type is not compatible."
       )}
     </p>
   </>
