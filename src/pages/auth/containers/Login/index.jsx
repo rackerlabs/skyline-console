@@ -25,6 +25,7 @@ import i18n from 'core/i18n';
 import { isEmpty } from 'lodash';
 import logo from 'asset/image/logo.png';
 import { setLocalStorageItem } from 'utils/local-storage';
+import { getConsoleMode, getHomePathForMode } from 'utils/console-mode';
 import styles from './index.less';
 
 // Key used to remember that the active session was started via
@@ -131,9 +132,18 @@ export class Login extends Component {
     const { location = {} } = this.props;
     const { search } = location;
     if (search) {
-      return search.split('=')[1];
+      // Preserve the referer redirect (e.g. session-expired bounces).
+      const params = new URLSearchParams(search);
+      const referer = params.get('referer');
+      if (referer) {
+        return referer;
+      }
     }
-    return '/base/overview';
+    // Land the user on their previously chosen mode's home, or
+    // Advanced (`/base/overview`) if they haven't picked yet. The
+    // header toggle lets them switch anytime.
+    const mode = getConsoleMode();
+    return getHomePathForMode(mode);
   }
 
   get enableSSO() {

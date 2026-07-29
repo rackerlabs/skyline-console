@@ -275,10 +275,13 @@ export class LayoutMenu extends Component {
       item.children.length === 0 ||
       item.level
     ) {
+      const itemClassName = item.basicHelp
+        ? `${styles['menu-item']} ${styles['menu-item-basic-help']}`
+        : styles['menu-item'];
       return (
         <Menu.Item
           key={item.key}
-          className={styles['menu-item']}
+          className={itemClassName}
           onClick={externalUrl ? undefined : this.onClickMenuItem}
         >
           {externalUrl ? (

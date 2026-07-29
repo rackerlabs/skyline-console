@@ -1,16 +1,3 @@
-// Copyright 2021 99cloud
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
 import { lazy } from 'react';
 import BaseLayout from 'layouts/Base';
 
@@ -81,6 +68,15 @@ const ScheduledActions = lazy(() =>
 const ZaqarApp = lazy(() =>
   import(/* webpackChunkName: "zaqar" */ 'pages/zaqar/App')
 );
+const BasicCompute = lazy(() =>
+  import(/* webpackChunkName: "basic-compute" */ 'pages/basic/compute/App')
+);
+const BasicStorage = lazy(() =>
+  import(/* webpackChunkName: "basic-storage" */ 'pages/basic/storage/App')
+);
+const BasicNetworkApp = lazy(() =>
+  import(/* webpackChunkName: "basic-network" */ 'pages/basic/network/App')
+);
 const PATH = '/';
 
 export default [
@@ -90,10 +86,22 @@ export default [
     routes: [
       { path: `/base`, component: Base },
       {
+        path: `/basic/compute`,
+        component: BasicCompute,
+      },
+      {
         path: `/compute`,
         component: Compute,
       },
+      {
+        path: `/basic/storage`,
+        component: BasicStorage,
+      },
       { path: `/storage`, component: Storage },
+      {
+        path: `/basic/network`,
+        component: BasicNetworkApp,
+      },
       {
         path: `/network`,
         component: Network,
