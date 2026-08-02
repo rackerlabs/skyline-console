@@ -98,6 +98,11 @@ export class BasicInstanceCreate extends FormAction {
     } finally {
       this.setState({ resourcesLoading: false });
       this.updateDefaultValue();
+      // The image dropdown auto-selects the first option; run the
+      // login-from-source sync so its `os_admin_user` populates the
+      // Login Name (and Password login is picked for Windows images)
+      // without waiting for the user to click.
+      setTimeout(this.syncLoginFromSource, 0);
     }
   }
 
@@ -361,11 +366,35 @@ export class BasicInstanceCreate extends FormAction {
   }
 
   get showBootFromVolume() {
-    return this.enableCinder && (this.isImageSource || this.isSnapshotSource);
+    // Instance snapshots carry their own boot volume metadata, so
+    // Nova picks the disk / type from the snapshot itself. Matches
+    // Advanced's `showBootFromVolumeFormItem` which only shows this
+    // radio for the image source (or a snapshot without a bound
+    // volume, which Basic doesn't distinguish).
+    return this.enableCinder && this.isImageSource;
   }
 
   get showBootDisk() {
     return this.showBootFromVolume && this.bootFromVolume;
+  }
+
+  // Convenience: image (or snapshot) metadata used to prefill the
+  // Login Name. Advanced reads `os_admin_user` off whichever source
+  // is picked; Basic mirrors that so a Cirros image seeds "cirros",
+  // Ubuntu seeds "ubuntu", etc.
+  get sourceOsAdminUser() {
+    if (this.isImageSource) {
+      return this.selectedImage?.os_admin_user || '';
+    }
+    if (this.isSnapshotSource) {
+      return this.selectedSnapshot?.os_admin_user || '';
+    }
+    return '';
+  }
+
+  get isWindowsSource() {
+    const src = this.selectedImage || this.selectedSnapshot;
+    return src?.os_distro === 'windows';
   }
 
   get hasNetworkSelected() {
@@ -413,6 +442,22 @@ export class BasicInstanceCreate extends FormAction {
 
   get confirmPasswordRule() {
     return getPasswordOtherRule('confirmPassword', 'instance');
+  }
+
+  // Same "Help me choose a flavor" link Advanced surfaces next to the
+  // Instance Resources selector.
+  get instanceResourcesTip() {
+    return (
+      <span>
+        <a
+          href="https://docs.rackspacecloud.com/openstack-flavors/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {t('Help me choose a flavor')}
+        </a>
+      </span>
+    );
   }
 
   // Minimum Boot Disk size (GiB). Matches Advanced's
@@ -487,17 +532,100 @@ export class BasicInstanceCreate extends FormAction {
     setTimeout(() => {
       this.syncFlavorAgainstSource();
       this.syncBootDiskAgainstSource();
+      this.syncLoginFromSource();
     }, 0);
   };
 
+  // Prefill Login Name and default Login Type off the picked source,
+  // matching Advanced's SystemStep behaviour:
+  //  - Windows images default to Password login (keypair is disabled
+  //    in Advanced for the same reason).
+  //  - Login Name is seeded from the image's `os_admin_user` when set,
+  //    otherwise left blank so the user can type it in.
+  // We only update the fields when they don't already carry a
+  // user-entered value, so re-picking the same OS doesn't clobber a
+  // custom username.
+  syncLoginFromSource = () => {
+    const form = this.formRef?.current;
+    if (!form) return;
+    const nextUsername = this.sourceOsAdminUser;
+    const currentUsername = form.getFieldValue('username');
+    // Autofill username whenever the image carries an admin user. The
+    // field is disabled while an image-provided default is present
+    // (same rule Advanced applies), so an override coming back to a
+    // blank value here is safe.
+    if (nextUsername && nextUsername !== currentUsername) {
+      form.setFieldsValue({ username: nextUsername });
+    } else if (
+      !nextUsername &&
+      currentUsername === this._lastAutofilledUsername
+    ) {
+      // The previously autofilled name no longer applies (e.g. user
+      // switched to an image without os_admin_user); clear it.
+      form.setFieldsValue({ username: undefined });
+    }
+    this._lastAutofilledUsername = nextUsername || null;
+
+    // For Windows images push Login Type to password so the required
+    // fields (password / username) show up automatically. setFieldsValue
+    // doesn't trigger onValuesChange, so mirror the write into local
+    // state — otherwise `isPasswordLogin` (which reads state) would lag
+    // and Password / Login Name would stay hidden.
+    if (this.isWindowsSource) {
+      const currentType = form.getFieldValue('loginType');
+      if (currentType !== 'password') {
+        form.setFieldsValue({ loginType: 'password' });
+        this.setState({ loginType: 'password' });
+      }
+    }
+  };
+
   // OS filter changed — the previously picked image may not belong to
-  // the new OS. Clear it so the user has to re-pick, and reset the
-  // flavor list + boot disk min.
+  // the new OS. Clear it so autoSelectFirst re-picks under the new
+  // family, then re-run all source-driven syncs.
   onOsFilterChange = () => {
     this.formRef?.current?.setFieldsValue({ image: undefined });
     setTimeout(() => {
       this.syncFlavorAgainstSource();
       this.syncBootDiskAgainstSource();
+      this.syncLoginFromSource();
+    }, 0);
+  };
+
+  // Shared validator for Networks + Ports. At least one of the two
+  // must carry a selection; when either does, both pass. Mirrors
+  // Advanced NetworkStep.checkNetworkAndPort so the "please select"
+  // error only appears on submit if truly nothing was picked, and
+  // clears the instant one side is filled (antd re-runs paired
+  // validators through the `dependencies` wiring).
+  // Shared validator for Networks + Ports. At least one side must
+  // carry a selection; when either does, both pass. Mirrors
+  // Advanced NetworkStep.checkNetworkAndPort.
+  // eslint-disable-next-line no-unused-vars
+  checkNetworkOrPort = (rule, value) => {
+    const form = this.formRef?.current;
+    const networks = form?.getFieldValue('networks') || [];
+    const ports = form?.getFieldValue('ports') || [];
+    if (networks.length === 0 && ports.length === 0) {
+      return Promise.reject(new Error(t('Please select networks or ports.')));
+    }
+    return Promise.resolve();
+  };
+
+  // After a network is picked, re-run the Ports validator so any
+  // "please select" error from a previous submit clears immediately.
+  // Antd's automatic trigger is disabled (validateTrigger: []), so
+  // we drive the revalidation ourselves. Same for the reverse pairing
+  // below.
+  onNetworksChange = () => {
+    setTimeout(() => {
+      this.formRef?.current?.validateFields(['ports']).catch(() => {});
+    }, 0);
+  };
+
+  onPortsChange = () => {
+    setTimeout(() => {
+      this.formRef?.current?.validateFields(['networks']).catch(() => {});
     }, 0);
   };
 
@@ -557,7 +685,7 @@ export class BasicInstanceCreate extends FormAction {
       // OS filter + image list behavior.
       {
         name: 'imageOsFilter',
-        label: t('Operating System'),
+        label: t('OS Distribution'),
         type: 'select',
         required: this.isImageSource,
         hidden: !this.isImageSource,
@@ -569,7 +697,7 @@ export class BasicInstanceCreate extends FormAction {
       },
       {
         name: 'image',
-        label: t('OS Type'),
+        label: t('Operating System'),
         type: 'select',
         required: this.isImageSource,
         hidden: !this.isImageSource,
@@ -666,7 +794,7 @@ export class BasicInstanceCreate extends FormAction {
         options: this.flavors,
         autoSelectFirst: true,
         ...searchable,
-        tip: t('Choose a flavor based on your source'),
+        tip: this.instanceResourcesTip,
         extra:
           !this.flavorStore.list.isLoading &&
           (this.flavorStore.list.data || []).length > 0 &&
@@ -680,23 +808,50 @@ export class BasicInstanceCreate extends FormAction {
       // Matches Advanced's "Network Config" step.
       { name: 'networkDivider', type: 'divider' },
       { name: 'networkTitle', label: t('Network Config'), type: 'title' },
+      // Networks + Ports are mutually required. Instead of flipping
+      // the `required` flag on each keystroke (which leaves the
+      // previous error message stranded on the paired field), both
+      // items share a single validator that only fails when *neither*
+      // side has a value. `dependencies` wires each field to the
+      // other so antd re-runs the check when the paired field changes
+      // — that matches Advanced's NetworkStep.checkNetworkAndPort
+      // behaviour and only surfaces the error at submit time when
+      // both are truly empty.
+      // Networks and Ports are mutually required — whichever side is
+      // empty gets the red `*`, and the marker flips off the other
+      // side as soon as the user picks something. We pass `rules`
+      // directly so antd's default "please select {label}" message
+      // (which reuses the placeholder for select fields) is skipped
+      // in favour of the shared checkNetworkOrPort validator. The
+      // `required` flag inside the rule still drives the asterisk on
+      // the label. `validateTrigger: []` keeps antd from firing
+      // mid-typing; the check only runs at submit or when the paired
+      // `onChange` handlers below force a revalidation to clear a
+      // stale error.
       {
         name: 'networks',
         label: t('Networks'),
         type: 'select',
         mode: 'multiple',
-        required: networkRequired,
         loading: this.networkStore.list.isLoading,
         options: this.networks,
         ...searchable,
         placeholder: t('Select one or more networks'),
+        dependencies: ['ports'],
+        rules: [
+          {
+            required: networkRequired,
+            validator: this.checkNetworkOrPort,
+          },
+        ],
+        validateTrigger: [],
+        onChange: this.onNetworksChange,
       },
       {
         name: 'ports',
         label: t('Ports'),
         type: 'select',
         mode: 'multiple',
-        required: portRequired,
         loading: this.portStore.list.isLoading,
         options: this.ports,
         ...searchable,
@@ -704,6 +859,15 @@ export class BasicInstanceCreate extends FormAction {
         tip: t(
           'Ports provide extra communication channels to your instances. Choose either networks or ports (a port executes its own security group rules).'
         ),
+        dependencies: ['networks'],
+        rules: [
+          {
+            required: portRequired,
+            validator: this.checkNetworkOrPort,
+          },
+        ],
+        validateTrigger: [],
+        onChange: this.onPortsChange,
       },
       {
         name: 'securityGroup',
@@ -743,6 +907,15 @@ export class BasicInstanceCreate extends FormAction {
         type: 'input',
         required: passwordLogin,
         hidden: !passwordLogin,
+        // Match Advanced: when the image publishes an admin user via
+        // `os_admin_user`, prefill it and lock the field so the user
+        // can't type something the image won't accept.
+        disabled: !!this.sourceOsAdminUser,
+        extra: this.sourceOsAdminUser
+          ? ''
+          : t(
+              "The feasible configuration of cloud-init or cloudbase-init service in the image is not synced to image's properties, so the Login Name is unknown."
+            ),
         tip: t(
           'Whether the Login Name can be used is up to the feasible configuration of cloud-init or cloudbase-init service in the image.'
         ),
@@ -846,30 +1019,42 @@ export class BasicInstanceCreate extends FormAction {
         },
         ...dataDiskMappings,
       ];
+    } else if (source === 'instanceSnapshot') {
+      // Instance snapshots are Glance images that already carry a
+      // `block_device_mapping` describing the boot volume + any data
+      // volumes. Passing just imageRef lets Nova rebuild the BDM off
+      // that metadata (same shortcut Advanced falls back to when it
+      // has an instanceSnapshotDisk from the snapshot). This also
+      // means Basic never has to show the Boot From Volume / Boot
+      // Disk inputs for snapshots.
+      server.imageRef = instanceSnapshot;
+      if (dataDiskMappings.length > 0) {
+        server.block_device_mapping_v2 = dataDiskMappings;
+      }
+    } else if (bootFromVolume) {
+      // Image source, booting from a fresh volume. Match Advanced's
+      // block_device_mapping_v2 shape exactly: volume_type +
+      // delete_on_termination come from the composite Boot Disk
+      // (instance-volume) input.
+      const { type, size, deleteType } = systemDisk;
+      server.block_device_mapping_v2 = [
+        {
+          boot_index: 0,
+          uuid: image,
+          source_type: 'image',
+          destination_type: 'volume',
+          volume_size: size,
+          volume_type: type,
+          delete_on_termination: deleteType === 1,
+        },
+        ...dataDiskMappings,
+      ];
     } else {
-      const srcId = source === 'image' ? image : instanceSnapshot;
-      if (bootFromVolume) {
-        // Match Advanced's block_device_mapping_v2 shape exactly:
-        // volume_type + delete_on_termination come from the composite
-        // Boot Disk (instance-volume) input.
-        const { type, size, deleteType } = systemDisk;
-        server.block_device_mapping_v2 = [
-          {
-            boot_index: 0,
-            uuid: srcId,
-            source_type: 'image',
-            destination_type: 'volume',
-            volume_size: size,
-            volume_type: type,
-            delete_on_termination: deleteType === 1,
-          },
-          ...dataDiskMappings,
-        ];
-      } else {
-        server.imageRef = srcId;
-        if (dataDiskMappings.length > 0) {
-          server.block_device_mapping_v2 = dataDiskMappings;
-        }
+      // Image source, booting from the flavor's local disk. Data disks
+      // (if any) still come through as BDM entries.
+      server.imageRef = image;
+      if (dataDiskMappings.length > 0) {
+        server.block_device_mapping_v2 = dataDiskMappings;
       }
     }
 

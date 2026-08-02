@@ -190,10 +190,18 @@ export class RootStore {
     this.hasAdminPageRole = hasSystemAdminRole || hasProjectAdminRole;
     this.hasAdminRole = this.hasAdminPageRole;
     this.hasAdminOnlyRole = roles.some((it) => it.name === 'admin');
+    // Basic mode is a project-user experience. Admins must always use the
+    // full Advanced console, regardless of any persisted preference left
+    // behind by a previous non-admin session on this browser. We reset
+    // the in-memory value only; localStorage stays untouched so a
+    // subsequent non-admin session still gets their prior choice.
+    if (this.hasAdminPageRole && this.consoleMode !== MODE_ADVANCED) {
+      this.consoleMode = MODE_ADVANCED;
+    }
   }
 
   @action
-  updateUser(user, policies) {
+  async updateUser(user, policies) {
     this.user = user;
     this.policies = policies;
     const {
@@ -205,7 +213,9 @@ export class RootStore {
     this.projectName = projectName;
     this.version = version;
     this.endpoints = endpoints;
-    this.updateUserRoles(user);
+    // Await role resolution so downstream code (post-login redirect,
+    // menu rendering) sees the correct admin state before it runs.
+    await this.updateUserRoles(user);
     this.setKeystoneToken(user);
   }
 

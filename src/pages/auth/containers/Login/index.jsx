@@ -25,7 +25,11 @@ import i18n from 'core/i18n';
 import { isEmpty } from 'lodash';
 import logo from 'asset/image/logo.png';
 import { setLocalStorageItem } from 'utils/local-storage';
-import { getConsoleMode, getHomePathForMode } from 'utils/console-mode';
+import {
+  getConsoleMode,
+  getHomePathForMode,
+  MODE_ADVANCED,
+} from 'utils/console-mode';
 import styles from './index.less';
 
 // Key used to remember that the active session was started via
@@ -138,6 +142,12 @@ export class Login extends Component {
       if (referer) {
         return referer;
       }
+    }
+    // Admins always land in Advanced. The persisted `console_mode`
+    // belongs to whichever project user last used this browser and
+    // must never route an admin into Basic.
+    if (this.rootStore.hasAdminPageRole) {
+      return getHomePathForMode(MODE_ADVANCED);
     }
     // Land the user on their previously chosen mode's home, or
     // Advanced (`/base/overview`) if they haven't picked yet. The

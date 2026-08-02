@@ -344,16 +344,25 @@ export class BasicVolumeCreate extends FormAction {
     // the extra confirmation modal.
     const snapshot = this.snapshotRows.find((it) => it.id === value);
     if (!snapshot) return;
+    // Prefer the snapshot's own volume_type_id (populated by Cinder
+    // since Wallaby). If that's missing, fall back to fetching the
+    // parent volume so a `volume_type` name gives us a match — that's
+    // what Advanced does in `onSnapshotChange` at
+    // `pages/storage/containers/Volume/actions/Create/index.jsx`.
     let volumeTypeId = snapshot.origin_data?.volume_type_id;
     if (!volumeTypeId) {
-      try {
-        const detail = await this.snapshotStore.fetchDetail({ id: value });
-        const { volume: { volume_type: name } = {} } = detail || {};
-        const match = this.rawVolumeTypes.find((it) => it.name === name);
-        volumeTypeId = match?.id;
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.log('volume already not exist', e);
+      const parentVolumeId =
+        snapshot.origin_data?.volume_id || snapshot.volume_id;
+      if (parentVolumeId) {
+        try {
+          const volume = await this.store.fetchDetail({ id: parentVolumeId });
+          const name = volume?.volume_type;
+          const match = this.rawVolumeTypes.find((it) => it.name === name);
+          volumeTypeId = match?.id;
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.log('volume already not exist', e);
+        }
       }
     }
     if (volumeTypeId) {
@@ -445,7 +454,7 @@ export class BasicVolumeCreate extends FormAction {
       // per row, both auto-pick the first option.
       {
         name: 'imageOsFilter',
-        label: t('Operating System'),
+        label: t('OS Distribution'),
         type: 'select',
         required: this.isImageSource,
         hidden: !this.isImageSource,
@@ -457,7 +466,7 @@ export class BasicVolumeCreate extends FormAction {
       },
       {
         name: 'image',
-        label: t('OS Type'),
+        label: t('Operating System'),
         type: 'select',
         required: this.isImageSource,
         hidden: !this.isImageSource,

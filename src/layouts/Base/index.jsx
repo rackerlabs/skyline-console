@@ -95,9 +95,13 @@ export class BaseLayout extends Component {
       ret = renderUserMenu(i18n.t);
     } else if (this.isAdminPage) {
       ret = renderAdminMenu(i18n.t);
-    } else if (this.rootStore.consoleMode === MODE_BASIC) {
-      // Basic mode gets a trimmed menu; everything else falls through
-      // to the full Advanced menu.
+    } else if (
+      this.rootStore.consoleMode === MODE_BASIC &&
+      !this.hasAdminPageRole
+    ) {
+      // Basic mode is a project-user experience; admins always get the
+      // Advanced menu even if a prior non-admin session on this browser
+      // left `console_mode = basic` in localStorage.
       ret = renderBasicMenu(i18n.t);
     } else {
       ret = renderMenu(i18n.t);
