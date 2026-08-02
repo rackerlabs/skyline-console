@@ -135,6 +135,23 @@ export class SkylineClient extends Base {
         ],
       },
       {
+        name: 'objectStorageContainers',
+        key: 'object-storage/containers',
+        responseKey: 'container',
+        extendOperations: [
+          {
+            key: 'updateCDN',
+            method: 'put',
+            generate: (containerId, enabled) => {
+              const url = `object-storage/containers/${encodeURIComponent(
+                containerId
+              )}/cdn`;
+              return this.request.put(url, { enabled });
+            },
+          },
+        ],
+      },
+      {
         key: 'query',
       },
       {

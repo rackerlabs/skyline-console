@@ -22,6 +22,11 @@ import { allCanChangePolicy } from 'resources/skyline/policy';
 import { getStrFromTimestamp } from 'utils/time';
 import { swiftEndpoint } from 'client/client/constants';
 import actionConfigs from './actions';
+import CDNUrl from './CDNUrl';
+
+function renderUrl(url) {
+  return <CDNUrl url={url} maxWidth={220} />;
+}
 
 function PopUpContent({ name }) {
   const [data, setData] = useState([]);
@@ -77,6 +82,18 @@ function PopUpContent({ name }) {
             t('Private')
           )}
         </Col>
+      </Row>
+      <Row>
+        <Col span={8}>{t('CDN')}</Col>
+        <Col span={12}>{data.cdn_enabled ? t('Enabled') : t('Disabled')}</Col>
+      </Row>
+      <Row>
+        <Col span={8}>{t('Public HTTP URL')}</Col>
+        <Col span={12}>{renderUrl(data.public_http_url)}</Col>
+      </Row>
+      <Row>
+        <Col span={8}>{t('Public HTTPS URL')}</Col>
+        <Col span={12}>{renderUrl(data.public_https_url)}</Col>
       </Row>
     </>
   );
@@ -144,6 +161,24 @@ export class Container extends Base {
         dataIndex: 'last_modified',
         isHideable: true,
         valueRender: 'sinceTime',
+      },
+      {
+        title: t('CDN'),
+        dataIndex: 'cdn_enabled',
+        isHideable: true,
+        render: (value) => (value ? t('Enabled') : t('Disabled')),
+      },
+      {
+        title: t('Public HTTP URL'),
+        dataIndex: 'public_http_url',
+        isHideable: true,
+        render: (value) => renderUrl(value),
+      },
+      {
+        title: t('Public HTTPS URL'),
+        dataIndex: 'public_https_url',
+        isHideable: true,
+        render: (value) => renderUrl(value),
       },
       {
         title: t('Detail Info'),

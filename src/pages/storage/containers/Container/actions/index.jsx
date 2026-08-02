@@ -15,11 +15,15 @@
 import Create from './Create';
 import Delete from './Delete';
 import Access from './Access';
+import CDN from './CDN';
 
 const actionConfigs = {
   rowActions: {
     firstAction: Access,
     moreActions: [
+      {
+        action: CDN,
+      },
       {
         action: Delete,
       },

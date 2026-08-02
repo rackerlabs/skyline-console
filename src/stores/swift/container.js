@@ -21,6 +21,10 @@ export class ContainerStore extends Base {
     return client.swift.container;
   }
 
+  get cdnClient() {
+    return client.skyline.objectStorageContainers;
+  }
+
   get listResponseKey() {
     return '';
   }
@@ -50,6 +54,7 @@ export class ContainerStore extends Base {
     if (isPublic) {
       link = this.client.url(name);
     }
+    const cdn = await this.fetchCDNInfo(name);
     const data = {
       used: headers['x-container-bytes-used'],
       object_count: headers['x-container-object-count'],
@@ -57,8 +62,62 @@ export class ContainerStore extends Base {
       timestamp: headers['x-timestamp'],
       is_public: isPublic,
       link,
+      ...cdn,
     };
     return data;
+  }
+
+  // Read CDN state and public URLs for a single container via the backend
+  // (which issues a HEAD to the CDN Swift endpoint). Falls back to a disabled
+  // state on error so the UI never gets stuck.
+  async fetchCDNInfo(name) {
+    try {
+      const result = await this.cdnClient.show(name);
+      const data = result.container || result;
+      return {
+        cdn_enabled: !!data.cdn_enabled,
+        public_http_url: data.public_http_url || null,
+        public_https_url: data.public_https_url || null,
+      };
+    } catch (e) {
+      return {
+        cdn_enabled: false,
+        public_http_url: null,
+        public_https_url: null,
+      };
+    }
+  }
+
+  // Enrich the container list with CDN metadata in a single batched backend
+  // call rather than letting the frontend issue one HEAD request per row.
+  async listDidFetch(items) {
+    if (!items || items.length === 0) {
+      return items;
+    }
+    try {
+      const result = await this.cdnClient.list();
+      const containers = (result && result.containers) || [];
+      const cdnMap = {};
+      containers.forEach((c) => {
+        cdnMap[c.name] = c;
+      });
+      return items.map((item) => {
+        const cdn = cdnMap[item.name] || {};
+        return {
+          ...item,
+          cdn_enabled: !!cdn.cdn_enabled,
+          public_http_url: cdn.public_http_url || null,
+          public_https_url: cdn.public_https_url || null,
+        };
+      });
+    } catch (e) {
+      return items.map((item) => ({
+        ...item,
+        cdn_enabled: false,
+        public_http_url: null,
+        public_https_url: null,
+      }));
+    }
   }
 
   @action
@@ -115,6 +174,12 @@ export class ContainerStore extends Base {
     };
     return this.submitting(this.client.updateMetadata(name, headers));
   };
+
+  // Toggle CDN for a container. The backend performs the PUT with
+  // X-CDN-Enabled and re-reads the authoritative state via HEAD.
+  @action
+  updateCDN = async (name, enabled) =>
+    this.submitting(this.cdnClient.updateCDN(name, enabled));
 }
 
 const globalContainerStore = new ContainerStore();
