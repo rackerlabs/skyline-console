@@ -22,6 +22,7 @@ import {
   setCreateVolumeType,
   setCreateVolumeCount,
 } from 'resources/cinder/volume';
+import 'pages/basic/containers/basic-form.less';
 
 // Basic-mode volume create. Mirrors the Advanced form's required
 // fields and their behaviours (volume-type dependent size floor,
@@ -83,6 +84,10 @@ export class BasicVolumeCreate extends FormAction {
 
   get name() {
     return t('create volume');
+  }
+
+  get className() {
+    return 'basic-create-form';
   }
 
   get listUrl() {
@@ -447,6 +452,9 @@ export class BasicVolumeCreate extends FormAction {
         required: true,
         options: this.sourceTypes,
         onChange: this.onSourceChange,
+        tip: t(
+          'Blank Volume: create an empty volume that you can attach to an instance and format. Image: create a volume pre-populated with the contents of a selected image so it can boot or be used as a data disk. Volume Snapshot: create a new volume from a point-in-time snapshot of an existing volume.'
+        ),
       },
       // Advanced shows an OS filter above the image table. Basic
       // exposes it as its own dropdown, then narrows to a specific
@@ -499,6 +507,9 @@ export class BasicVolumeCreate extends FormAction {
         extra: this.getVolumeTypeExtra(),
         autoSelectFirst: true,
         ...searchable,
+        tip: t(
+          'Volume types define the storage capabilities and performance characteristics of a volume, including backend selection, QoS settings, and supported features.'
+        ),
       },
       // Basic uses a plain number input for size (no slider). The
       // allowed range sits under the field. Dropping below the volume

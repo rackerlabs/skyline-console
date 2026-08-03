@@ -169,18 +169,6 @@ export class Container extends Base {
         render: (value) => (value ? t('Enabled') : t('Disabled')),
       },
       {
-        title: t('Public HTTP URL'),
-        dataIndex: 'public_http_url',
-        isHideable: true,
-        render: (value) => renderUrl(value),
-      },
-      {
-        title: t('Public HTTPS URL'),
-        dataIndex: 'public_https_url',
-        isHideable: true,
-        render: (value) => renderUrl(value),
-      },
-      {
         title: t('Detail Info'),
         dataIndex: 'detail',
         isHideable: true,

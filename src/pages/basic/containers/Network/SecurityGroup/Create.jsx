@@ -1,6 +1,7 @@
 import { inject, observer } from 'mobx-react';
 import { FormAction } from 'containers/Action';
 import globalSecurityGroupStore from 'stores/neutron/security-group';
+import 'pages/basic/containers/basic-form.less';
 
 // Basic-mode security group create. All inputs from the Advanced form
 // (Name and Description) are kept. No table pickers here so nothing
@@ -22,6 +23,10 @@ export class BasicSecurityGroupCreate extends FormAction {
 
   get name() {
     return t('Create security group');
+  }
+
+  get className() {
+    return 'basic-create-form';
   }
 
   get listUrl() {

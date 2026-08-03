@@ -2,6 +2,7 @@ import { inject, observer } from 'mobx-react';
 import { FormAction } from 'containers/Action';
 import { RouterStore } from 'stores/neutron/router';
 import { NetworkStore } from 'stores/neutron/network';
+import 'pages/basic/containers/basic-form.less';
 
 // Basic-mode router create. Mirrors the required Advanced fields —
 // Name, Description, Open External Gateway (Yes/No), and the External
@@ -38,6 +39,10 @@ export class BasicRouterCreate extends FormAction {
 
   get name() {
     return t('create router');
+  }
+
+  get className() {
+    return 'basic-create-form';
   }
 
   get listUrl() {

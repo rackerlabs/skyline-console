@@ -29,6 +29,7 @@ import {
 import { isBlazarInternalAvailabilityZone } from 'resources/blazar/reservation';
 import { getPasswordOtherRule } from 'utils/validate';
 import { getUserData } from 'resources/nova/instance';
+import 'pages/basic/containers/basic-form.less';
 
 // Single-page Basic instance create. Mirrors every required field
 // from the Advanced flow (BaseStep + NetworkStep + SystemStep) using
@@ -108,6 +109,10 @@ export class BasicInstanceCreate extends FormAction {
 
   get name() {
     return t('Create instance');
+  }
+
+  get className() {
+    return 'basic-create-form';
   }
 
   get listUrl() {
@@ -378,6 +383,22 @@ export class BasicInstanceCreate extends FormAction {
     return this.showBootFromVolume && this.bootFromVolume;
   }
 
+  // Mirror Advanced's `hideDataDisk`:
+  //  - hidden entirely when Cinder is unavailable,
+  //  - shown for the bootable-volume source,
+  //  - for image/snapshot, shown only while booting from a volume
+  //    (Boot From Volume = Yes). Local-disk boot carries no data
+  //    disks, same as Advanced.
+  get hideDataDisk() {
+    if (!this.enableCinder) {
+      return true;
+    }
+    if (this.isVolumeSource) {
+      return false;
+    }
+    return !this.bootFromVolume;
+  }
+
   // Convenience: image (or snapshot) metadata used to prefill the
   // Login Name. Advanced reads `os_admin_user` off whichever source
   // is picked; Basic mirrors that so a Cirros image seeds "cirros",
@@ -460,6 +481,22 @@ export class BasicInstanceCreate extends FormAction {
     );
   }
 
+  // Same "More about images" link Advanced shows next to the
+  // Operating System (image) selector.
+  get operatingSystemTip() {
+    return (
+      <span>
+        <a
+          href="https://docs.rackspacecloud.com/openstack-glance-images/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {t('More about images')}
+        </a>
+      </span>
+    );
+  }
+
   // Minimum Boot Disk size (GiB). Matches Advanced's
   // getSystemDiskMinSize: max of (1, volume-type's
   // provisioning:min_vol_size, image min_disk, ceil(image.size/1024^3),
@@ -525,6 +562,25 @@ export class BasicInstanceCreate extends FormAction {
     setTimeout(() => {
       this.syncFlavorAgainstSource();
       this.syncBootDiskAgainstSource();
+    }, 0);
+  };
+
+  // Mirror Advanced's onChangeBootFromVolume:
+  //  - No  -> drop any data disks (the field hides, and a local-disk
+  //           boot can't carry Cinder volumes),
+  //  - Yes -> reseed the Boot Disk against the current source so its
+  //           size/type floor is correct.
+  onBootFromVolumeChange = (value) => {
+    setTimeout(() => {
+      if (!value) {
+        this.formRef?.current?.setFieldsValue({ dataDisk: [] });
+      } else {
+        this.formRef?.current?.setFieldsValue({
+          systemDisk: this.defaultSystemDisk,
+        });
+        this.syncBootDiskAgainstSource();
+      }
+      this.syncFlavorAgainstSource();
     }, 0);
   };
 
@@ -667,7 +723,12 @@ export class BasicInstanceCreate extends FormAction {
       // Matches Advanced's "Base Config" step. Availability Zone is
       // not shown in Basic — the first available zone is picked
       // automatically in defaultValue and read on submit.
-      { name: 'baseTitle', label: t('Base Config'), type: 'title' },
+      {
+        name: 'baseTitle',
+        label: t('Base Config'),
+        type: 'title',
+        className: 'basic-section-title',
+      },
       {
         name: 'source',
         label: t('Boot Source'),
@@ -705,6 +766,7 @@ export class BasicInstanceCreate extends FormAction {
         options: this.images,
         onChange: this.onImageOrSnapshotChange,
         autoSelectFirst: true,
+        tip: this.operatingSystemTip,
         ...searchable,
       },
       {
@@ -730,6 +792,15 @@ export class BasicInstanceCreate extends FormAction {
         autoSelectFirst: true,
         ...searchable,
       },
+      // Only relevant when booting from an existing volume. Mirrors
+      // Advanced's `deleteVolumeInstance` check — when ticked the boot
+      // volume is deleted along with the instance.
+      {
+        name: 'deleteVolumeInstance',
+        label: t('Delete Volume on Instance Delete'),
+        type: 'check',
+        hidden: !this.isVolumeSource,
+      },
       {
         name: 'bootFromVolume',
         label: t('Boot From Volume'),
@@ -740,6 +811,7 @@ export class BasicInstanceCreate extends FormAction {
           { value: true, label: t('Yes') },
           { value: false, label: t('No') },
         ],
+        onChange: this.onBootFromVolumeChange,
         tip: t(
           'When set to Yes, a new boot volume is created from the selected image and the instance boots from that volume. When set to No, the instance boots from the image on the flavor local disk and no boot volume is created.'
         ),
@@ -764,8 +836,8 @@ export class BasicInstanceCreate extends FormAction {
         ),
       },
       // Data disks — matches Advanced's add-select of extra volumes.
-      // Shown when Cinder is available and we're booting an
-      // image/snapshot (bootable-volume source doesn't need them).
+      // Hidden for local-disk boot (Boot From Volume = No) and when
+      // Cinder is unavailable, following Advanced's `hideDataDisk`.
       {
         name: 'dataDisk',
         label: t('Data Disk'),
@@ -776,7 +848,7 @@ export class BasicInstanceCreate extends FormAction {
         minCount: 0,
         addTextTips: t('Data Disks'),
         addText: t('Add Data Disks'),
-        hidden: !this.enableCinder || this.isVolumeSource,
+        hidden: this.hideDataDisk,
         display: this.enableCinder,
         tip: t(
           'Additional volumes attached to the instance for data storage. You can add multiple disks and configure type, size, and delete behavior for each.'
@@ -807,7 +879,12 @@ export class BasicInstanceCreate extends FormAction {
       // ---------------- Network Config ----------------
       // Matches Advanced's "Network Config" step.
       { name: 'networkDivider', type: 'divider' },
-      { name: 'networkTitle', label: t('Network Config'), type: 'title' },
+      {
+        name: 'networkTitle',
+        label: t('Network Config'),
+        type: 'title',
+        className: 'basic-section-title',
+      },
       // Networks + Ports are mutually required. Instead of flipping
       // the `required` flag on each keystroke (which leaves the
       // previous error message stranded on the paired field), both
@@ -879,11 +956,19 @@ export class BasicInstanceCreate extends FormAction {
         loading: this.securityGroupStore.list.isLoading,
         options: this.securityGroups,
         ...searchable,
+        tip: t(
+          'Each instance belongs to at least one security group, which needs to be specified when it is created. Instances in the same security group can communicate with each other on the network, and instances in different security groups are disconnected from the internal network by default.'
+        ),
       },
       // ---------------- System Config ----------------
       // Matches Advanced's "System Config" step.
       { name: 'systemDivider', type: 'divider' },
-      { name: 'systemTitle', label: t('System Config'), type: 'title' },
+      {
+        name: 'systemTitle',
+        label: t('System Config'),
+        type: 'title',
+        className: 'basic-section-title',
+      },
       {
         name: 'name',
         label: t('Name'),
@@ -964,6 +1049,7 @@ export class BasicInstanceCreate extends FormAction {
       instanceSnapshot,
       bootableVolume,
       bootFromVolume,
+      deleteVolumeInstance = false,
       systemDisk = {},
       dataDisk = [],
       flavor,
@@ -1015,7 +1101,7 @@ export class BasicInstanceCreate extends FormAction {
           uuid: bootableVolume,
           source_type: 'volume',
           destination_type: 'volume',
-          delete_on_termination: false,
+          delete_on_termination: !!deleteVolumeInstance,
         },
         ...dataDiskMappings,
       ];

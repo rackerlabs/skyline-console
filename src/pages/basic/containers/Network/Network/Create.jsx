@@ -4,6 +4,7 @@ import { FormAction } from 'containers/Action';
 import globalNetworkStore from 'stores/neutron/network';
 import { subnetIpv6Tip } from 'resources/neutron/network';
 import { ipValidate, nameTypeValidate } from 'utils/validate';
+import 'pages/basic/containers/basic-form.less';
 
 const { isIpCidr, isIPv6Cidr } = ipValidate;
 const { nameValidateWithoutChinese } = nameTypeValidate;
@@ -31,6 +32,10 @@ export class BasicNetworkCreate extends FormAction {
 
   get name() {
     return t('create network');
+  }
+
+  get className() {
+    return 'basic-create-form';
   }
 
   get listUrl() {
@@ -73,11 +78,17 @@ export class BasicNetworkCreate extends FormAction {
         label: t('Port Security Enabled'),
         type: 'switch',
         required: true,
+        tip: t(
+          'When enabled, security groups and anti-spoofing protection are applied to ports on this network. Disable only for specific use cases, such as NFV workloads or troubleshooting.'
+        ),
       },
       {
         name: 'create_subnet',
         label: t('Create Subnet'),
         type: 'check',
+        tip: t(
+          'If checked, a subnet will be created for this network. Additional subnet configuration options will be displayed below.'
+        ),
       },
       {
         name: 'subnet_name',
@@ -121,7 +132,7 @@ export class BasicNetworkCreate extends FormAction {
         },
         tip: isIpv4
           ? t(
-              'Use a private network address like 10.0.0.0/8, 172.16.0.0/12, or 192.168.0.0/16.'
+              'It is recommended that you use the private network address 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16'
             )
           : t('e.g. 2001:Db8::/48'),
       },

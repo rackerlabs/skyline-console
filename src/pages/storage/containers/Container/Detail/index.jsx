@@ -88,8 +88,6 @@ function CDNSection({ container }) {
   };
 
   const enabled = !!(data && data.cdn_enabled);
-  const labelColProps = { xs: 24, sm: 6, md: 4 };
-  const valueColProps = { xs: 24, sm: 18, md: 20 };
 
   return (
     <div className={styles['cdn-section']}>
@@ -106,28 +104,26 @@ function CDNSection({ container }) {
         </Button>
       </div>
       {loading ? (
-        <Skeleton active paragraph={{ rows: 2 }} />
+        <Skeleton active paragraph={{ rows: 1 }} />
       ) : (
-        <>
-          <Row className={styles['cdn-row']}>
-            <Col {...labelColProps}>{t('CDN Enabled')}</Col>
-            <Col {...valueColProps}>
-              {enabled ? t('Enabled') : t('Disabled')}
-            </Col>
-          </Row>
-          <Row className={styles['cdn-row']}>
-            <Col {...labelColProps}>{t('Public HTTP URL')}</Col>
-            <Col {...valueColProps}>
-              {renderCDNUrl(data && data.public_http_url)}
-            </Col>
-          </Row>
-          <Row className={styles['cdn-row']}>
-            <Col {...labelColProps}>{t('Public HTTPS URL')}</Col>
-            <Col {...valueColProps}>
-              {renderCDNUrl(data && data.public_https_url)}
-            </Col>
-          </Row>
-        </>
+        <Row className={styles['cdn-row']} gutter={24} align="middle">
+          <Col xs={24} sm={6} md={4}>
+            <span className={styles['cdn-label']}>{t('CDN')}: </span>
+            {enabled ? t('Enabled') : t('Disabled')}
+          </Col>
+          <Col xs={24} sm={9} md={10}>
+            <span className={styles['cdn-label']}>
+              {t('Public HTTP URL')}:{' '}
+            </span>
+            {renderCDNUrl(data && data.public_http_url)}
+          </Col>
+          <Col xs={24} sm={9} md={10}>
+            <span className={styles['cdn-label']}>
+              {t('Public HTTPS URL')}:{' '}
+            </span>
+            {renderCDNUrl(data && data.public_https_url)}
+          </Col>
+        </Row>
       )}
     </div>
   );

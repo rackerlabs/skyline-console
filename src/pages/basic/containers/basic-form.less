@@ -1,0 +1,30 @@
+// Light visual tweaks for the Basic-mode create forms. Scoped under
+// the `.basic-create-form` wrapper class (set via each form's
+// `get className()`), so the Advanced forms sharing BaseForm are
+// untouched.
+
+:global {
+  .basic-create-form {
+    // A little breathing room on top so the form doesn't butt up
+    // against the route heading (breadcrumb) above it. Use padding
+    // only — `.sl-form` is border-box with a fixed height, so padding
+    // stays inside the box. A `margin-top` here would push the box
+    // past the parent's height and add a second (outer) scrollbar.
+    .sl-form {
+      padding-top: 16px;
+    }
+
+    // Section headings rendered as a small tag/chip rather than plain
+    // bold text, so each in-form section is easy to pick out.
+    .basic-section-title {
+      display: inline-block;
+      margin-left: 0;
+      padding: 2px 10px;
+      color: #595959;
+      font-weight: 500;
+      font-size: 13px;
+      background: #f5f5f5;
+      border-radius: 4px;
+    }
+  }
+}

@@ -273,6 +273,17 @@
   }
 }
 
+// On the Basic create pages the route header sits directly above a
+// single-page form. Give it a subtle border + shadow so it reads as a
+// distinct bar instead of blending into the form below. Scoped via
+// `:has()` so every other page's breadcrumb is left untouched.
+.content:has(:global(.basic-create-form)) {
+  .breadcrumb {
+    border-bottom: 1px solid #f0f0f0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 4%);
+  }
+}
+
 .breadcrumb-has-tab {
   height: @breadcrumb-height + 30px;
 }

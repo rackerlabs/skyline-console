@@ -3,6 +3,7 @@ import { FormAction } from 'containers/Action';
 import { NetworkStore } from 'stores/neutron/network';
 import { SecurityGroupStore } from 'stores/neutron/security-group';
 import globalPortStore from 'stores/neutron/port-extension';
+import 'pages/basic/containers/basic-form.less';
 
 // Basic-mode virtual adapter (port) create. Mirrors the required
 // fields from the Advanced form for a non-admin user: Name, Owned
@@ -38,6 +39,10 @@ export class BasicPortCreate extends FormAction {
 
   get name() {
     return t('create virtual adapter');
+  }
+
+  get className() {
+    return 'basic-create-form';
   }
 
   get listUrl() {
@@ -109,6 +114,9 @@ export class BasicPortCreate extends FormAction {
         name: 'port_security_enabled',
         label: t('Port Security'),
         type: 'switch',
+        tip: t(
+          'When enabled, security groups and anti-spoofing protection are applied to this port. Disable only for specific use cases, such as NFV workloads or troubleshooting.'
+        ),
       },
       {
         name: 'security_groups',
