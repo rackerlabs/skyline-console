@@ -5,6 +5,7 @@ import { NetworkStore } from 'stores/neutron/network';
 import globalSubnetStore from 'stores/neutron/subnet';
 import { FloatingIpStore } from 'stores/neutron/floatingIp';
 import { checkPolicyRule } from 'resources/skyline/policy';
+import 'pages/basic/containers/basic-form.less';
 
 // Basic-mode floating IP allocate. Includes every input from the
 // Advanced non-admin form: Network, Specify Subnet toggle + Subnet,
@@ -45,6 +46,10 @@ export class BasicFloatingIpAllocate extends FormAction {
 
   get name() {
     return t('Allocate IP');
+  }
+
+  get className() {
+    return 'basic-create-form';
   }
 
   get listUrl() {

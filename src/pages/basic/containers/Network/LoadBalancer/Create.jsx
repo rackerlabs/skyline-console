@@ -14,6 +14,7 @@ import {
   OvnPoolAlgorithm,
   algorithmTip,
 } from 'resources/octavia/pool';
+import 'pages/basic/containers/basic-form.less';
 
 // Basic-mode single-page load balancer create. Advanced uses a
 // multi-step wizard (Base, Listener, Pool, Member, Health Monitor);
@@ -53,6 +54,10 @@ export class BasicLoadBalancerCreate extends FormAction {
 
   get name() {
     return t('Create Loadbalancer');
+  }
+
+  get className() {
+    return 'basic-create-form';
   }
 
   get listUrl() {
@@ -217,6 +222,7 @@ export class BasicLoadBalancerCreate extends FormAction {
         name: 'baseTitle',
         label: t('Base Config'),
         type: 'title',
+        className: 'basic-section-title',
       },
       {
         name: 'name',
@@ -274,7 +280,12 @@ export class BasicLoadBalancerCreate extends FormAction {
       },
       // ---------------- Listener Detail ----------------
       { name: 'listenerDivider', type: 'divider' },
-      { name: 'listenerTitle', label: t('Listener Detail'), type: 'title' },
+      {
+        name: 'listenerTitle',
+        label: t('Listener Detail'),
+        type: 'title',
+        className: 'basic-section-title',
+      },
       {
         name: 'listener_name',
         label: t('Listener Name'),
@@ -311,7 +322,12 @@ export class BasicLoadBalancerCreate extends FormAction {
       },
       // ---------------- Pool Detail ----------------
       { name: 'poolDivider', type: 'divider' },
-      { name: 'poolTitle', label: t('Pool Detail'), type: 'title' },
+      {
+        name: 'poolTitle',
+        label: t('Pool Detail'),
+        type: 'title',
+        className: 'basic-section-title',
+      },
       {
         name: 'pool_name',
         label: t('Pool Name'),
@@ -349,6 +365,7 @@ export class BasicLoadBalancerCreate extends FormAction {
         name: 'healthTitle',
         label: t('Health Monitor Detail'),
         type: 'title',
+        className: 'basic-section-title',
       },
       {
         name: 'enableHealthMonitor',

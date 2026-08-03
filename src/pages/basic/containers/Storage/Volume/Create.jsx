@@ -22,6 +22,7 @@ import {
   setCreateVolumeType,
   setCreateVolumeCount,
 } from 'resources/cinder/volume';
+import 'pages/basic/containers/basic-form.less';
 
 // Basic-mode volume create. Mirrors the Advanced form's required
 // fields and their behaviours (volume-type dependent size floor,
@@ -83,6 +84,10 @@ export class BasicVolumeCreate extends FormAction {
 
   get name() {
     return t('create volume');
+  }
+
+  get className() {
+    return 'basic-create-form';
   }
 
   get listUrl() {
@@ -344,16 +349,25 @@ export class BasicVolumeCreate extends FormAction {
     // the extra confirmation modal.
     const snapshot = this.snapshotRows.find((it) => it.id === value);
     if (!snapshot) return;
+    // Prefer the snapshot's own volume_type_id (populated by Cinder
+    // since Wallaby). If that's missing, fall back to fetching the
+    // parent volume so a `volume_type` name gives us a match — that's
+    // what Advanced does in `onSnapshotChange` at
+    // `pages/storage/containers/Volume/actions/Create/index.jsx`.
     let volumeTypeId = snapshot.origin_data?.volume_type_id;
     if (!volumeTypeId) {
-      try {
-        const detail = await this.snapshotStore.fetchDetail({ id: value });
-        const { volume: { volume_type: name } = {} } = detail || {};
-        const match = this.rawVolumeTypes.find((it) => it.name === name);
-        volumeTypeId = match?.id;
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.log('volume already not exist', e);
+      const parentVolumeId =
+        snapshot.origin_data?.volume_id || snapshot.volume_id;
+      if (parentVolumeId) {
+        try {
+          const volume = await this.store.fetchDetail({ id: parentVolumeId });
+          const name = volume?.volume_type;
+          const match = this.rawVolumeTypes.find((it) => it.name === name);
+          volumeTypeId = match?.id;
+        } catch (e) {
+          // eslint-disable-next-line no-console
+          console.log('volume already not exist', e);
+        }
       }
     }
     if (volumeTypeId) {
@@ -438,6 +452,9 @@ export class BasicVolumeCreate extends FormAction {
         required: true,
         options: this.sourceTypes,
         onChange: this.onSourceChange,
+        tip: t(
+          'Blank Volume: create an empty volume that you can attach to an instance and format. Image: create a volume pre-populated with the contents of a selected image so it can boot or be used as a data disk. Volume Snapshot: create a new volume from a point-in-time snapshot of an existing volume.'
+        ),
       },
       // Advanced shows an OS filter above the image table. Basic
       // exposes it as its own dropdown, then narrows to a specific
@@ -445,7 +462,7 @@ export class BasicVolumeCreate extends FormAction {
       // per row, both auto-pick the first option.
       {
         name: 'imageOsFilter',
-        label: t('Operating System'),
+        label: t('OS Distribution'),
         type: 'select',
         required: this.isImageSource,
         hidden: !this.isImageSource,
@@ -457,7 +474,7 @@ export class BasicVolumeCreate extends FormAction {
       },
       {
         name: 'image',
-        label: t('OS Type'),
+        label: t('Operating System'),
         type: 'select',
         required: this.isImageSource,
         hidden: !this.isImageSource,
@@ -490,6 +507,9 @@ export class BasicVolumeCreate extends FormAction {
         extra: this.getVolumeTypeExtra(),
         autoSelectFirst: true,
         ...searchable,
+        tip: t(
+          'Volume types define the storage capabilities and performance characteristics of a volume, including backend selection, QoS settings, and supported features.'
+        ),
       },
       // Basic uses a plain number input for size (no slider). The
       // allowed range sits under the field. Dropping below the volume

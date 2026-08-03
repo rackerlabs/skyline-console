@@ -14,9 +14,10 @@
 
 import React, { useEffect, useState } from 'react';
 import { observer, inject } from 'mobx-react';
-import { Popover, Col, Row, Skeleton } from 'antd';
+import { Popover, Col, Row, Skeleton, Button, message } from 'antd';
 import Base from 'containers/List';
 import globalObjectStore, { ObjectStore } from 'stores/swift/object';
+import { ContainerStore } from 'stores/swift/container';
 import { bytesFilter } from 'utils/index';
 import { allCanReadPolicy } from 'resources/skyline/policy';
 import { toJS } from 'mobx';
@@ -25,6 +26,108 @@ import { isFolder } from 'resources/swift/container';
 import { getStrFromTimestamp } from 'utils/time';
 import styles from './index.less';
 import actionConfigs from './actions';
+import CDNUrl from '../CDNUrl';
+
+function renderCDNUrl(url) {
+  return <CDNUrl url={url} maxWidth={360} />;
+}
+
+// CDN information section for the container detail page. Reads the CDN state
+// and public URLs via the backend (HEAD to the CDN Swift endpoint) and lets
+// the user enable/disable CDN. Refreshes state from the authoritative HEAD
+// response after each successful toggle.
+function CDNSection({ container }) {
+  const [store] = useState(() => new ContainerStore());
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const cdn = await store.fetchCDNInfo(container);
+      setData(cdn);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load();
+  }, [container]);
+
+  const onToggle = async () => {
+    const enabled = !(data && data.cdn_enabled);
+    setSubmitting(true);
+    try {
+      const result = await store.updateCDN(container, enabled);
+      const updated = (result && result.container) || result;
+      // Trust the authoritative HEAD-confirmed state returned by the backend.
+      setData({
+        cdn_enabled: !!updated.cdn_enabled,
+        public_http_url: updated.public_http_url || null,
+        public_https_url: updated.public_https_url || null,
+      });
+      message.success(
+        enabled
+          ? t('CDN enabled successfully.')
+          : t('CDN disabled successfully.')
+      );
+    } catch (e) {
+      const detail =
+        e?.response?.data?.detail ||
+        (typeof e?.response?.data === 'string' ? e.response.data : null) ||
+        e?.message ||
+        t('Unable to update CDN.');
+      message.error(detail);
+      // Re-sync from the backend so the UI is never left in a stale state.
+      await load();
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const enabled = !!(data && data.cdn_enabled);
+
+  return (
+    <div className={styles['cdn-section']}>
+      <div className={styles['cdn-header']}>
+        <span className={styles['cdn-title']}>{t('CDN')}</span>
+        <Button
+          type="primary"
+          size="small"
+          loading={submitting}
+          disabled={loading}
+          onClick={onToggle}
+        >
+          {enabled ? t('Disable CDN') : t('Enable CDN')}
+        </Button>
+      </div>
+      {loading ? (
+        <Skeleton active paragraph={{ rows: 1 }} />
+      ) : (
+        <Row className={styles['cdn-row']} gutter={24} align="middle">
+          <Col xs={24} sm={6} md={4}>
+            <span className={styles['cdn-label']}>{t('CDN')}: </span>
+            {enabled ? t('Enabled') : t('Disabled')}
+          </Col>
+          <Col xs={24} sm={9} md={10}>
+            <span className={styles['cdn-label']}>
+              {t('Public HTTP URL')}:{' '}
+            </span>
+            {renderCDNUrl(data && data.public_http_url)}
+          </Col>
+          <Col xs={24} sm={9} md={10}>
+            <span className={styles['cdn-label']}>
+              {t('Public HTTPS URL')}:{' '}
+            </span>
+            {renderCDNUrl(data && data.public_https_url)}
+          </Col>
+        </Row>
+      )}
+    </div>
+  );
+}
 
 function PopUpContent({ item }) {
   const { container, name, shortName } = item;
@@ -327,10 +430,13 @@ export class ContainerObject extends Base {
       );
     });
     return (
-      <div className={styles['link-header']}>
-        <span className={styles['link-title']}>{t('Current Path: ')}</span>
-        <span className={styles['path-items']}>{itemLinks}</span>
-      </div>
+      <>
+        <div className={styles['link-header']}>
+          <span className={styles['link-title']}>{t('Current Path: ')}</span>
+          <span className={styles['path-items']}>{itemLinks}</span>
+        </div>
+        {container ? <CDNSection container={container} /> : null}
+      </>
     );
   }
 }

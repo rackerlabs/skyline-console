@@ -1,5 +1,6 @@
 import { inject, observer } from 'mobx-react';
 import { CreateForm as AdvancedCreateForm } from 'pages/compute/containers/Image/actions/Create';
+import 'pages/basic/containers/basic-form.less';
 
 // Basic-mode image create. Keeps only the fields marked required in the
 // Advanced form (Name, File/URL, Disk Format, Container Format when
@@ -15,6 +16,10 @@ export class BasicImageCreate extends AdvancedCreateForm {
   // Basic mode is always the project user view.
   get isAdminPage() {
     return false;
+  }
+
+  get className() {
+    return 'basic-create-form';
   }
 
   get listUrl() {
