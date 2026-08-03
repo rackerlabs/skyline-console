@@ -11,6 +11,20 @@ export class TrustStore extends Base {
     return false;
   }
 
+  get paramsFunc() {
+    return (params = {}) => {
+      const { trustor_user_id, trustee_user_id } = params;
+      const newParams = {};
+      if (trustor_user_id) {
+        newParams.trustor_user_id = trustor_user_id;
+      }
+      if (trustee_user_id) {
+        newParams.trustee_user_id = trustee_user_id;
+      }
+      return newParams;
+    };
+  }
+
   @action
   create(body) {
     return this.submitting(this.client.create(body));

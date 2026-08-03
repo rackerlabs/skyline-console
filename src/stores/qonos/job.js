@@ -41,9 +41,15 @@ export class JobStore extends Base {
 
   async listDidFetch(items, _allProjects, filters) {
     const scheduleId = filters?.schedule_id;
-    return scheduleId
+    const filtered = scheduleId
       ? items.filter((item) => item.schedule_id === scheduleId)
       : items;
+    if (!scheduleId) {
+      return filtered;
+    }
+    return [...filtered].sort((a, b) =>
+      (b.created_at || '').localeCompare(a.created_at || '')
+    );
   }
 
   @action

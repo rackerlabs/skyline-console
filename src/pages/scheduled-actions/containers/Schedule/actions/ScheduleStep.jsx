@@ -89,7 +89,7 @@ export class ScheduleStep extends Base {
         type: 'radio',
         options: retentionTypeOptions,
         tip: t(
-          'Count keeps the last N snapshots/backups. Age keeps snapshots/backups for N days.'
+          'Count keeps the newest N snapshots/backups created by the schedule. Age keeps snapshots/backups that are N days old or younger; older ones are deleted.'
         ),
       },
       {
@@ -100,7 +100,9 @@ export class ScheduleStep extends Base {
         required: retentionType === 'count',
         hidden: retentionType !== 'count',
         validator: this.retentionValidator,
-        tip: t('Keep the last N snapshots or backups.'),
+        tip: t(
+          'Keep the newest N snapshots or backups created by the schedule.'
+        ),
       },
       {
         name: 'retention_age_days',
@@ -110,7 +112,9 @@ export class ScheduleStep extends Base {
         required: retentionType === 'age',
         hidden: retentionType !== 'age',
         validator: this.retentionValidator,
-        tip: t('Keep snapshots or backups for N days.'),
+        tip: t(
+          'Keep snapshots or backups that are N days old or younger. Older ones are deleted.'
+        ),
       },
     ];
   }

@@ -2,7 +2,11 @@ import { inject, observer } from 'mobx-react';
 import Base from 'containers/List';
 import globalJobStore, { JobStore } from 'stores/qonos/job';
 import { qonosEndpoint } from 'client/client/constants';
-import { actionTypeOptions, jobStatus } from 'resources/qonos';
+import {
+  actionTypeOptions,
+  jobStatus,
+  getJobStatusReason,
+} from 'resources/qonos';
 import actionConfigs from './actions';
 
 export class Job extends Base {
@@ -79,9 +83,10 @@ export class Job extends Base {
         isHideable: true,
       },
       {
-        title: t('Status'),
-        dataIndex: 'status',
-        valueMap: jobStatus,
+        title: t('Created At'),
+        dataIndex: 'created_at',
+        valueRender: 'toLocalTime',
+        isHideable: true,
       },
       {
         title: t('Run At'),
@@ -89,9 +94,14 @@ export class Job extends Base {
         valueRender: 'toLocalTime',
       },
       {
-        title: t('Created At'),
-        dataIndex: 'created_at',
-        valueRender: 'toLocalTime',
+        title: t('Status'),
+        dataIndex: 'status',
+        valueMap: jobStatus,
+      },
+      {
+        title: t('Reason'),
+        dataIndex: 'error_message',
+        render: (value, record) => getJobStatusReason(record) || '-',
         isHideable: true,
       },
     ];

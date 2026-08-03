@@ -1,12 +1,5 @@
-import Cancel from './Cancel';
+import { emptyActionConfig } from 'utils/constants';
 
-const actionConfigs = {
-  rowActions: {
-    firstAction: Cancel,
-    moreActions: [],
-  },
-  batchActions: [],
-  primaryActions: [],
-};
+const actionConfigs = emptyActionConfig;
 
 export default actionConfigs;

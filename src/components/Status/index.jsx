@@ -34,6 +34,7 @@ const successKeys = [
   'online',
   'ready',
   'pass',
+  'done',
 ];
 
 const successKeysContain = ['complete'];
@@ -60,6 +61,9 @@ const errorKeys = [
   'error',
   'offline',
   'refuse',
+  'timed_out',
+  'hard_timed_out',
+  'max_retried',
 ];
 
 const errorKeysContain = ['fail'];

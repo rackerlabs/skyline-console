@@ -29,6 +29,7 @@ import {
   BookOutlined,
   PlayCircleOutlined,
   CalendarOutlined,
+  ScheduleOutlined,
   MessageOutlined,
 } from '@ant-design/icons';
 
@@ -997,6 +998,63 @@ const renderMenu = (t) => {
       ],
     },
     {
+      path: '/scheduled-actions',
+      name: t('Scheduled Actions'),
+      key: 'scheduledActionsAdmin',
+      endpoints: 'qonos',
+      icon: <ScheduleOutlined />,
+      children: [
+        {
+          path: '/scheduled-actions/schedule-admin',
+          name: t('Schedules'),
+          key: 'qonosScheduleAdmin',
+          level: 1,
+          children: [
+            {
+              path: '/scheduled-actions/schedule-admin/create',
+              name: t('Create Schedule'),
+              key: 'qonosScheduleCreateAdmin',
+              level: 2,
+            },
+            {
+              path: /^\/scheduled-actions\/schedule-admin\/detail\/.[^/]+$/,
+              name: t('Schedule Detail'),
+              key: 'qonosScheduleDetailAdmin',
+              level: 2,
+              routePath: '/scheduled-actions/schedule-admin/detail/:id',
+            },
+          ],
+        },
+        {
+          path: '/scheduled-actions/execution-profile-admin',
+          name: t('Execution Profiles'),
+          key: 'qonosExecutionProfileAdmin',
+          level: 1,
+        },
+        {
+          path: '/scheduled-actions/job-admin',
+          name: t('Jobs'),
+          key: 'qonosJobAdmin',
+          level: 1,
+          children: [
+            {
+              path: /^\/scheduled-actions\/job-admin\/detail\/.[^/]+$/,
+              name: t('Job Detail'),
+              key: 'qonosJobDetailAdmin',
+              level: 2,
+              routePath: '/scheduled-actions/job-admin/detail/:id',
+            },
+          ],
+        },
+        {
+          path: '/scheduled-actions/trust-admin',
+          name: t('Trusts'),
+          key: 'qonosTrustAdmin',
+          level: 1,
+        },
+      ],
+    },
+    {
       path: '/ha',
       name: t('Instance-HA'),
       key: 'masakari',
@@ -1145,63 +1203,6 @@ const renderMenu = (t) => {
               routePath: '/configuration-admin/metadata/detail/:id',
             },
           ],
-        },
-      ],
-    },
-    {
-      path: '/scheduled-actions',
-      name: t('Scheduled Actions'),
-      key: 'scheduledActionsAdmin',
-      endpoints: 'qonos',
-      icon: <CalendarOutlined />,
-      children: [
-        {
-          path: '/scheduled-actions/schedule-admin',
-          name: t('Schedules'),
-          key: 'qonosScheduleAdmin',
-          level: 1,
-          children: [
-            {
-              path: '/scheduled-actions/schedule-admin/create',
-              name: t('Create Schedule'),
-              key: 'qonosScheduleCreateAdmin',
-              level: 2,
-            },
-            {
-              path: /^\/scheduled-actions\/schedule-admin\/detail\/.[^/]+$/,
-              name: t('Schedule Detail'),
-              key: 'qonosScheduleDetailAdmin',
-              level: 2,
-              routePath: '/scheduled-actions/schedule-admin/detail/:id',
-            },
-          ],
-        },
-        {
-          path: '/scheduled-actions/execution-profile-admin',
-          name: t('Execution Profiles'),
-          key: 'qonosExecutionProfileAdmin',
-          level: 1,
-        },
-        {
-          path: '/scheduled-actions/job-admin',
-          name: t('Jobs'),
-          key: 'qonosJobAdmin',
-          level: 1,
-          children: [
-            {
-              path: /^\/scheduled-actions\/job-admin\/detail\/.[^/]+$/,
-              name: t('Job Detail'),
-              key: 'qonosJobDetailAdmin',
-              level: 2,
-              routePath: '/scheduled-actions/job-admin/detail/:id',
-            },
-          ],
-        },
-        {
-          path: '/scheduled-actions/trust-admin',
-          name: t('Trusts'),
-          key: 'qonosTrustAdmin',
-          level: 1,
         },
       ],
     },

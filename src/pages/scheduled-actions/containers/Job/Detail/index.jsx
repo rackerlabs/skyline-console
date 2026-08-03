@@ -1,7 +1,7 @@
 import { inject, observer } from 'mobx-react';
 import Base from 'containers/TabDetail';
 import { JobStore } from 'stores/qonos/job';
-import { jobStatus } from 'resources/qonos';
+import { jobStatus, getJobStatusReason } from 'resources/qonos';
 import actionConfigs from '../actions';
 import Executions from './Executions';
 
@@ -19,7 +19,13 @@ export class JobDetail extends Base {
   }
 
   get listUrl() {
-    return this.getRoutePath('qonosJob');
+    if (this.isAdminPage) {
+      return this.getRoutePath('qonosJob');
+    }
+    const scheduleId = this.detailData?.schedule_id;
+    return scheduleId
+      ? this.getRoutePath('qonosScheduleDetail', { id: scheduleId })
+      : this.getRoutePath('qonosSchedule');
   }
 
   get actionConfigs() {
@@ -56,6 +62,11 @@ export class JobDetail extends Base {
         title: t('Status'),
         dataIndex: 'status',
         valueMap: jobStatus,
+      },
+      {
+        title: t('Reason'),
+        dataIndex: 'error_message',
+        render: (value, record) => getJobStatusReason(record) || '-',
       },
       {
         title: t('Run At'),

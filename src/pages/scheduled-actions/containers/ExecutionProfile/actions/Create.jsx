@@ -3,7 +3,10 @@ import { inject, observer } from 'mobx-react';
 import { ModalAction } from 'containers/Action';
 import globalExecutionProfileStore from 'stores/qonos/execution-profile';
 import { TrustStore } from 'stores/keystone/trust';
-import { buildExecutionProfileBody } from 'resources/qonos';
+import {
+  buildExecutionProfileBody,
+  fetchTrustsForQonosTrustee,
+} from 'resources/qonos';
 import TrustIdInput from '../../../components/TrustIdInput';
 
 export class Create extends ModalAction {
@@ -20,7 +23,7 @@ export class Create extends ModalAction {
   init() {
     this.store = globalExecutionProfileStore;
     this.trustStore = new TrustStore();
-    this.trustStore.fetchList().catch(() => {
+    fetchTrustsForQonosTrustee(this.trustStore).catch(() => {
       this.trustStore.list.isLoading = false;
     });
   }
@@ -70,6 +73,9 @@ export class Create extends ModalAction {
         name: 'trust_id',
         label: t('Trust ID'),
         required: true,
+        tip: t(
+          'Only trusts whose trustee is the qonos service user are listed.'
+        ),
         component: (
           <TrustIdInput
             options={this.trustOptions}

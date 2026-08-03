@@ -22,9 +22,9 @@ export default class Delete extends ConfirmAction {
     return true;
   }
 
-  policy = '';
+  policy = 'identity:delete_trust';
 
-  aliasPolicy = 'keystone:identity:delete_trust';
+  aliasPolicy = '';
 
   allowedCheckFunc = () => this.containerProps.rootStore.hasAdminRole;
 

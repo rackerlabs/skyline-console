@@ -1,3 +1,5 @@
+import client from 'client';
+
 export const ACTION_TYPES = {
   SERVER_SNAPSHOT: 'server_snapshot',
   VOLUME_BACKUP_FULL: 'volume_backup_full',
@@ -86,6 +88,13 @@ export const jobStatus = {
   CANCELLED: t('Cancelled'),
   HARD_TIMED_OUT: t('Hard Timed Out'),
   MAX_RETRIED: t('Max Retried'),
+};
+
+export const getJobStatusReason = (record = {}) => {
+  if (!record || record.status === 'DONE') {
+    return '';
+  }
+  return record.error_message || '';
 };
 
 export const executableJobStatuses = ['QUEUED', 'PROCESSING'];
@@ -269,14 +278,16 @@ export const buildTrustBody = (values = {}, currentUser = {}) => {
     trustee_user_id,
     project_id = projectId,
     role_name = 'member',
+    roles,
     impersonation = false,
     expires_at,
   } = values;
+  const roleNames = Array.isArray(roles) && roles.length ? roles : [role_name];
   const trust = {
     trustor_user_id,
     trustee_user_id,
     project_id,
-    roles: [{ name: role_name }],
+    roles: roleNames.map((name) => ({ name })),
     impersonation,
   };
   if (expires_at) {
@@ -286,4 +297,28 @@ export const buildTrustBody = (values = {}, currentUser = {}) => {
   return {
     trust,
   };
+};
+
+export const fetchTrustsForQonosTrustee = async (trustStore) => {
+  const { domains = [] } = (await client.keystone.domains.list()) || {};
+  const results = await Promise.all(
+    domains.map((d) => client.keystone.users.list({ domain_id: d.id }))
+  );
+  const qonosId = results
+    .flatMap((r) => r?.users || [])
+    .find((u) => u.name === 'qonos')?.id;
+  if (!qonosId) {
+    trustStore.list.data = [];
+    trustStore.list.isLoading = false;
+    return [];
+  }
+  try {
+    await trustStore.fetchList({ trustee_user_id: qonosId });
+  } catch (e) {
+    await trustStore.fetchList();
+    trustStore.list.data = (trustStore.list.data || []).filter(
+      (t) => t.trustee_user_id === qonosId
+    );
+  }
+  return trustStore.list.data || [];
 };

@@ -11,15 +11,19 @@ export class Trust extends Base {
   }
 
   get policy() {
-    return '';
+    return 'identity:list_trusts';
   }
 
   get aliasPolicy() {
-    return 'keystone:identity:list_trusts';
+    return '';
   }
 
   get name() {
     return t('trusts');
+  }
+
+  get fetchDataByAllProjects() {
+    return false;
   }
 
   get actionConfigs() {

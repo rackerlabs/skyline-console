@@ -23,7 +23,7 @@ export default [
       ...dual('schedule', ScheduleCreate, '/create'),
       ...dual('schedule', ScheduleDetail, '/detail/:id'),
       ...dual('execution-profile', ExecutionProfile),
-      ...dual('job', Job),
+      { path: `${PATH}/job-admin`, component: Job, exact: true },
       ...dual('job', JobDetail, '/detail/:id'),
       { path: `${PATH}/trust-admin`, component: Trust, exact: true },
       { path: '*', component: E404 },

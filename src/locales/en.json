@@ -3278,5 +3278,15 @@
   "Documentation": "Documentation",
   "Getting Started": "Getting Started",
   "Documentation - Opens documentation in new tab": "Documentation - Opens documentation in new tab",
-  "Getting Started - Opens video tutorials in new tab": "Getting Started - Opens video tutorials in new tab"
+  "Getting Started - Opens video tutorials in new tab": "Getting Started - Opens video tutorials in new tab",
+  "Count keeps the newest N snapshots/backups created by the schedule. Age keeps snapshots/backups that are N days old or younger; older ones are deleted.": "Count keeps the newest N snapshots/backups created by the schedule. Age keeps snapshots/backups that are N days old or younger; older ones are deleted.",
+  "Keep the newest N snapshots or backups created by the schedule.": "Keep the newest N snapshots or backups created by the schedule.",
+  "Keep snapshots or backups that are N days old or younger. Older ones are deleted.": "Keep snapshots or backups that are N days old or younger. Older ones are deleted.",
+  "Project being delegated.": "Project being delegated.",
+  "Roles to authorize on the project.": "Roles to authorize on the project.",
+  "Tokens generated from the trust will represent the trustor.": "Tokens generated from the trust will represent the trustor.",
+  "Optional expiration date for the trust.": "Optional expiration date for the trust.",
+  "User that is assuming authorization (includes users from all domains, e.g. service).": "User that is assuming authorization (includes users from all domains, e.g. service).",
+  "Keystone only allows the currently authenticated user to be the trustor.": "Keystone only allows the currently authenticated user to be the trustor.",
+  "Only trusts whose trustee is the qonos service user are listed.": "Only trusts whose trustee is the qonos service user are listed."
 }
