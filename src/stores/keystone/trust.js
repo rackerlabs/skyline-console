@@ -13,16 +13,36 @@ export class TrustStore extends Base {
 
   get paramsFunc() {
     return (params = {}) => {
-      const { trustor_user_id, trustee_user_id } = params;
+      const { trustor_user_id } = params;
       const newParams = {};
       if (trustor_user_id) {
         newParams.trustor_user_id = trustor_user_id;
       }
-      if (trustee_user_id) {
-        newParams.trustee_user_id = trustee_user_id;
-      }
       return newParams;
     };
+  }
+
+  async listDidFetch(items = [], _allProjects, filters = {}) {
+    if (filters.skipRoleFetch) {
+      return items;
+    }
+    return Promise.all(
+      items.map(async (item) => {
+        if (item.roles && item.roles.length) {
+          return item;
+        }
+        try {
+          const result = await this.client.show(item.id);
+          const trust = result?.trust || result || {};
+          return {
+            ...item,
+            roles: trust.roles || [],
+          };
+        } catch (e) {
+          return item;
+        }
+      })
+    );
   }
 
   @action

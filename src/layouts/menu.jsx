@@ -929,6 +929,18 @@ const renderMenu = (t) => {
       icon: <ScheduleOutlined />,
       children: [
         {
+          path: '/scheduled-actions/trust',
+          name: t('Trusts'),
+          key: 'qonosTrust',
+          level: 1,
+        },
+        {
+          path: '/scheduled-actions/execution-profile',
+          name: t('Execution Profiles'),
+          key: 'qonosExecutionProfile',
+          level: 1,
+        },
+        {
           path: '/scheduled-actions/schedule',
           name: t('Schedules'),
           key: 'qonosSchedule',
@@ -955,12 +967,6 @@ const renderMenu = (t) => {
               routePath: '/scheduled-actions/job/detail/:id',
             },
           ],
-        },
-        {
-          path: '/scheduled-actions/execution-profile',
-          name: t('Execution Profiles'),
-          key: 'qonosExecutionProfile',
-          level: 1,
         },
       ],
     },

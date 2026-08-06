@@ -1,13 +1,7 @@
 import { inject, observer } from 'mobx-react';
-import { toJS } from 'mobx';
 import { ModalAction } from 'containers/Action';
-import client from 'client';
 import globalTrustStore from 'stores/keystone/trust';
-import globalRoleStore from 'stores/keystone/role';
-import { ProjectStore } from 'stores/keystone/project';
-import { buildTrustBody } from 'resources/qonos';
-
-const DEFAULT_ROLE_NAME = 'member';
+import { buildTrustBody, resolveQonosUserId } from 'resources/qonos';
 
 export class Create extends ModalAction {
   static id = 'create-qonos-trust';
@@ -18,105 +12,69 @@ export class Create extends ModalAction {
 
   static aliasPolicy = '';
 
-  static allowed = (_, containerProps) =>
-    Promise.resolve(containerProps.rootStore.hasAdminRole);
+  static allowed = () => Promise.resolve(true);
 
   init() {
     this.store = globalTrustStore;
-    this.roleStore = globalRoleStore;
-    this.projectStore = new ProjectStore();
-    this.state.users = [];
-    this.state.usersLoading = false;
-    this.fetchUsers();
-    this.fetchProjects();
-    this.fetchRoles();
   }
 
   get name() {
     return t('Create trust');
   }
 
+  get messageHasItemName() {
+    return false;
+  }
+
   get trustorLabel() {
-    const { user: { id, name } = {} } = this.currentUser || {};
-    if (!id) {
-      return '-';
-    }
-    return name ? `${name} (${id})` : id;
+    return this.currentUserId || '-';
+  }
+
+  get projectLabel() {
+    return this.currentProjectId || '-';
   }
 
   get currentUserId() {
-    const { user: { id } = {} } = this.currentUser || {};
-    return id;
+    return this.currentUser?.user?.id;
   }
 
   get currentProjectId() {
-    const { project: { id } = {} } = this.currentUser || {};
-    return id;
+    return this.currentUser?.project?.id;
   }
 
-  get userOptions() {
-    return (this.state.users || []).map((it) => ({
-      label: it.domainName ? `${it.name} (${it.domainName})` : it.name || it.id,
-      value: it.id,
-    }));
+  get trusteeUserId() {
+    return resolveQonosUserId();
   }
 
-  get projectOptions() {
-    return (toJS(this.projectStore.list.data) || []).map((it) => ({
-      label: it.name ? `${it.name} (${it.id})` : it.id,
-      value: it.id,
-    }));
+  get trusteeLabel() {
+    return this.trusteeUserId || '-';
   }
 
   get roleOptions() {
-    return (this.roleStore.list.data || []).map((it) => ({
-      label: it.name,
-      value: it.name,
+    const roles = this.props.rootStore?.roles || this.currentUser?.roles || [];
+    return roles.map((it) => ({
+      label: it.name || it.id,
+      value: it.id,
     }));
+  }
+
+  get defaultRoleIds() {
+    const roles = this.props.rootStore?.roles || this.currentUser?.roles || [];
+    const admin = roles.find((r) => r.name === 'admin');
+    if (admin?.id) {
+      return [admin.id];
+    }
+    return roles.map((r) => r.id).filter(Boolean);
   }
 
   get defaultValue() {
     return {
-      roles: [DEFAULT_ROLE_NAME],
-      impersonation: false,
-      project_id: this.currentProjectId,
+      trustor: this.trustorLabel,
+      trustee: this.trusteeLabel,
+      project: this.projectLabel,
+      roles: this.defaultRoleIds,
+      impersonation: true,
     };
-  }
-
-  async fetchUsers() {
-    this.setState({ usersLoading: true });
-    try {
-      const domainResult = await client.keystone.domains.list();
-      const domains = domainResult?.domains || [];
-      const domainNameById = domains.reduce((acc, domain) => {
-        acc[domain.id] = domain.name;
-        return acc;
-      }, {});
-      const results = await Promise.all(
-        domains.map((domain) =>
-          client.keystone.users.list({ domain_id: domain.id })
-        )
-      );
-      const users = results.flatMap((result) =>
-        (result?.users || []).map((user) => ({
-          ...user,
-          domainName: domainNameById[user.domain_id] || user.domain_id,
-        }))
-      );
-      this.setState({ users });
-    } catch (e) {
-      this.setState({ users: [] });
-    } finally {
-      this.setState({ usersLoading: false });
-    }
-  }
-
-  fetchProjects() {
-    this.projectStore.fetchProjectsWithDomain();
-  }
-
-  fetchRoles() {
-    this.roleStore.fetchList();
   }
 
   get formItems() {
@@ -127,31 +85,30 @@ export class Create extends ModalAction {
         type: 'label',
         iconType: 'user',
         content: this.trustorLabel,
+        required: true,
         tip: t(
-          'Keystone only allows the currently authenticated user to be the trustor.'
+          'The trustor is automatically set to the currently authenticated user and cannot be changed.'
         ),
       },
       {
-        name: 'trustee_user_id',
+        name: 'trustee',
         label: t('Trustee'),
-        type: 'select',
+        type: 'label',
+        iconType: 'user',
+        content: this.trusteeLabel,
         required: true,
-        options: this.userOptions,
-        loading: this.state.usersLoading,
-        showSearch: true,
         tip: t(
-          'User that is assuming authorization (includes users from all domains, e.g. service).'
+          'The trustee is the Qonos service user that uses this trust to perform operations on your behalf.'
         ),
       },
       {
-        name: 'project_id',
+        name: 'project',
         label: t('Project'),
-        type: 'select',
+        type: 'label',
+        iconType: 'project',
+        content: this.projectLabel,
         required: true,
-        options: this.projectOptions,
-        loading: this.projectStore.list.isLoading,
-        showSearch: true,
-        tip: t('Project being delegated.'),
+        tip: t('This trust is scoped to the project you are currently using.'),
       },
       {
         name: 'roles',
@@ -160,36 +117,58 @@ export class Create extends ModalAction {
         required: true,
         mode: 'multiple',
         options: this.roleOptions,
-        loading: this.roleStore.list.isLoading,
-        showSearch: true,
-        tip: t('Roles to authorize on the project.'),
+        tip: t(
+          'Select one or more roles to delegate to the trustee for this project.'
+        ),
       },
       {
         name: 'impersonation',
         label: t('Impersonation'),
         type: 'switch',
-        tip: t('Tokens generated from the trust will represent the trustor.'),
+        tip: t(
+          'When enabled, the trustee performs operations on your behalf using the delegated roles.'
+        ),
       },
       {
         name: 'expires_at',
         label: t('Expires At'),
         type: 'date-picker',
         showTime: true,
-        tip: t('Optional expiration date for the trust.'),
+        tip: t(
+          'Set an optional expiration date after which the trust can no longer be used.'
+        ),
       },
     ];
   }
 
-  onSubmit = (values) =>
-    this.store.create(
+  onSubmit = (values) => {
+    const { trusteeUserId } = this;
+    if (!trusteeUserId) {
+      const error = new Error(t('Trustee is the Qonos service user'));
+      error.response = {
+        data: { detail: t('Trustee is the Qonos service user') },
+      };
+      return Promise.reject(error);
+    }
+    if (!values.roles || !values.roles.length) {
+      const error = new Error(t('Please select at least one role.'));
+      error.response = {
+        data: { detail: t('Please select at least one role.') },
+      };
+      return Promise.reject(error);
+    }
+    return this.store.create(
       buildTrustBody(
         {
           ...values,
           trustor_user_id: this.currentUserId,
+          trustee_user_id: trusteeUserId,
+          project_id: this.currentProjectId,
         },
         this.currentUser
       )
     );
+  };
 }
 
 export default inject('rootStore')(observer(Create));

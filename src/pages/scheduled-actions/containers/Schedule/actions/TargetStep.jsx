@@ -8,6 +8,7 @@ import { volumeSelectTablePropsBackend } from 'resources/cinder/volume';
 import {
   ACTION_TYPES,
   executionProfileColumns,
+  fetchExecutionProfilesForProject,
   isServerSnapshotAction,
   isVolumeBackupAction,
 } from 'resources/qonos';
@@ -17,7 +18,12 @@ export class TargetStep extends Base {
     this.profileStore = new ExecutionProfileStore();
     this.serverStore = new ServerStore();
     this.volumeStore = new VolumeStore();
-    this.profileStore.fetchList();
+    const { user, projectId } = this.props.rootStore || {};
+    fetchExecutionProfilesForProject(
+      this.profileStore,
+      user?.user?.id,
+      user?.project?.id || projectId
+    );
   }
 
   get name() {
