@@ -3,10 +3,13 @@ import { ModalAction } from 'containers/Action';
 import globalScheduleStore from 'stores/qonos/schedule';
 import {
   buildScheduleBody,
+  cronExpressionTip,
   cronPresetOptions,
+  cronTimezoneTip,
   getScheduleDefaultValue,
   retentionTypeOptions,
   validateCronExpression,
+  webhookUrlValidator,
 } from 'resources/qonos';
 
 export class Edit extends ModalAction {
@@ -89,6 +92,7 @@ export class Edit extends ModalAction {
         type: 'select',
         options: cronPresetOptions,
         required: true,
+        extra: cronTimezoneTip,
       },
       {
         name: 'cron_expression',
@@ -96,12 +100,13 @@ export class Edit extends ModalAction {
         type: 'input',
         required: true,
         validator: this.cronValidator,
-        tip: t('Use five fields: minute hour day-of-month month day-of-week.'),
+        tip: cronExpressionTip,
       },
       {
         name: 'webhook_url',
         label: t('Webhook URL'),
         type: 'input',
+        validator: webhookUrlValidator,
       },
       {
         type: 'divider',

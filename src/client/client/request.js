@@ -130,6 +130,12 @@ export class HttpRequest {
         const disposition = response.headers['content-disposition'] || '';
         const contentType = response.headers['content-type'] || '';
         const { method = 'get' } = response.config || {};
+        const qonosAdvisory = response.headers?.['x-qonos-advisory'];
+        if (qonosAdvisory) {
+          require('resources/qonos/advisory').setLastQonosAdvisory(
+            qonosAdvisory
+          );
+        }
         if (method.toLowerCase() === 'head') {
           return response;
         }

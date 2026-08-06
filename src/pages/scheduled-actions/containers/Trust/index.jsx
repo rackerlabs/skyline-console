@@ -1,7 +1,8 @@
 import { inject, observer } from 'mobx-react';
 import Base from 'containers/List';
 import globalTrustStore, { TrustStore } from 'stores/keystone/trust';
-import { emptyActionConfig } from 'utils/constants';
+import { fetchTrustsForQonosTrustee } from 'resources/qonos';
+import { getIdRender } from 'utils/table';
 import actionConfigs from './actions';
 
 export class Trust extends Base {
@@ -11,7 +12,7 @@ export class Trust extends Base {
   }
 
   get policy() {
-    return 'identity:list_trusts';
+    return 'identity:list_trusts_for_trustor';
   }
 
   get aliasPolicy() {
@@ -27,17 +28,27 @@ export class Trust extends Base {
   }
 
   get actionConfigs() {
-    return this.hasAdminRole ? actionConfigs : emptyActionConfig;
+    return actionConfigs;
   }
 
-  getDataWithPolicy(params) {
-    if (!this.hasAdminRole) {
+  getData = async ({ silent } = {}) => {
+    silent && (this.list.silent = true);
+    this.list.data = [];
+    this.list.isLoading = true;
+    try {
+      await fetchTrustsForQonosTrustee(
+        this.store,
+        this.currentUser?.user?.id,
+        this.currentUser?.project?.id || this.currentProjectId,
+        { withRoles: true }
+      );
+    } catch (e) {
+      this.list.data = [];
+    } finally {
       this.list.isLoading = false;
       this.list.silent = false;
-      return;
     }
-    super.getDataWithPolicy(params);
-  }
+  };
 
   get searchFilters() {
     return [
@@ -56,13 +67,17 @@ export class Trust extends Base {
     if (!roles || !roles.length) {
       return '-';
     }
-    return roles.map((it) => it.name || it.id).join(', ');
+    const names = roles
+      .map((it) => (typeof it === 'string' ? it : it.name || it.id))
+      .filter(Boolean);
+    return names.length ? names.join(', ') : '-';
   };
 
   getColumns = () => [
     {
       title: t('ID'),
       dataIndex: 'id',
+      render: (value) => (value ? getIdRender(value, true, true) : '-'),
     },
     {
       title: t('Project ID'),

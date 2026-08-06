@@ -1,9 +1,12 @@
+import React from 'react';
 import { inject, observer } from 'mobx-react';
 import Base from 'containers/List';
 import globalExecutionProfileStore, {
   ExecutionProfileStore,
 } from 'stores/qonos/execution-profile';
 import { qonosEndpoint } from 'client/client/constants';
+import { fetchExecutionProfilesForProject } from 'resources/qonos';
+import { getIdRender, getNameRenderWithStyle } from 'utils/table';
 import actionConfigs from './actions';
 
 export class ExecutionProfile extends Base {
@@ -32,9 +35,28 @@ export class ExecutionProfile extends Base {
     return t('execution profiles');
   }
 
+  get fetchDataByAllProjects() {
+    return false;
+  }
+
   get actionConfigs() {
     return actionConfigs;
   }
+
+  getData = async ({ silent } = {}) => {
+    silent && (this.list.silent = true);
+    try {
+      await fetchExecutionProfilesForProject(
+        this.store,
+        this.currentUser?.user?.id,
+        this.currentUser?.project?.id || this.currentProjectId
+      );
+    } catch (e) {
+      this.list.data = [];
+    } finally {
+      this.list.silent = false;
+    }
+  };
 
   get searchFilters() {
     return [
@@ -57,6 +79,12 @@ export class ExecutionProfile extends Base {
     {
       title: t('ID/Name'),
       dataIndex: 'name',
+      render: (value, record) => (
+        <div>
+          <div>{getIdRender(record.id, true, true)}</div>
+          {getNameRenderWithStyle(value, true)}
+        </div>
+      ),
     },
     {
       title: t('Auth Type'),

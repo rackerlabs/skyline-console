@@ -1,9 +1,12 @@
 import { inject, observer } from 'mobx-react';
 import Base from 'components/Form';
 import {
+  cronExpressionTip,
   cronPresetOptions,
+  cronTimezoneTip,
   retentionTypeOptions,
   validateCronExpression,
+  webhookUrlValidator,
 } from 'resources/qonos';
 
 export class ScheduleStep extends Base {
@@ -66,6 +69,7 @@ export class ScheduleStep extends Base {
         type: 'select',
         options: cronPresetOptions,
         required: true,
+        extra: cronTimezoneTip,
       },
       {
         name: 'cron_expression',
@@ -73,12 +77,13 @@ export class ScheduleStep extends Base {
         type: 'input',
         required: true,
         validator: this.cronValidator,
-        tip: t('Use five fields: minute hour day-of-month month day-of-week.'),
+        tip: cronExpressionTip,
       },
       {
         name: 'webhook_url',
         label: t('Webhook URL'),
         type: 'input',
+        validator: webhookUrlValidator,
       },
       {
         type: 'divider',

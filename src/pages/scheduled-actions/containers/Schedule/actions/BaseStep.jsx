@@ -1,6 +1,5 @@
 import { inject, observer } from 'mobx-react';
 import Base from 'components/Form';
-import { ACTION_TYPES, actionTypeOptions } from 'resources/qonos';
 
 export class BaseStep extends Base {
   get name() {
@@ -15,7 +14,6 @@ export class BaseStep extends Base {
 
   get defaultValue() {
     return {
-      action_type: ACTION_TYPES.SERVER_SNAPSHOT,
       enabled: true,
     };
   }
@@ -39,13 +37,6 @@ export class BaseStep extends Base {
         name: 'enabled',
         label: t('Enabled'),
         type: 'switch',
-      },
-      {
-        name: 'action_type',
-        label: t('Action Type'),
-        type: 'select',
-        options: actionTypeOptions,
-        required: true,
       },
     ];
   }

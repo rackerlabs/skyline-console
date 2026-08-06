@@ -1,5 +1,3 @@
-import client from 'client';
-
 export const ACTION_TYPES = {
   SERVER_SNAPSHOT: 'server_snapshot',
   VOLUME_BACKUP_FULL: 'volume_backup_full',
@@ -27,6 +25,15 @@ export const isServerSnapshotAction = (actionType) =>
 export const isVolumeBackupAction = (actionType) =>
   actionType === ACTION_TYPES.VOLUME_BACKUP_FULL ||
   actionType === ACTION_TYPES.VOLUME_BACKUP_INCREMENTAL;
+
+export const getVolumeBackupActionTip = (actionType) => {
+  if (actionType === ACTION_TYPES.VOLUME_BACKUP_INCREMENTAL) {
+    return t(
+      'Incremental backups need a successful full backup first. Add a volume_backup_full schedule for this volume, or ensure a full backup already exists.'
+    );
+  }
+  return undefined;
+};
 
 export const getScheduleCreatePath = (isAdminPage) =>
   isAdminPage
@@ -57,7 +64,7 @@ export const cronPresetOptions = [
     value: '0 0 * * *',
   },
   {
-    label: t('Daily at 2:00'),
+    label: t('Daily at 02:00'),
     value: '0 2 * * *',
   },
   {
@@ -65,7 +72,7 @@ export const cronPresetOptions = [
     value: '0 */6 * * *',
   },
   {
-    label: t('Weekly on Sunday'),
+    label: t('Weekly on Sunday at midnight'),
     value: '0 0 * * 0',
   },
   {
@@ -73,6 +80,12 @@ export const cronPresetOptions = [
     value: 'custom',
   },
 ];
+
+export const cronTimezoneTip = t('All schedule times are UTC.');
+
+export const cronExpressionTip = t(
+  'Use five fields: minute hour day-of-month month day-of-week. Times are UTC.'
+);
 
 export const enabledStatus = {
   true: t('Enabled'),
@@ -106,13 +119,30 @@ export const getCronPreset = (cronExpression) => {
 
 export const validateCronExpression = (value) => {
   if (!value) {
-    return t('Please input Cron Expression!');
+    return '';
   }
   const fields = value.trim().split(/\s+/);
   if (fields.length !== 5) {
     return t('Cron expression must contain five fields.');
   }
   return '';
+};
+
+export const webhookUrlValidator = (rule, value) => {
+  if (!value) {
+    return Promise.resolve();
+  }
+  try {
+    const { protocol } = new URL(value);
+    if (protocol === 'http:' || protocol === 'https:') {
+      return Promise.resolve();
+    }
+  } catch (e) {
+    // invalid URL
+  }
+  return Promise.reject(
+    new Error(t('Please enter a valid URL (http:// or https://).'))
+  );
 };
 
 export const buildRetentionPolicy = (values = {}) => {
@@ -207,15 +237,90 @@ export const getSelectedId = (value) => {
   return selectedRowKeys[0];
 };
 
+export const normalizeTrustId = (id) => {
+  if (!id) {
+    return id;
+  }
+  const raw = String(id).trim().split(/\s+/)[0];
+  return raw.replace(/-/g, '');
+};
+
+export const fetchExecutionProfilesForProject = async (
+  profileStore,
+  trustorUserId,
+  projectId
+) => {
+  const { TrustStore } = require('stores/keystone/trust');
+  profileStore.list.data = [];
+  profileStore.list.isLoading = true;
+  try {
+    const trusts = await fetchTrustsForQonosTrustee(
+      new TrustStore(),
+      trustorUserId,
+      projectId
+    );
+    const trustIds = new Set(
+      (trusts || []).map((t) => normalizeTrustId(t.id)).filter(Boolean)
+    );
+    const allProfiles = await profileStore.requestList(
+      profileStore.paramsFunc({}),
+      {}
+    );
+    const items = (allProfiles || []).filter((ep) =>
+      trustIds.has(normalizeTrustId(ep.trust_id))
+    );
+    profileStore.list.data = items;
+    profileStore.list.total = items.length;
+    return items;
+  } catch (e) {
+    profileStore.list.data = [];
+    profileStore.list.total = 0;
+    return [];
+  } finally {
+    profileStore.list.isLoading = false;
+  }
+};
+
+export const trustHasEnabledExecutionProfile = async (trustId) => {
+  if (!trustId) {
+    return false;
+  }
+  const { ExecutionProfileStore } = require('stores/qonos/execution-profile');
+  const store = new ExecutionProfileStore();
+  await store.fetchList({ enabled: true });
+  const normalized = normalizeTrustId(trustId);
+  return (store.list.data || []).some(
+    (ep) => !!ep.enabled && normalizeTrustId(ep.trust_id) === normalized
+  );
+};
+
+export const executionProfileHasEnabledSchedule = async (profileId) => {
+  if (!profileId) {
+    return false;
+  }
+  const { ScheduleStore } = require('stores/qonos/schedule');
+  const store = new ScheduleStore();
+  await store.fetchList({});
+  const normalized = normalizeTrustId(profileId);
+  return (store.list.data || []).some(
+    (schedule) =>
+      !!schedule.enabled &&
+      normalizeTrustId(schedule.execution_profile_id) === normalized
+  );
+};
+
 export const buildExecutionProfileBody = (values = {}) => {
   const { name, description, trust_id, enabled = true } = values;
-  return {
+  const body = {
     name,
-    description,
     auth_type: 'trust',
-    trust_id,
-    enabled,
+    trust_id: normalizeTrustId(trust_id),
+    enabled: !!enabled,
   };
+  if (description) {
+    body.description = description;
+  }
+  return body;
 };
 
 export const buildScheduleBody = (values = {}, isEdit = false) => {
@@ -277,17 +382,16 @@ export const buildTrustBody = (values = {}, currentUser = {}) => {
     trustor_user_id = currentUserId,
     trustee_user_id,
     project_id = projectId,
-    role_name = 'member',
-    roles,
+    roles = [],
     impersonation = false,
     expires_at,
   } = values;
-  const roleNames = Array.isArray(roles) && roles.length ? roles : [role_name];
+  const roleIds = (Array.isArray(roles) ? roles : [roles]).filter(Boolean);
   const trust = {
     trustor_user_id,
     trustee_user_id,
     project_id,
-    roles: roleNames.map((name) => ({ name })),
+    roles: roleIds.map((id) => ({ id })),
     impersonation,
   };
   if (expires_at) {
@@ -299,26 +403,65 @@ export const buildTrustBody = (values = {}, currentUser = {}) => {
   };
 };
 
-export const fetchTrustsForQonosTrustee = async (trustStore) => {
-  const { domains = [] } = (await client.keystone.domains.list()) || {};
-  const results = await Promise.all(
-    domains.map((d) => client.keystone.users.list({ domain_id: d.id }))
-  );
-  const qonosId = results
-    .flatMap((r) => r?.users || [])
-    .find((u) => u.name === 'qonos')?.id;
-  if (!qonosId) {
-    trustStore.list.data = [];
+export const resolveQonosUserId = () => {
+  const globalRootStore = require('stores/root').default;
+  return globalRootStore.user?.qonos_user_id || undefined;
+};
+
+export const fetchTrustsForQonosTrustee = async (
+  trustStore,
+  trustorUserId,
+  projectId,
+  { withRoles = false } = {}
+) => {
+  const qonosId = resolveQonosUserId();
+  trustStore.list.data = [];
+  if (!trustorUserId) {
     trustStore.list.isLoading = false;
     return [];
   }
+  trustStore.list.isLoading = true;
   try {
-    await trustStore.fetchList({ trustee_user_id: qonosId });
-  } catch (e) {
-    await trustStore.fetchList();
-    trustStore.list.data = (trustStore.list.data || []).filter(
-      (t) => t.trustee_user_id === qonosId
-    );
+    const params = trustStore.paramsFunc({ trustor_user_id: trustorUserId });
+    const allData = await trustStore.requestList(params, {
+      trustor_user_id: trustorUserId,
+      skipRoleFetch: true,
+    });
+    let items = (allData || []).filter((t) => {
+      if (t.trustor_user_id !== trustorUserId) {
+        return false;
+      }
+      if (projectId && t.project_id !== projectId) {
+        return false;
+      }
+      if (qonosId && t.trustee_user_id !== qonosId) {
+        return false;
+      }
+      return true;
+    });
+    if (withRoles && items.length) {
+      items = await Promise.all(
+        items.map(async (item) => {
+          if (item.roles && item.roles.length) {
+            return item;
+          }
+          try {
+            const result = await trustStore.client.show(item.id);
+            const trust = result?.trust || result || {};
+            return {
+              ...item,
+              roles: trust.roles || [],
+            };
+          } catch (e) {
+            return item;
+          }
+        })
+      );
+    }
+    trustStore.list.data = items;
+    trustStore.list.total = items.length;
+    return items;
+  } finally {
+    trustStore.list.isLoading = false;
   }
-  return trustStore.list.data || [];
 };
