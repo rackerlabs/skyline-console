@@ -1,7 +1,11 @@
 import { inject, observer } from 'mobx-react';
 import Base from 'containers/TabDetail';
 import { ScheduleStore } from 'stores/qonos/schedule';
-import { formatRetentionPolicy } from 'resources/qonos';
+import {
+  formatRetentionPolicy,
+  isServerSnapshotAction,
+  isVolumeBackupAction,
+} from 'resources/qonos';
 import actionConfigs from '../actions';
 import Jobs from './Jobs';
 
@@ -29,6 +33,7 @@ export class ScheduleDetail extends Base {
   renderRetention = (policy) => formatRetentionPolicy(policy);
 
   get detailInfos() {
+    const { action_type: actionType } = this.detailData || {};
     return [
       {
         title: t('Name'),
@@ -49,11 +54,13 @@ export class ScheduleDetail extends Base {
       {
         title: t('Server ID'),
         dataIndex: 'server_id',
+        hidden: isVolumeBackupAction(actionType),
         render: (value) => value || '-',
       },
       {
         title: t('Volume ID'),
         dataIndex: 'volume_id',
+        hidden: isServerSnapshotAction(actionType),
         render: (value) => value || '-',
       },
       {

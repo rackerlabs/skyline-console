@@ -2,6 +2,7 @@ import { inject, observer } from 'mobx-react';
 import { StepAction } from 'containers/Action';
 import globalScheduleStore from 'stores/qonos/schedule';
 import { buildScheduleBody, getScheduleCreatePath } from 'resources/qonos';
+import { withQonosAdvisory } from 'resources/qonos/advisory';
 import BaseStep from './BaseStep';
 import TargetStep from './TargetStep';
 import ScheduleStep from './ScheduleStep';
@@ -60,7 +61,7 @@ export class Create extends StepAction {
     return buildScheduleBody(data);
   }
 
-  onSubmit = (body) => this.store.create(body);
+  onSubmit = (body) => withQonosAdvisory(this.store.create(body));
 }
 
 export default inject('rootStore')(observer(Create));

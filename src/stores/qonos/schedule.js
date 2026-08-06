@@ -27,6 +27,16 @@ export class ScheduleStore extends Base {
     });
   }
 
+  async listDidFetch(items = []) {
+    const globalRootStore = require('stores/root').default;
+    const projectId =
+      globalRootStore.user?.project?.id || globalRootStore.projectId;
+    if (!projectId) {
+      return items;
+    }
+    return items.filter((s) => s.project_id === projectId);
+  }
+
   @action
   create(body) {
     return this.submitting(this.client.create(body));

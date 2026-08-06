@@ -1046,12 +1046,6 @@ const renderMenu = (t) => {
             },
           ],
         },
-        {
-          path: '/scheduled-actions/trust-admin',
-          name: t('Trusts'),
-          key: 'qonosTrustAdmin',
-          level: 1,
-        },
       ],
     },
     {

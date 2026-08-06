@@ -7,7 +7,10 @@ import { instanceSelectTablePropsBackend } from 'resources/nova/instance';
 import { volumeSelectTablePropsBackend } from 'resources/cinder/volume';
 import {
   ACTION_TYPES,
+  actionTypeOptions,
   executionProfileColumns,
+  fetchExecutionProfilesForProject,
+  getVolumeBackupActionTip,
   isServerSnapshotAction,
   isVolumeBackupAction,
 } from 'resources/qonos';
@@ -17,7 +20,12 @@ export class TargetStep extends Base {
     this.profileStore = new ExecutionProfileStore();
     this.serverStore = new ServerStore();
     this.volumeStore = new VolumeStore();
-    this.profileStore.fetchList();
+    const { user, projectId } = this.props.rootStore || {};
+    fetchExecutionProfilesForProject(
+      this.profileStore,
+      user?.user?.id,
+      user?.project?.id || projectId
+    );
   }
 
   get name() {
@@ -30,14 +38,36 @@ export class TargetStep extends Base {
 
   allowed = () => Promise.resolve();
 
+  get nameForStateUpdate() {
+    return ['action_type'];
+  }
+
+  get defaultValue() {
+    return {
+      action_type: ACTION_TYPES.SERVER_SNAPSHOT,
+    };
+  }
+
   get actionType() {
-    return this.props.context?.action_type || ACTION_TYPES.SERVER_SNAPSHOT;
+    return (
+      this.state.action_type ||
+      this.props.context?.action_type ||
+      ACTION_TYPES.SERVER_SNAPSHOT
+    );
   }
 
   get formItems() {
     const showServer = isServerSnapshotAction(this.actionType);
     const showVolume = isVolumeBackupAction(this.actionType);
     return [
+      {
+        name: 'action_type',
+        label: t('Action Type'),
+        type: 'select',
+        options: actionTypeOptions,
+        required: true,
+        extra: getVolumeBackupActionTip(this.actionType),
+      },
       {
         name: 'server',
         label: t('Instance'),

@@ -25,7 +25,7 @@ export default [
       ...dual('execution-profile', ExecutionProfile),
       { path: `${PATH}/job-admin`, component: Job, exact: true },
       ...dual('job', JobDetail, '/detail/:id'),
-      { path: `${PATH}/trust-admin`, component: Trust, exact: true },
+      { path: `${PATH}/trust`, component: Trust, exact: true },
       { path: '*', component: E404 },
     ],
   },
