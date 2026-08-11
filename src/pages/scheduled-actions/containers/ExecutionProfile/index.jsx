@@ -61,6 +61,10 @@ export class ExecutionProfile extends Base {
   get searchFilters() {
     return [
       {
+        label: t('ID'),
+        name: 'id',
+      },
+      {
         label: t('Name'),
         name: 'name',
       },

@@ -14,11 +14,11 @@
 
 import { inject, observer } from 'mobx-react';
 import Base from 'containers/BaseDetail';
+import { isEmpty } from 'lodash';
 
 export class BaseDetail extends Base {
   get leftCards() {
-    const cards = [this.volumeCard];
-    return cards;
+    return [this.volumeCard, this.metadataCard];
   }
 
   get volumeCard() {
@@ -40,6 +40,27 @@ export class BaseDetail extends Base {
     ];
     return {
       title: t('Volume Info'),
+      options,
+    };
+  }
+
+  get metadataCard() {
+    const metadata = this.detailData.metadata || {};
+    const options = isEmpty(metadata)
+      ? [
+          {
+            label: t('Metadata'),
+            dataIndex: 'metadata',
+            render: () => '-',
+          },
+        ]
+      : Object.keys(metadata).map((key) => ({
+          label: key,
+          dataIndex: key,
+          render: () => metadata[key],
+        }));
+    return {
+      title: t('Metadata'),
       options,
     };
   }

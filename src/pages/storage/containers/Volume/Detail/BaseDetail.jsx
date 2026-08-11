@@ -15,10 +15,11 @@
 import React from 'react';
 import { inject, observer } from 'mobx-react';
 import Base from 'containers/BaseDetail';
+import { isEmpty } from 'lodash';
 
 export class BaseDetail extends Base {
   get leftCards() {
-    const cards = [this.attachmentsCard];
+    const cards = [this.attachmentsCard, this.metadataCard];
     const { snapshot_id, volume_image_metadata, transfer } = this.detailData;
     if (snapshot_id) {
       cards.push(this.snapshotCard);
@@ -57,6 +58,27 @@ export class BaseDetail extends Base {
     ];
     return {
       title: t('Attachments Info'),
+      options,
+    };
+  }
+
+  get metadataCard() {
+    const metadata = this.detailData.metadata || {};
+    const options = isEmpty(metadata)
+      ? [
+          {
+            label: t('Metadata'),
+            dataIndex: 'metadata',
+            render: () => '-',
+          },
+        ]
+      : Object.keys(metadata).map((key) => ({
+          label: key,
+          dataIndex: key,
+          render: () => metadata[key],
+        }));
+    return {
+      title: t('Metadata'),
       options,
     };
   }
