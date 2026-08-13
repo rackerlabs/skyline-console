@@ -100,6 +100,9 @@ export class StepInfo extends Base {
         name: 'public',
         label: t('Public'),
         type: 'switch',
+        tip: t(
+          'When enabled, this cluster template is public and can be seen and used by all projects. When disabled, it is only available within the project that created it.'
+        ),
       },
     ];
   }

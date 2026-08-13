@@ -97,7 +97,10 @@ export class StepNodeSpec extends Base {
 
     return {
       master_count: master_count || 1,
-      node_count: node_count || 1,
+      // Default to a minimum of 2 worker nodes. Upgrading a cluster with a
+      // single worker node deletes that worker (and its pods) with no room to
+      // migrate workloads, so at least 2 workers are required.
+      node_count: node_count || 2,
       masterFlavor: masterFlavor || {
         selectedRowKeys: master_flavor_id ? [master_flavor_id] : [],
         selectedRows: this.masterFlavors.filter(
@@ -209,8 +212,11 @@ export class StepNodeSpec extends Base {
         name: 'node_count',
         label: t('Number of Nodes'),
         type: 'input-int',
-        min: 1,
+        min: 2,
         required: true,
+        tip: t(
+          'A minimum of 2 worker nodes is required. During an upgrade a worker node is deleted along with its pods, so having at least 2 workers leaves room to migrate workloads.'
+        ),
         onChange: (value) => {
           this.updateContext({
             node_count: value,

@@ -10,11 +10,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import React from 'react';
+import { Button, Space } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import Base from 'components/Form';
 import { inject, observer } from 'mobx-react';
 import KeyValueInput from 'components/FormItem/KeyValueInput';
+import { presetLabels } from 'resources/magnum/cluster';
 
 export class StepLabel extends Base {
+  init() {
+    const initLabels = this.getInitLabels();
+    this.labelsValue = initLabels;
+    this.state = {
+      ...this.state,
+      labelItems: initLabels,
+    };
+  }
+
   get title() {
     return t('Labels');
   }
@@ -31,21 +44,47 @@ export class StepLabel extends Base {
     return !!this.props.extra;
   }
 
-  get defaultValue() {
-    const values = {};
+  getInitLabels() {
+    const { context: { additionalLabels } = {} } = this.props;
+    if (additionalLabels && additionalLabels.length) {
+      return additionalLabels.map((it) => ({ value: { ...it.value } }));
+    }
     if (this.isEdit) {
-      const {
-        extra: { labels },
-      } = this.props;
-      values.additionalLabels = Object.keys(labels || {}).map((key) => ({
-        value: {
-          key,
-          value: labels[key],
-        },
+      const { extra: { labels } = {} } = this.props;
+      return Object.keys(labels || {}).map((key) => ({
+        value: { key, value: `${labels[key]}` },
       }));
     }
-    return values;
+    return [];
   }
+
+  get defaultValue() {
+    return {
+      additionalLabels: this.getInitLabels(),
+    };
+  }
+
+  onLabelsChange = (value) => {
+    this.labelsValue = value;
+    this.updateContext({
+      additionalLabels: value,
+    });
+  };
+
+  addPresetLabel = (preset) => {
+    const current = this.labelsValue || this.state.labelItems || [];
+    if (current.some((it) => it?.value?.key === preset.key)) {
+      return;
+    }
+    const next = [
+      ...current,
+      { value: { key: preset.key, value: `${preset.value}` } },
+    ];
+    this.labelsValue = next;
+    this.setState({ labelItems: next });
+    this.updateFormValue('additionalLabels', next);
+    this.updateContext({ additionalLabels: next });
+  };
 
   keyValidator = (rule, values) => {
     if (!values?.length) return Promise.resolve();
@@ -67,15 +106,40 @@ export class StepLabel extends Base {
     return Promise.resolve();
   };
 
+  renderPresetLabels() {
+    return (
+      <Space size={[8, 8]} wrap>
+        {presetLabels.map((p) => (
+          <Button
+            key={p.key}
+            size="small"
+            icon={<PlusOutlined />}
+            onClick={() => this.addPresetLabel(p)}
+          >
+            {`${p.key}: ${p.value}`}
+          </Button>
+        ))}
+      </Space>
+    );
+  }
+
   get formItems() {
     return [
+      {
+        name: 'presetLabels',
+        label: t('Label Templates'),
+        type: 'label',
+        content: this.renderPresetLabels(),
+      },
       {
         name: 'additionalLabels',
         label: t('Additional Labels'),
         type: 'add-select',
         itemComponent: KeyValueInput,
         addText: t('Add Label'),
+        initValue: this.state.labelItems,
         validator: this.keyValidator,
+        onChange: this.onLabelsChange,
       },
     ];
   }

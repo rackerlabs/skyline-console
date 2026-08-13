@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import React from 'react';
+import { Alert } from 'antd';
 import Base from 'components/Form';
 import { toJS } from 'mobx';
 import { inject, observer } from 'mobx-react';
@@ -95,6 +96,9 @@ export class StepNetworks extends Base {
     return {
       newNetwork: true,
       master_lb_enabled: true,
+      // Enable Floating IP by default on cluster creation. Users may still
+      // uncheck it if required.
+      floating_ip_enabled: true,
       fixedNetwork: fixedNetwork || {
         selectedRowKeys: fixed_network ? [fixed_network] : [],
         selectedRows: fixed_network ? [this.network] : [],
@@ -107,7 +111,70 @@ export class StepNetworks extends Base {
   }
 
   get nameForStateUpdate() {
-    return ['newNetwork'];
+    // Track the selected fixed network too, so the network-type warning below
+    // re-evaluates whenever the user picks a different network.
+    return ['newNetwork', 'fixedNetwork'];
+  }
+
+  // Overlay (tunnel) network types. Geneve is the one called out explicitly,
+  // vxlan/gre behave the same way with respect to floating IPs.
+  get overlayNetworkTypes() {
+    return ['geneve', 'vxlan', 'gre'];
+  }
+
+  // Provider network type of the currently selected fixed network, if the
+  // Neutron API exposes it to the current user (it may be admin-only, in which
+  // case this is undefined and we fall back to a generic warning).
+  get selectedFixedNetworkType() {
+    const { fixedNetwork } = this.state;
+    const { context: { fixedNetwork: contextFixedNetwork } = {} } = this.props;
+    const selected = fixedNetwork || contextFixedNetwork || {};
+    const [row] = selected.selectedRows || [];
+    return (row || {})['provider:network_type'];
+  }
+
+  renderNetworkWarning() {
+    const networkType = this.selectedFixedNetworkType;
+    const isOverlay = this.overlayNetworkTypes.includes(networkType);
+
+    let message;
+    if (isOverlay) {
+      message = t(
+        'The selected network is a {type} overlay network, so you need to enable "Floating IP".',
+        { type: networkType }
+      );
+    } else if (networkType) {
+      // Known non-overlay type (e.g. flat / vlan) => provider network.
+      message = t(
+        'The selected network is a {type} provider network, so "Enable Floating IP" should be disabled, and the provider network must have access to the public endpoints for Keystone and the rest of the services.',
+        { type: networkType }
+      );
+    } else {
+      // Network type is not exposed to the current user: show both cases.
+      message = (
+        <>
+          <div style={{ marginBottom: 4 }}>
+            {t(
+              'If you are using a provider network, "Enable Floating IP" should be disabled, and the provider network must have access to the public endpoints for Keystone and the rest of the services.'
+            )}
+          </div>
+          <div>
+            {t(
+              'If the selected network is a Geneve overlay network, you need to enable "Floating IP".'
+            )}
+          </div>
+        </>
+      );
+    }
+
+    return (
+      <Alert
+        type="warning"
+        showIcon
+        message={message}
+        style={{ marginBottom: 24 }}
+      />
+    );
   }
 
   get formItems() {
@@ -138,6 +205,13 @@ export class StepNetworks extends Base {
         label: t('Enabled Network'),
         type: 'check',
         content: t('Create New Network'),
+      },
+      {
+        name: 'existingNetworkWarning',
+        label: '',
+        type: 'label',
+        hidden: newNetwork,
+        content: this.renderNetworkWarning(),
       },
       {
         name: 'fixedNetwork',

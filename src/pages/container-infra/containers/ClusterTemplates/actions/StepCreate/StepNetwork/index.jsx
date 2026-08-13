@@ -12,20 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import React from 'react';
 import Base from 'components/Form';
 import { inject, observer } from 'mobx-react';
 import { NetworkStore } from 'src/stores/neutron/network';
-import { SubnetStore } from 'src/stores/neutron/subnet';
-import { getLinkRender } from 'utils/route-map';
-import { networkColumns, subnetColumns } from 'resources/neutron/network';
+import { networkColumns } from 'resources/neutron/network';
 
 export class StepNetwork extends Base {
   async init() {
     this.externalNetworkStore = new NetworkStore();
-    this.privateNetworkStore = new NetworkStore();
-    this.subnetNetworkStore = new SubnetStore();
-    this.getSubnetList();
   }
 
   get title() {
@@ -42,19 +36,6 @@ export class StepNetwork extends Base {
 
   get isEdit() {
     return !!this.props.extra;
-  }
-
-  async getSubnetList() {
-    await this.subnetNetworkStore.fetchList();
-    this.updateDefaultValue();
-  }
-
-  get subnetList() {
-    const selectedRowKeys =
-      this.props.context?.fixedNetwork?.selectedRowKeys || [];
-    return (this.subnetNetworkStore.list.data || []).filter(
-      (it) => selectedRowKeys[0] === it.network_id
-    );
   }
 
   get networkDrivers() {
@@ -80,6 +61,9 @@ export class StepNetwork extends Base {
     let values = {
       network_driver: 'calico',
       master_lb_enabled: true,
+      // Enable Floating IP by default on cluster template creation. Users may
+      // still uncheck it if required.
+      floating_ip_enabled: true,
     };
 
     if (this.isEdit) {
@@ -91,18 +75,10 @@ export class StepNetwork extends Base {
           no_proxy,
           external_network_id,
           externalNetwork,
-          fixed_network,
-          fixedNetwork,
-          fixed_subnet,
-          fixedSubnet,
           dns_nameserver,
           master_lb_enabled,
           floating_ip_enabled,
         } = {},
-        context: {
-          fixedNetwork: fixedNetworkContext,
-          fixedSubnet: fixedSubnetContext,
-        },
       } = this.props;
       values = {
         network_driver,
@@ -119,18 +95,6 @@ export class StepNetwork extends Base {
           selectedRows: [externalNetwork],
         };
       }
-      if (fixed_network) {
-        values.fixedNetwork = fixedNetworkContext || {
-          selectedRowKeys: [fixed_network],
-          selectedRows: [fixedNetwork],
-        };
-      }
-      if (fixed_subnet) {
-        values.fixedSubnet = fixedSubnetContext || {
-          selectedRowKeys: [fixed_subnet],
-          selectedRows: [fixedSubnet],
-        };
-      }
       if (externalNetworkContext) {
         values.externalNetwork = externalNetworkContext;
       }
@@ -144,16 +108,6 @@ export class StepNetwork extends Base {
   }
 
   get formItems() {
-    const {
-      extra: { fixed_subnet, fixedSubnet } = {},
-      context: { fixedSubnet: fixedSubnetContext },
-    } = this.props;
-
-    const initSubnet = fixedSubnetContext || {
-      selectedRowKeys: fixed_subnet ? [fixed_subnet] : [],
-      selectedRows: fixedSubnet ? [fixedSubnet] : [],
-    };
-
     return [
       {
         name: 'networkDriverDisplay',
@@ -205,61 +159,6 @@ export class StepNetwork extends Base {
         onChange: (value) => {
           this.updateContext({
             externalNetwork: value,
-          });
-        },
-      },
-      {
-        name: 'fixedNetwork',
-        label: t('Fixed Network'),
-        type: 'select-table',
-        backendPageStore: this.privateNetworkStore,
-        extraParams: {
-          'router:external': false,
-          project_id: this.currentProjectId,
-        },
-        loading: this.privateNetworkStore.list.isLoading,
-        header: (
-          <div>
-            {t(' You can go to the console to ')}
-            {getLinkRender({
-              key: 'network',
-              value: `${t('create a new network/subnet')} > `,
-            })}
-          </div>
-        ),
-        filterParams: [
-          {
-            label: t('Name'),
-            name: 'name',
-          },
-        ],
-        columns: networkColumns(this),
-        onChange: (value) => {
-          this.updateContext({
-            fixedNetwork: value,
-            fixedSubnet: {
-              selectedRowKeys: [],
-              selectedRows: [],
-            },
-          });
-        },
-      },
-      {
-        name: 'fixedSubnet',
-        label: t('Fixed Subnet'),
-        type: 'select-table',
-        data: this.subnetList,
-        filterParams: [
-          {
-            label: t('Name'),
-            name: 'name',
-          },
-        ],
-        columns: subnetColumns,
-        initValue: initSubnet,
-        onChange: (value) => {
-          this.updateContext({
-            fixedSubnet: value,
           });
         },
       },

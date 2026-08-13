@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import React, { Component } from 'react';
-import { Input, Row, Col } from 'antd';
+import { Input, InputNumber, Row, Col } from 'antd';
 import PropTypes from 'prop-types';
 import { PauseOutlined } from '@ant-design/icons';
 
@@ -29,6 +29,11 @@ export default class index extends Component {
     middleComponent: PropTypes.node,
     isTextarea: PropTypes.bool,
     textareaRows: PropTypes.number,
+    // When 'integer', the value field renders as a number input constrained by
+    // valueMin/valueMax (used e.g. for the min_node_count label).
+    valueType: PropTypes.string,
+    valueMin: PropTypes.number,
+    valueMax: PropTypes.number,
   };
 
   static defaultProps = {
@@ -42,6 +47,9 @@ export default class index extends Component {
     middleComponent: <PauseOutlined rotate={90} />,
     isTextarea: false,
     textareaRows: 2,
+    valueType: undefined,
+    valueMin: undefined,
+    valueMax: undefined,
   };
 
   constructor(props) {
@@ -84,8 +92,37 @@ export default class index extends Component {
     });
   };
 
+  onValueNumberChange = (val) => {
+    this.onChange({
+      ...this.state,
+      value: val === null || val === undefined ? '' : `${val}`,
+    });
+  };
+
   renderInput(value, placeholder, readOnly) {
-    const { isTextarea = false, textareaRows } = this.props;
+    const {
+      isTextarea = false,
+      textareaRows,
+      valueType,
+      valueMin,
+      valueMax,
+    } = this.props;
+    if (valueType === 'integer') {
+      return (
+        <InputNumber
+          style={{ width: '100%' }}
+          value={
+            value === '' || value === undefined ? undefined : Number(value)
+          }
+          placeholder={placeholder}
+          min={valueMin}
+          max={valueMax}
+          precision={0}
+          onChange={this.onValueNumberChange}
+          readOnly={readOnly}
+        />
+      );
+    }
     const props = {
       value,
       placeholder,

@@ -38,6 +38,11 @@ export default class index extends Component {
     readonlyKeys: PropTypes.array,
     disableEditKeys: PropTypes.array,
     disabledRemoveFunc: PropTypes.func,
+    // Keys whose value should be edited as an integer (constrained by
+    // integerValueMin / integerValueMax).
+    integerValueKeys: PropTypes.array,
+    integerValueMin: PropTypes.number,
+    integerValueMax: PropTypes.number,
   };
 
   static defaultProps = {
@@ -52,6 +57,9 @@ export default class index extends Component {
     readonlyKeys: [],
     disableEditKeys: [],
     disabledRemoveFunc: null,
+    integerValueKeys: [],
+    integerValueMin: undefined,
+    integerValueMax: undefined,
   };
 
   constructor(props) {
@@ -217,9 +225,15 @@ export default class index extends Component {
       );
     }
     const ItemComponent = itemComponent;
+    const {
+      integerValueKeys = [],
+      integerValueMin,
+      integerValueMax,
+    } = this.props;
     const { key = '' } = item.value || {};
     const keyReadonly = readonlyKeys.indexOf(key) >= 0;
     const isDisabledKey = this.checkItemRemoveDisabled(item);
+    const isIntegerValue = integerValueKeys.indexOf(key) >= 0;
     return (
       <ItemComponent
         {...this.props}
@@ -228,6 +242,9 @@ export default class index extends Component {
         index={index}
         keyReadonly={keyReadonly}
         disabled={isDisabledKey}
+        valueType={isIntegerValue ? 'integer' : undefined}
+        valueMin={isIntegerValue ? integerValueMin : undefined}
+        valueMax={isIntegerValue ? integerValueMax : undefined}
         onChange={(newValue) => {
           this.onItemChange(newValue, index);
         }}
