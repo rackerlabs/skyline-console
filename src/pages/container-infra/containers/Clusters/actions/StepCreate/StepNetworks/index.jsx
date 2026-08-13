@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import React from 'react';
+import { Alert } from 'antd';
 import Base from 'components/Form';
 import { toJS } from 'mobx';
 import { inject, observer } from 'mobx-react';
@@ -95,6 +96,9 @@ export class StepNetworks extends Base {
     return {
       newNetwork: true,
       master_lb_enabled: true,
+      // Enable Floating IP by default on cluster creation. Users may still
+      // uncheck it if required.
+      floating_ip_enabled: true,
       fixedNetwork: fixedNetwork || {
         selectedRowKeys: fixed_network ? [fixed_network] : [],
         selectedRows: fixed_network ? [this.network] : [],
@@ -108,6 +112,17 @@ export class StepNetworks extends Base {
 
   get nameForStateUpdate() {
     return ['newNetwork'];
+  }
+
+  renderNetworkWarning() {
+    return (
+      <Alert
+        type="warning"
+        showIcon
+        message={t('Provider network clusters require access to public API.')}
+        style={{ marginBottom: 24 }}
+      />
+    );
   }
 
   get formItems() {
@@ -138,6 +153,13 @@ export class StepNetworks extends Base {
         label: t('Enabled Network'),
         type: 'check',
         content: t('Create New Network'),
+      },
+      {
+        name: 'existingNetworkWarning',
+        label: '',
+        type: 'label',
+        hidden: newNetwork,
+        content: this.renderNetworkWarning(),
       },
       {
         name: 'fixedNetwork',

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import React from 'react';
 import Base from 'components/Form';
 import { inject, observer } from 'mobx-react';
 
@@ -100,6 +101,16 @@ export class StepInfo extends Base {
         name: 'public',
         label: t('Public'),
         type: 'switch',
+      },
+      {
+        name: 'publicDescription',
+        label: '',
+        type: 'label',
+        content: (
+          <span style={{ fontSize: 12, color: 'rgba(0, 0, 0, 0.45)' }}>
+            {t('Public templates are available to all projects.')}
+          </span>
+        ),
       },
     ];
   }

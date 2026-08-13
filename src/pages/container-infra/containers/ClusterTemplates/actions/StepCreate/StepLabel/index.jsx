@@ -4,7 +4,7 @@
 //
 //     http://www.apache.org/licenses/LICENSE-2.0
 //
-// Unles //required by applicable law or agreed to in writing, software
+// Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
@@ -31,21 +31,31 @@ export class StepLabel extends Base {
     return !!this.props.extra;
   }
 
-  get defaultValue() {
-    const values = {};
+  getInitLabels() {
+    const { context: { additionalLabels } = {} } = this.props;
+    if (additionalLabels && additionalLabels.length) {
+      return additionalLabels.map((it) => ({ value: { ...it.value } }));
+    }
     if (this.isEdit) {
-      const {
-        extra: { labels },
-      } = this.props;
-      values.additionalLabels = Object.keys(labels || {}).map((key) => ({
-        value: {
-          key,
-          value: labels[key],
-        },
+      const { extra: { labels } = {} } = this.props;
+      return Object.keys(labels || {}).map((key) => ({
+        value: { key, value: `${labels[key]}` },
       }));
     }
-    return values;
+    return [];
   }
+
+  get defaultValue() {
+    return {
+      additionalLabels: this.getInitLabels(),
+    };
+  }
+
+  onLabelsChange = (value) => {
+    this.updateContext({
+      additionalLabels: value,
+    });
+  };
 
   keyValidator = (rule, values) => {
     if (!values?.length) return Promise.resolve();
@@ -76,6 +86,7 @@ export class StepLabel extends Base {
         itemComponent: KeyValueInput,
         addText: t('Add Label'),
         validator: this.keyValidator,
+        onChange: this.onLabelsChange,
       },
     ];
   }

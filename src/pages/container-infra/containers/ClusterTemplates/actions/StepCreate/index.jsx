@@ -13,6 +13,7 @@
 import { inject, observer } from 'mobx-react';
 import { StepAction } from 'src/containers/Action';
 import globalClusterTemplateStore from 'src/stores/magnum/clusterTemplates';
+import globalRootStore from 'stores/root';
 import { toJS } from 'mobx';
 import StepInfo from './StepInfo';
 import StepNodeSpec from './StepNodeSpec';
@@ -34,7 +35,9 @@ export class StepCreate extends StepAction {
   static policy = 'clustertemplate:create';
 
   static allowed() {
-    return Promise.resolve(true);
+    // Creating a cluster template is an admin-only action (restricted to
+    // internal RackSpace teams). Normal project users must not see this option.
+    return Promise.resolve(globalRootStore.hasAdminRole);
   }
 
   get name() {

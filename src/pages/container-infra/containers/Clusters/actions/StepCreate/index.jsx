@@ -345,6 +345,12 @@ export class StepCreate extends StepAction {
     }
     if (auto_scaling_enabled) {
       labels.auto_scaling_enabled = 'true';
+      // min_node_count is required when auto scaling is enabled. It is shown as
+      // an editable (but non-removable) label in the Additional Labels step, so
+      // only fall back to the default here if it is somehow missing.
+      if (!labels.min_node_count) {
+        labels.min_node_count = '2';
+      }
     }
 
     const data = {
