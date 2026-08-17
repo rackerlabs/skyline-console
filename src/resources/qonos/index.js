@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 export const ACTION_TYPES = {
   SERVER_SNAPSHOT: 'server_snapshot',
   VOLUME_BACKUP_FULL: 'volume_backup_full',
@@ -58,34 +60,39 @@ export const mapActionTarget = (data = {}) => {
 const toSelected = (id) =>
   id ? { selectedRowKeys: [id], selectedRows: [{ id, name: id }] } : undefined;
 
-export const cronPresetOptions = [
-  {
-    label: t('Daily at midnight'),
-    value: '0 0 * * *',
-  },
-  {
-    label: t('Daily at 02:00'),
-    value: '0 2 * * *',
-  },
-  {
-    label: t('Every 6 hours'),
-    value: '0 */6 * * *',
-  },
-  {
-    label: t('Weekly on Sunday at midnight'),
-    value: '0 0 * * 0',
-  },
-  {
-    label: t('Custom'),
-    value: 'custom',
-  },
-];
+export const SCHEDULE_FREQUENCIES = {
+  DAILY: 'daily',
+  WEEKLY: 'weekly',
+  MONTHLY: 'monthly',
+};
 
-export const cronTimezoneTip = t('All schedule times are UTC.');
+const scheduleFrequencyOptions = [
+  [t('Daily'), SCHEDULE_FREQUENCIES.DAILY],
+  [t('Weekly'), SCHEDULE_FREQUENCIES.WEEKLY],
+  [t('Monthly'), SCHEDULE_FREQUENCIES.MONTHLY],
+].map(([label, value]) => ({ label, value }));
 
-export const cronExpressionTip = t(
-  'Use five fields: minute hour day-of-month month day-of-week. Times are UTC.'
-);
+const weekDayOptions = [
+  t('Sunday'),
+  t('Monday'),
+  t('Tuesday'),
+  t('Wednesday'),
+  t('Thursday'),
+  t('Friday'),
+  t('Saturday'),
+].map((label, value) => ({ label, value: `${value}` }));
+
+const monthDayOptions = Array.from({ length: 31 }, (_, i) => ({
+  label: `${i + 1}`,
+  value: `${i + 1}`,
+}));
+
+export const getDefaultScheduleTiming = () => ({
+  schedule_frequency: SCHEDULE_FREQUENCIES.DAILY,
+  schedule_week_days: {},
+  schedule_month_days: [],
+  schedule_time: moment().startOf('day'),
+});
 
 export const enabledStatus = {
   true: t('Enabled'),
@@ -112,20 +119,126 @@ export const getJobStatusReason = (record = {}) => {
 
 export const executableJobStatuses = ['QUEUED', 'PROCESSING'];
 
-export const getCronPreset = (cronExpression) => {
-  const preset = cronPresetOptions.find((it) => it.value === cronExpression);
-  return preset ? preset.value : 'custom';
+const byNumber = (a, b) => Number(a) - Number(b);
+
+const getCheckedKeys = (value = {}) =>
+  Object.keys(value)
+    .filter((key) => value[key])
+    .sort(byNumber);
+
+export const buildCronExpression = (values = {}) => {
+  const time = values.schedule_time;
+  const minute = time ? time.minutes() : 0;
+  const hour = time ? time.hours() : 0;
+  const frequency = values.schedule_frequency || SCHEDULE_FREQUENCIES.DAILY;
+  if (frequency === SCHEDULE_FREQUENCIES.WEEKLY) {
+    const days = getCheckedKeys(values.schedule_week_days).join(',') || '0';
+    return `${minute} ${hour} * * ${days}`;
+  }
+  if (frequency === SCHEDULE_FREQUENCIES.MONTHLY) {
+    const days =
+      [...(values.schedule_month_days || [])].sort(byNumber).join(',') || '1';
+    return `${minute} ${hour} ${days} * *`;
+  }
+  return `${minute} ${hour} * * *`;
 };
 
-export const validateCronExpression = (value) => {
-  if (!value) {
-    return '';
+const parseCronField = (field, max) => {
+  if (field === '*') return [];
+  const parts = (field || '').split(',').map((it) => it.trim());
+  return parts.every((it) => /^\d+$/.test(it) && Number(it) <= max)
+    ? parts
+    : null;
+};
+
+export const parseCronExpression = (cronExpression) => {
+  const defaults = getDefaultScheduleTiming();
+  const fields = (cronExpression || '').trim().split(/\s+/);
+  if (fields.length !== 5) return defaults;
+  const [minute, hour, dayOfMonth, month, dayOfWeek] = fields;
+  const monthDays = parseCronField(dayOfMonth, 31);
+  const weekDays = parseCronField(dayOfWeek, 7);
+  if (
+    !/^\d+$/.test(minute) ||
+    !/^\d+$/.test(hour) ||
+    month !== '*' ||
+    monthDays === null ||
+    weekDays === null
+  ) {
+    return defaults;
   }
-  const fields = value.trim().split(/\s+/);
-  if (fields.length !== 5) {
-    return t('Cron expression must contain five fields.');
+  const schedule_time = moment()
+    .startOf('day')
+    .hours(Number(hour))
+    .minutes(Number(minute));
+  if (weekDays.length) {
+    return {
+      ...defaults,
+      schedule_frequency: SCHEDULE_FREQUENCIES.WEEKLY,
+      schedule_time,
+      schedule_week_days: Object.fromEntries(
+        weekDays.map((day) => [`${Number(day) % 7}`, true])
+      ),
+    };
   }
-  return '';
+  if (monthDays.length) {
+    return {
+      ...defaults,
+      schedule_frequency: SCHEDULE_FREQUENCIES.MONTHLY,
+      schedule_time,
+      schedule_month_days: monthDays,
+    };
+  }
+  return { ...defaults, schedule_time };
+};
+
+export const getScheduleTimingFormItems = (frequency) => {
+  const isWeekly = frequency === SCHEDULE_FREQUENCIES.WEEKLY;
+  const isMonthly = frequency === SCHEDULE_FREQUENCIES.MONTHLY;
+  return [
+    {
+      name: 'schedule_frequency',
+      label: t('Frequency'),
+      type: 'radio',
+      options: scheduleFrequencyOptions,
+      required: true,
+    },
+    {
+      name: 'schedule_week_days',
+      label: t('Days of Week'),
+      type: 'check-group',
+      options: weekDayOptions,
+      span: 6,
+      required: isWeekly,
+      hidden: !isWeekly,
+      validator: (rule, value) =>
+        getCheckedKeys(value).length
+          ? Promise.resolve()
+          : Promise.reject(new Error(t('Please select at least one day.'))),
+    },
+    {
+      name: 'schedule_month_days',
+      label: t('Days of Month'),
+      type: 'select',
+      mode: 'multiple',
+      options: monthDayOptions,
+      required: isMonthly,
+      hidden: !isMonthly,
+      placeholder: t('Please select days of the month'),
+      extra: t(
+        'If a selected day does not exist in a month (for example 31 in April), the schedule is skipped that month.'
+      ),
+    },
+    {
+      name: 'schedule_time',
+      label: t('Time'),
+      type: 'time-picker',
+      format: 'HH:mm',
+      allowClear: false,
+      required: true,
+      extra: t('All schedule times are UTC.'),
+    },
+  ];
 };
 
 export const webhookUrlValidator = (rule, value) => {
@@ -327,7 +440,7 @@ export const buildScheduleBody = (values = {}, isEdit = false) => {
   const body = {
     name: values.name,
     description: values.description,
-    cron_expression: values.cron_expression,
+    cron_expression: buildCronExpression(values),
     webhook_url: values.webhook_url,
     retention_policy: buildRetentionPolicy(values),
   };
@@ -361,8 +474,7 @@ export const getScheduleDefaultValue = (item = {}) => {
     name: item.name,
     description: item.description,
     action_type: actionType,
-    cron_preset: getCronPreset(item.cron_expression),
-    cron_expression: item.cron_expression,
+    ...parseCronExpression(item.cron_expression),
     server: toSelected(serverId),
     server_id: serverId,
     volume: toSelected(volumeId),

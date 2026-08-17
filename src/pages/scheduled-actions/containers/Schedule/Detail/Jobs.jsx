@@ -1,6 +1,5 @@
 import { inject, observer } from 'mobx-react';
 import { JobStore } from 'stores/qonos/job';
-import { emptyActionConfig } from 'utils/constants';
 import { Job } from '../../Job';
 
 export class ScheduleJobs extends Job {
@@ -19,10 +18,6 @@ export class ScheduleJobs extends Job {
 
   get searchFilters() {
     return [];
-  }
-
-  get actionConfigs() {
-    return emptyActionConfig;
   }
 
   get scheduleId() {

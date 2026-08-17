@@ -1,11 +1,10 @@
 import { inject, observer } from 'mobx-react';
 import Base from 'components/Form';
 import {
-  cronExpressionTip,
-  cronPresetOptions,
-  cronTimezoneTip,
+  SCHEDULE_FREQUENCIES,
+  getDefaultScheduleTiming,
+  getScheduleTimingFormItems,
   retentionTypeOptions,
-  validateCronExpression,
   webhookUrlValidator,
 } from 'resources/qonos';
 
@@ -22,14 +21,13 @@ export class ScheduleStep extends Base {
 
   get defaultValue() {
     return {
-      cron_preset: cronPresetOptions[0].value,
-      cron_expression: cronPresetOptions[0].value,
+      ...getDefaultScheduleTiming(),
       retention_type: 'none',
     };
   }
 
   get nameForStateUpdate() {
-    return ['retention_type', 'cron_preset'];
+    return ['retention_type', 'schedule_frequency'];
   }
 
   get currentRetentionType() {
@@ -38,10 +36,13 @@ export class ScheduleStep extends Base {
     );
   }
 
-  cronValidator = (rule, value) => {
-    const message = validateCronExpression(value);
-    return message ? Promise.reject(new Error(message)) : Promise.resolve();
-  };
+  get currentFrequency() {
+    return (
+      this.state.schedule_frequency ||
+      this.props.context?.schedule_frequency ||
+      SCHEDULE_FREQUENCIES.DAILY
+    );
+  }
 
   retentionValidator = (rule, value) => {
     if (value && Number(value) < 1) {
@@ -50,35 +51,10 @@ export class ScheduleStep extends Base {
     return Promise.resolve();
   };
 
-  onValuesChange = (changedFields) => {
-    const { cron_preset, retention_type } = changedFields;
-    if (cron_preset && cron_preset !== 'custom') {
-      this.updateFormValue('cron_expression', cron_preset);
-    }
-    if (retention_type !== undefined) {
-      this.setState({ retention_type });
-    }
-  };
-
   get formItems() {
     const retentionType = this.currentRetentionType;
     return [
-      {
-        name: 'cron_preset',
-        label: t('Cron Preset'),
-        type: 'select',
-        options: cronPresetOptions,
-        required: true,
-        extra: cronTimezoneTip,
-      },
-      {
-        name: 'cron_expression',
-        label: t('Cron Expression'),
-        type: 'input',
-        required: true,
-        validator: this.cronValidator,
-        tip: cronExpressionTip,
-      },
+      ...getScheduleTimingFormItems(this.currentFrequency),
       {
         name: 'webhook_url',
         label: t('Webhook URL'),
