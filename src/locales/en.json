@@ -3314,5 +3314,6 @@
   "Time": "Time",
   "Please select days of the month": "Please select days of the month",
   "Please select at least one day.": "Please select at least one day.",
-  "If a selected day does not exist in a month (for example 31 in April), the schedule is skipped that month.": "If a selected day does not exist in a month (for example 31 in April), the schedule is skipped that month."
+  "If a selected day does not exist in a month (for example 31 in April), the schedule is skipped that month.": "If a selected day does not exist in a month (for example 31 in April), the schedule is skipped that month.",
+  "When enabled, the cluster template is public and accessible to other users.": "When enabled, the cluster template is public and accessible to other users."
 }

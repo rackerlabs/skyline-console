@@ -16,17 +16,14 @@ import { inject, observer } from 'mobx-react';
 import { toJS } from 'mobx';
 import Base from 'components/Form';
 import { ImageStore } from 'stores/glance/image';
-import globalKeypairStore from 'stores/nova/keypair';
 import { FlavorStore } from 'src/stores/nova/flavor';
 import { getImageColumns } from 'resources/glance/image';
-import { getKeyPairHeader } from 'resources/nova/keypair';
 import { getBaseSimpleFlavorColumns } from 'resources/magnum/template';
 import { allSettled } from 'utils';
 
 export class StepNodeSpec extends Base {
   init() {
     this.imageStore = new ImageStore();
-    this.keyPairStore = globalKeypairStore;
     this.flavorStore = new FlavorStore();
     this.masterFlavorStore = new FlavorStore();
     this.getAllInitFunctions();
@@ -51,7 +48,6 @@ export class StepNodeSpec extends Base {
   async getAllInitFunctions() {
     await allSettled([
       this.getImageList(),
-      this.getKeypairs(),
       this.getFlavors(),
       this.getMasterFlavors(),
     ]);
@@ -60,14 +56,6 @@ export class StepNodeSpec extends Base {
 
   getImageList() {
     return this.imageStore.fetchList({ all_projects: this.hasAdminRole });
-  }
-
-  getKeypairs() {
-    return this.keyPairStore.fetchList();
-  }
-
-  get keypairs() {
-    return this.keyPairStore.list.data || [];
   }
 
   getFlavors() {
@@ -119,9 +107,8 @@ export class StepNodeSpec extends Base {
     const values = {};
 
     if (this.isEdit) {
-      const {
-        extra: { image_id, keypair_id, flavor_id, master_flavor_id } = {},
-      } = this.props;
+      const { extra: { image_id, flavor_id, master_flavor_id } = {} } =
+        this.props;
       if (flavor_id) {
         values.flavor = {
           selectedRowKeys: [flavor_id],
@@ -139,16 +126,11 @@ export class StepNodeSpec extends Base {
       if (image_id) {
         values.images = { selectedRowKeys: [image_id] };
       }
-      if (keypair_id) {
-        values.keypair = { selectedRowKeys: [keypair_id] };
-      }
     }
     return values;
   }
 
   get formItems() {
-    const { initKeyPair } = this.state;
-
     return [
       {
         name: 'images',
@@ -164,34 +146,6 @@ export class StepNodeSpec extends Base {
           },
         ],
         columns: this.imageColumns,
-      },
-      {
-        name: 'keypair',
-        label: t('Keypair'),
-        type: 'select-table',
-        data: this.keypairs,
-        initValue: initKeyPair,
-        isLoading: this.keyPairStore.list.isLoading,
-        header: getKeyPairHeader(this),
-        tip: t(
-          'The SSH key is a way to remotely log in to the cluster instance. The cloud platform only helps to keep the public key. Please keep your private key properly.'
-        ),
-        filterParams: [
-          {
-            label: t('Name'),
-            name: 'name',
-          },
-        ],
-        columns: [
-          {
-            title: t('Name'),
-            dataIndex: 'name',
-          },
-          {
-            title: t('Fingerprint'),
-            dataIndex: 'fingerprint',
-          },
-        ],
       },
       {
         name: 'flavor',

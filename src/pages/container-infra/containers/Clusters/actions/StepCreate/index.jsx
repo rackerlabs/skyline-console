@@ -30,6 +30,7 @@ export class StepCreate extends StepAction {
     this.projectStore = globalProjectStore;
     this.state.quotaLoading = true;
     this.getQuota();
+    globalFlavorStore.fetchList();
     this.errorMsg = '';
   }
 
@@ -117,16 +118,17 @@ export class StepCreate extends StepAction {
   }
 
   get quotaInfo() {
-    const { quotaLoading } = this.state;
+    const { quotaLoading, current = 0 } = this.state;
     if (quotaLoading) {
       return [];
     }
-    const quotaError = this.checkQuotaInput();
+    this.checkQuotaInput();
+    const showNodeQuota = current >= 1;
 
     const { magnum_cluster = {} } = toJS(this.projectStore.magnumQuota) || {};
     const clusterQuotaInfo = {
       ...magnum_cluster,
-      add: quotaError ? 0 : 1,
+      add: 1,
       name: 'cluster',
       title: t('Clusters'),
     };
@@ -137,18 +139,18 @@ export class StepCreate extends StepAction {
       cores = {},
       ram = {},
     } = toJS(this.projectStore.novaQuota) || {};
+    const { newCPU, newRam } = this.getFlavorInput();
     const instanceQuotaInfo = {
       ...instances,
-      add: quotaError ? 0 : newNodes,
+      add: showNodeQuota ? newNodes : 0,
       name: 'instance',
       title: t('Instance'),
       type: 'line',
     };
 
-    const { newCPU, newRam } = this.getFlavorInput();
     const cpuQuotaInfo = {
       ...cores,
-      add: quotaError ? 0 : newCPU,
+      add: showNodeQuota ? newCPU : 0,
       name: 'cpu',
       title: t('CPU'),
       type: 'line',
@@ -156,7 +158,7 @@ export class StepCreate extends StepAction {
 
     const ramQuotaInfo = {
       ...ram,
-      add: quotaError ? 0 : newRam,
+      add: showNodeQuota ? newRam : 0,
       name: 'ram',
       title: t('Memory (GiB)'),
       type: 'line',
@@ -165,21 +167,19 @@ export class StepCreate extends StepAction {
     const { volumes } = toJS(this.projectStore.cinderQuota) || {};
     const volumeQuotaInfo = {
       ...volumes,
-      add: quotaError ? 0 : newNodes,
+      add: showNodeQuota ? newNodes : 0,
       name: 'volume',
       title: t('Volume'),
       type: 'line',
     };
 
-    const quotaInfo = [
+    return [
       clusterQuotaInfo,
       instanceQuotaInfo,
       cpuQuotaInfo,
       ramQuotaInfo,
       volumeQuotaInfo,
     ];
-
-    return quotaInfo;
   }
 
   checkClusterQuota() {
@@ -188,16 +188,28 @@ export class StepCreate extends StepAction {
       return '';
     }
     const { magnum_cluster = {} } = toJS(this.projectStore.magnumQuota) || {};
-    const { left = 0 } = magnum_cluster;
-    if (left === 0) {
+    const { limit, left = 0 } = magnum_cluster;
+    if (limit === undefined || limit === null) {
+      return '';
+    }
+    if (left !== -1 && left < 1) {
       return this.getQuotaMessage(1, magnum_cluster, t('Clusters'));
     }
     return '';
   }
 
+  findFlavor(flavorIdOrName) {
+    if (!flavorIdOrName) {
+      return undefined;
+    }
+    return this.flavors.find(
+      (it) => it.id === flavorIdOrName || it.name === flavorIdOrName
+    );
+  }
+
   getNodesInput() {
     const { data = {} } = this.state;
-    const { node_count = 0, master_count = 0 } = data;
+    const { node_count = 2, master_count = 1 } = data;
     const newNodes = node_count + master_count;
     return {
       newNodes,
@@ -222,13 +234,9 @@ export class StepCreate extends StepAction {
     const { data = {} } = this.state;
     const { clusterTemplate: { selectedRows = [] } = {} } = data;
     const { master_flavor_id, flavor_id } = selectedRows[0] || {};
-    const masterTemplateFlavor = this.flavors.find(
-      (it) => it.id === master_flavor_id
-    );
-    const workTemplateFlavor = this.flavors.find((it) => it.id === flavor_id);
     return {
-      masterTemplateFlavor,
-      workTemplateFlavor,
+      masterTemplateFlavor: this.findFlavor(master_flavor_id),
+      workTemplateFlavor: this.findFlavor(flavor_id),
     };
   }
 
@@ -236,7 +244,7 @@ export class StepCreate extends StepAction {
     const { data = {} } = this.state;
     const {
       flavor: { selectedRows = [] } = {},
-      node_count = 1,
+      node_count = 2,
       masterFlavor: { selectedRows: selectedRowsMaster = [] } = {},
       master_count = 1,
     } = data;
@@ -283,7 +291,21 @@ export class StepCreate extends StepAction {
   }
 
   checkQuotaInput() {
+    const { current = 0 } = this.state;
     const clusterMsg = this.checkClusterQuota();
+    if (current < 1) {
+      if (!clusterMsg) {
+        this.status = 'success';
+        this.errorMsg = '';
+        return '';
+      }
+      this.status = 'error';
+      if (this.errorMsg !== clusterMsg) {
+        $message.error(clusterMsg);
+      }
+      this.errorMsg = clusterMsg;
+      return clusterMsg;
+    }
     const instanceMsg = this.checkInstanceQuota();
     const flavorMsg = this.checkFlavorQuota();
     const volumeMsg = this.checkVolumeQuota();
@@ -345,6 +367,12 @@ export class StepCreate extends StepAction {
     }
     if (auto_scaling_enabled) {
       labels.auto_scaling_enabled = 'true';
+      // min_node_count is required when auto scaling is enabled. It is shown as
+      // an editable (but non-removable) label in the Additional Labels step, so
+      // only fall back to the default here if it is somehow missing.
+      if (!labels.min_node_count) {
+        labels.min_node_count = '2';
+      }
     }
 
     const data = {
