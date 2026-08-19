@@ -144,6 +144,9 @@ export class LbaasStore extends Base {
   delete = ({ id }) =>
     // TODO: check params;
     this.submitting(this.client.delete(id, { cascade: true }));
+
+  @action
+  failover = ({ id }) => this.submitting(this.client.failover(id));
 }
 
 const globalLbaasStore = new LbaasStore();
