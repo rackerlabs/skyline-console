@@ -70,6 +70,13 @@ export class OctaviaClient extends Base {
         name: 'loadbalancers',
         key: 'lbaas/loadbalancers',
         responseKey: 'loadbalancer',
+        extendOperations: [
+          {
+            name: 'failover',
+            key: 'failover',
+            method: 'put',
+          },
+        ],
       },
       {
         name: 'pools',

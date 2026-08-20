@@ -17,6 +17,7 @@ import Delete from './Delete';
 import AssociateFIP from './AssociateFIP';
 import StepCreate from './StepCreate';
 import DisassociateFip from './DisassociateFip';
+import Failover from './Failover';
 
 export const actionConfigs = {
   rowActions: {
@@ -27,6 +28,9 @@ export const actionConfigs = {
       },
       {
         action: DisassociateFip,
+      },
+      {
+        action: Failover,
       },
       {
         action: Delete,
@@ -40,6 +44,9 @@ export const actionConfigs = {
 export const adminActions = {
   rowActions: {
     moreActions: [
+      {
+        action: Failover,
+      },
       {
         action: Delete,
       },
