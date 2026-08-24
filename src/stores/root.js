@@ -215,8 +215,8 @@ export class RootStore {
     this.endpoints = endpoints;
     // Await role resolution so downstream code (post-login redirect,
     // menu rendering) sees the correct admin state before it runs.
-    await this.updateUserRoles(user);
     this.setKeystoneToken(user);
+    await this.updateUserRoles(user);
   }
 
   checkEndpoint(key) {
