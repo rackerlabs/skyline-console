@@ -213,13 +213,10 @@ export class RootStore {
     this.projectName = projectName;
     this.version = version;
     this.endpoints = endpoints;
-    // Federation returns the Keystone token through /profile rather than the
-    // login response. Persist it before making the authenticated system-role
-    // request so the request interceptor can attach X-Auth-Token.
-    this.setKeystoneToken(user);
     // Await role resolution so downstream code (post-login redirect,
     // menu rendering) sees the correct admin state before it runs.
     await this.updateUserRoles(user);
+    this.setKeystoneToken(user);
   }
 
   checkEndpoint(key) {
