@@ -45,6 +45,11 @@ export class NovaClient extends Base {
             key: 'tags',
             responseKey: 'tag',
           },
+          {
+            name: 'metadata',
+            key: 'metadata',
+            responseKey: 'metadata',
+          },
         ],
         extendOperations: [
           {

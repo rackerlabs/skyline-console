@@ -51,6 +51,8 @@ import ConfirmResize from './ConfirmResize';
 import RevertResize from './RevertResize';
 import ModifyTags from './ModifyTags';
 import ResetState from './ResetState';
+import EnableBackup from './EnableBackup';
+import DisableBackup from './DisableBackup';
 
 const statusActions = [
   StartAction,
@@ -120,7 +122,7 @@ const actionConfigs = {
       },
       {
         title: t('Backups & Snapshots'),
-        actions: [CreateSnapshot],
+        actions: [CreateSnapshot, EnableBackup, DisableBackup],
       },
       {
         title: t('Configuration Update'),

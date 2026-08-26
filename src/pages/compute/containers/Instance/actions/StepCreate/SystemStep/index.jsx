@@ -14,6 +14,7 @@
 
 import { inject, observer } from 'mobx-react';
 import globalKeyPairStore from 'stores/nova/keypair';
+import globalRootStore from 'stores/root';
 import globalServerStore from 'stores/nova/instance';
 import globalHypervisorStore from 'stores/nova/hypervisor';
 import globalServerGroupStore from 'stores/nova/server-group';
@@ -144,6 +145,7 @@ export class SystemStep extends Base {
       more: false,
       physicalNodeType: physicalNodeTypes[0],
       userData: '',
+      enableBackup: false,
       username: this.loginUserName || this.loginUserNameInContext,
     };
     if (servergroup) {
@@ -251,10 +253,16 @@ export class SystemStep extends Base {
     return item;
   }
 
+  // 'check' fields aren't auto-mirrored into state, so mirror it explicitly.
+  onEnableBackupChange = (e) => {
+    this.setState({ enableBackup: e?.target?.checked ?? e });
+  };
+
   get formItems() {
-    const { more = false, physicalNodeType } = this.state;
+    const { more = false, physicalNodeType, enableBackup } = this.state;
     const hasHostReservation = this.hasHostReservationSelected;
     const isManually = physicalNodeType === physicalNodeTypes[1].value;
+    const freezerAvailable = globalRootStore.checkEndpoint('freezer');
 
     const { initKeyPair } = this.state;
 
@@ -399,6 +407,27 @@ export class SystemStep extends Base {
         hidden: !more,
         extra: t(
           'The user needs to ensure that the input is a shell script that can run completely and normally.'
+        ),
+      },
+      {
+        name: 'enableBackup',
+        label: t('Enable Backup'),
+        type: 'check',
+        content: t('Install the Freezer backup agent on first boot'),
+        onChange: this.onEnableBackupChange,
+        hidden: !more || !freezerAvailable,
+        tip: t(
+          'When enabled, the Freezer backup agent and scheduler are installed automatically the first time this instance boots (via cloud-init). Only available for instances created here; existing VMs must install the agent manually.'
+        ),
+      },
+      {
+        name: 'backupPassword',
+        label: t('Backup Password'),
+        type: 'input-password',
+        required: !!enableBackup,
+        hidden: !more || !freezerAvailable || !enableBackup,
+        tip: t(
+          'Your OpenStack account password. It is embedded in the instance cloud-init data so the on-VM scheduler can authenticate to the backup service. It is not stored by Skyline.'
         ),
       },
     ];

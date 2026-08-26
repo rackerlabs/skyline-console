@@ -40,6 +40,7 @@ export const endpointVersionMap = {
   blazar: 'v1',
   zaqar: 'v2',
   qonos: 'v2',
+  freezer: 'v2',
 };
 
 export const endpointsDefault = {
@@ -84,6 +85,7 @@ export const designateBase = () => getOpenstackEndpoint('designate');
 export const masakariBase = () => getOpenstackEndpoint('masakari');
 export const blazarBase = () => getOpenstackEndpoint('blazar');
 export const zaqarBase = () => getOpenstackEndpoint('zaqar');
+export const freezerBase = () => getOpenstackEndpoint('freezer');
 export const qonosBase = () => getOpenstackEndpoint('qonos');
 
 export const ironicOriginEndpoint = () => getOriginEndpoint('ironic');
@@ -98,6 +100,7 @@ export const masakariEndpoint = () => getOriginEndpoint('masakari');
 export const blazarEndpoint = () => getOriginEndpoint('blazar');
 export const zaqarEndpoint = () => getOriginEndpoint('zaqar');
 export const qonosEndpoint = () => getOriginEndpoint('qonos');
+export const freezerEndpoint = () => getOriginEndpoint('freezer');
 export const firewallEndpoint = () => getOriginEndpoint('neutron_firewall');
 
 export const apiVersionMaps = {

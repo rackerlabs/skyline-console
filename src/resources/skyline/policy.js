@@ -93,6 +93,7 @@ export const policyMap = {
   blazar: ['osreservations:'],
   qonos: ['qonos:'],
   zaqar: ['messaging:'],
+  freezer: ['freezer:'],
 };
 
 export const convertPolicyMap = (map) => {

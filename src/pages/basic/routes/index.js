@@ -77,6 +77,9 @@ const BasicStorage = lazy(() =>
 const BasicNetworkApp = lazy(() =>
   import(/* webpackChunkName: "basic-network" */ 'pages/basic/network/App')
 );
+const BackupRestore = lazy(() =>
+  import(/* webpackChunkName: "backup-restore" */ 'pages/backup-restore/App')
+);
 const PATH = '/';
 
 export default [
@@ -173,6 +176,10 @@ export default [
       {
         path: `/zaqar`,
         component: ZaqarApp,
+      },
+      {
+        path: `/backup-restore`,
+        component: BackupRestore,
       },
       { path: '*', component: E404 },
     ],

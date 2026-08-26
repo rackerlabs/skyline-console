@@ -33,6 +33,7 @@ import designate from './designate';
 import blazar from './blazar';
 import qonos from './qonos';
 import zaqar from './zaqar';
+import freezer from './freezer';
 
 const client = {
   skyline,
@@ -56,6 +57,7 @@ const client = {
   blazar,
   qonos,
   zaqar,
+  freezer,
 };
 
 window.client = client;

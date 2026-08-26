@@ -281,6 +281,46 @@ export const getUserData = (password, userData, username = 'root') => {
   return onlyUserData.replace(/USER_DATA/g, userData);
 };
 
+// cloud-init multipart boundary, shared with getUserData so the freezer
+// bootstrap can be appended as an extra MIME part.
+export const CLOUD_INIT_BOUNDARY = '===============2309984059743762475==';
+
+const CLOUD_INIT_CLOSING = `--${CLOUD_INIT_BOUNDARY}--`;
+
+const shellPart = (script, filename) =>
+  `--${CLOUD_INIT_BOUNDARY}\n` +
+  'Content-Type: text/x-shellscript; charset="us-ascii" \n' +
+  'MIME-Version: 1.0\n' +
+  'Content-Transfer-Encoding: 7bit\n' +
+  `Content-Disposition: attachment; filename="${filename}" \n\n` +
+  `${script}\n\n`;
+
+export const appendShellUserData = (
+  mime,
+  script,
+  filename = 'freezer-bootstrap.sh'
+) =>
+  // Replacer must be a function: a string replacement would collapse the
+  // script's '$$' oslo-escaping. A function inserts the text verbatim.
+  mime.replace(
+    CLOUD_INIT_CLOSING,
+    () => `${shellPart(script, filename)}${CLOUD_INIT_CLOSING}`
+  );
+
+// UTF-8-safe base64 (btoa only accepts Latin1, so non-ASCII would throw).
+export const toBase64Utf8 = (str) => {
+  let binary = '';
+  new TextEncoder().encode(str).forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+  return btoa(binary);
+};
+
+export const buildShellUserData = (script, filename = 'freezer-bootstrap.sh') =>
+  `Content-Type: multipart/mixed; boundary="${CLOUD_INIT_BOUNDARY}" \n` +
+  'MIME-Version: 1.0\n\n' +
+  `${shellPart(script, filename)}${CLOUD_INIT_CLOSING}`;
+
 export const getIpInitValue = (subnet) => {
   if (!subnet) {
     return null;
