@@ -152,6 +152,28 @@ export class SkylineClient extends Base {
         ],
       },
       {
+        name: 'freezerBackup',
+        key: 'freezer-backup',
+        isResource: false,
+        extendOperations: [
+          {
+            name: 'enable',
+            generate: (data) =>
+              this.request.post('extension/freezer/enable-backup', data),
+          },
+          {
+            name: 'disable',
+            generate: (data) =>
+              this.request.post('extension/freezer/disable-backup', data),
+          },
+          {
+            name: 'resume',
+            generate: (data) =>
+              this.request.post('extension/freezer/resume-backup', data),
+          },
+        ],
+      },
+      {
         key: 'query',
       },
       {

@@ -527,6 +527,18 @@ export class ServerStore extends Base {
     };
     return this.operation({ body, id });
   }
+
+  @action
+  async setMetadata({ id, metadata }) {
+    // metadata subresource lives at this.client.metadata (this.client is
+    // already client.nova.servers).
+    return this.submitting(this.client.metadata.create(id, { metadata }));
+  }
+
+  @action
+  async deleteMetadataItem({ id, key }) {
+    return this.submitting(this.client.metadata.delete(id, key));
+  }
 }
 
 const globalServerStore = new ServerStore();

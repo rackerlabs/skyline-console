@@ -29,6 +29,7 @@ import {
   CalendarOutlined,
   ScheduleOutlined,
   MessageOutlined,
+  CloudServerOutlined,
 } from '@ant-design/icons';
 
 const renderMenu = (t) => {
@@ -967,6 +968,59 @@ const renderMenu = (t) => {
               routePath: '/scheduled-actions/job/detail/:id',
             },
           ],
+        },
+      ],
+    },
+    {
+      path: '/backup-restore',
+      name: t('Backup & Restore'),
+      key: 'backupRestore',
+      endpoints: 'freezer',
+      icon: <CloudServerOutlined />,
+      children: [
+        {
+          path: '/backup-restore/job',
+          name: t('Jobs'),
+          key: 'freezerJob',
+          level: 1,
+          children: [
+            {
+              path: /^\/backup-restore\/job\/detail\/.[^/]+$/,
+              name: t('Job Detail'),
+              key: 'freezerJobDetail',
+              level: 2,
+              routePath: '/backup-restore/job/detail/:id',
+            },
+          ],
+        },
+        {
+          path: '/backup-restore/action',
+          name: t('Actions'),
+          key: 'freezerAction',
+          level: 1,
+          children: [
+            {
+              path: /^\/backup-restore\/action\/detail\/.[^/]+$/,
+              name: t('Action Detail'),
+              key: 'freezerActionDetail',
+              level: 2,
+              routePath: '/backup-restore/action/detail/:id',
+            },
+          ],
+        },
+        {
+          path: '/backup-restore/client',
+          name: t('Clients'),
+          key: 'freezerClient',
+          level: 1,
+          children: [],
+        },
+        {
+          path: '/backup-restore/backup',
+          name: t('Backups'),
+          key: 'freezerBackup',
+          level: 1,
+          children: [],
         },
       ],
     },

@@ -21,7 +21,13 @@ import globalServerStore from 'stores/nova/instance';
 import globalProjectStore from 'stores/keystone/project';
 import classnames from 'classnames';
 import { isEmpty, isFinite, isString } from 'lodash';
-import { getUserData } from 'resources/nova/instance';
+import {
+  getUserData,
+  appendShellUserData,
+  buildShellUserData,
+  toBase64Utf8,
+} from 'resources/nova/instance';
+import globalFreezerEnableBackupStore from 'stores/freezer/enable-backup';
 import { getAllDataDisks } from 'resources/cinder/snapshot';
 import { getGiBValue } from 'utils/index';
 import Notify from 'components/Notify';
@@ -786,12 +792,60 @@ export class StepCreate extends StepAction {
     return this.store.create(body);
   };
 
-  onOk = () => {
+  // On "Enable Backup", fetch the cloud-init bootstrap and merge it into the
+  // instance user-data, then stamp backup metadata for the post-create actions.
+  async injectFreezerBackup(submitData, values) {
+    const { enableBackup, backupPassword, name } = values;
+    if (!enableBackup || !backupPassword) {
+      return submitData;
+    }
+    const result = await globalFreezerEnableBackupStore.enable({
+      instance_id: '',
+      instance_name: name,
+      password: backupPassword,
+    });
+    const script = result && result.user_data;
+    if (!script) {
+      throw new Error(t('Failed to build the backup bootstrap data.'));
+    }
+    const { server } = submitData;
+    if (server.user_data) {
+      const decoded = atob(server.user_data);
+      server.user_data = toBase64Utf8(appendShellUserData(decoded, script));
+    } else {
+      server.user_data = toBase64Utf8(buildShellUserData(script));
+    }
+    // Deliver via config-drive rather than the network metadata service.
+    server.config_drive = true;
+    server.metadata = {
+      ...(server.metadata || {}),
+      freezer_agent_installed: 'true',
+      freezer_backup_enabled: 'true',
+    };
+    return submitData;
+  }
+
+  onOk = async () => {
     const { data } = this.state;
     this.values = data;
     const submitData = this.getSubmitData(data);
     if (!submitData) {
       Notify.errorWithDetail(null, this.errorText);
+      return;
+    }
+    try {
+      await this.injectFreezerBackup(submitData, data);
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error('Enable backup failed:', e?.response?.data || e);
+      const detail =
+        e?.response?.data?.detail || e?.data?.detail || e?.message || '';
+      Notify.errorWithDetail(
+        e?.response?.data || e?.data || null,
+        `${t('Failed to enable backup for the instance.')}${
+          detail ? ` ${detail}` : ''
+        }`
+      );
       return;
     }
     this.onSubmit(submitData).then(
