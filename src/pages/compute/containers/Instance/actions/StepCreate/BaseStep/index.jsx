@@ -95,6 +95,9 @@ export class BaseStep extends Base {
     if (source.value === 'image') {
       values.bootFromVolume = true;
     }
+    if (snapshot) {
+      values.instanceSnapshot = this.getSnapshotInitValue();
+    }
     if (flavor) {
       values.flavor = {
         selectedRowKeys: [flavor],
@@ -111,6 +114,24 @@ export class BaseStep extends Base {
       };
     }
     return values;
+  }
+
+  getSnapshotInitValue() {
+    const { snapshot } = this.locationParams;
+    if (!snapshot) {
+      return {};
+    }
+    const detail = toJS(this.instanceSnapshotStore.detail);
+    if (detail && detail.id === snapshot) {
+      return {
+        selectedRowKeys: [detail.id],
+        selectedRows: [detail],
+      };
+    }
+    return {
+      selectedRowKeys: [snapshot],
+      selectedRows: [],
+    };
   }
 
   get availableZones() {
@@ -387,6 +408,12 @@ export class BaseStep extends Base {
       return;
     }
     await this.instanceSnapshotStore.fetchDetail({ id: snapshot });
+    const selected = this.getSnapshotInitValue();
+    if (selected.selectedRowKeys?.length) {
+      this.updateFormValue('instanceSnapshot', selected);
+      this.updateContext({ instanceSnapshot: selected });
+      this.onInstanceSnapshotChange(selected);
+    }
   }
 
   onImageTabChange = (value) => {
@@ -939,14 +966,18 @@ export class BaseStep extends Base {
   }
 
   get formItems() {
-    const { image } = this.locationParams;
+    const { image, snapshot, volume } = this.locationParams;
     const imageLoading = image
       ? this.imageStore.isLoading
       : this.imageStore.list.isLoading;
     const filteredTabs = this.systemTabs;
-    if (!filteredTabs || filteredTabs.length === 0) {
+    if (!snapshot && !volume && (!filteredTabs || filteredTabs.length === 0)) {
       return [];
     }
+    const imageTabs =
+      filteredTabs && filteredTabs.length > 0
+        ? filteredTabs
+        : getImageSystemTabs();
     return [
       {
         name: 'project',
@@ -1005,8 +1036,8 @@ export class BaseStep extends Base {
           },
         ],
         columns: this.imageColumns,
-        tabs: filteredTabs,
-        defaultTabValue: this.locationParams.os_distro || filteredTabs[0].value,
+        tabs: imageTabs,
+        defaultTabValue: this.locationParams.os_distro || imageTabs[0].value,
         selectedLabel: t('Image'),
         onChange: this.onImageChange,
         onTabChange: this.onImageTabChange,
@@ -1021,6 +1052,7 @@ export class BaseStep extends Base {
         isMulti: false,
         hidden: !this.sourceTypeIsSnapshot,
         display: this.sourceTypeIsSnapshot,
+        initValue: this.getSnapshotInitValue(),
         onChange: this.onInstanceSnapshotChange,
         filterParams: [
           {
