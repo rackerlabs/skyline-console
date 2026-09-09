@@ -37,7 +37,6 @@ class Create extends ModalAction {
       containers: [],
       selectedMode: 'fs',
       selectedAction: 'backup',
-      selectedStorage: undefined,
     };
     this.getClients();
     this.getContainers();
@@ -59,8 +58,10 @@ class Create extends ModalAction {
         label: c.name,
         value: c.name,
       }));
+      this._allContainers = containers;
       this.setState({ containers });
     } catch (e) {
+      this._allContainers = [];
       this.setState({ containers: [] });
     }
   }
@@ -76,15 +77,6 @@ class Create extends ModalAction {
     ];
   }
 
-  get storageOptions() {
-    return [
-      { label: t('Local (VM disk)'), value: 'local' },
-      { label: t('Swift (Object Store)'), value: 'swift' },
-      { label: t('SSH'), value: 'ssh' },
-      { label: t('S3'), value: 's3' },
-    ];
-  }
-
   get modeOptions() {
     return [
       { label: t('File System (fs)'), value: 'fs' },
@@ -96,12 +88,7 @@ class Create extends ModalAction {
   }
 
   get formItems() {
-    const {
-      clients = [],
-      selectedMode,
-      selectedStorage,
-      containers = [],
-    } = this.state;
+    const { clients = [], selectedMode, containers = [] } = this.state;
 
     const modeFields = [];
     if (selectedMode === 'nova') {
@@ -190,7 +177,6 @@ class Create extends ModalAction {
         placeholder: t('Select a registered VM'),
         tip: t('The VM whose freezer-scheduler will execute this job.'),
       },
-
       {
         name: 'backup_name',
         label: t('Backup Name'),
@@ -220,43 +206,37 @@ class Create extends ModalAction {
       },
       ...modeFields,
       {
-        name: 'storage',
-        label: t('Storage Backend'),
+        name: 'container',
+        label: t('Swift Container'),
         type: 'select',
-        options: this.storageOptions,
+        options: containers,
         required: true,
-        onChange: (val) => this.setState({ selectedStorage: val }),
-        tip: t(
-          'local: stored on the VM disk. swift: uploaded to OpenStack object store.'
+        showSearch: true,
+        allowClear: true,
+        filterOption: false,
+        onSearch: (val) => {
+          const trimmed = (val || '').trim();
+          if (!trimmed) {
+            this.setState({ containers: this._allContainers || [] });
+            return;
+          }
+          const filtered = (this._allContainers || []).filter((c) =>
+            c.value.toLowerCase().includes(trimmed.toLowerCase())
+          );
+          const exists = (this._allContainers || []).some(
+            (c) => c.value === trimmed
+          );
+          this.setState({
+            containers: exists
+              ? filtered
+              : [{ label: trimmed, value: trimmed }, ...filtered],
+          });
+        },
+        placeholder: t('Select an existing container or type a new name'),
+        extra: t(
+          "If a container with that name doesn't exist, a new container will be created"
         ),
       },
-      selectedStorage === 'swift'
-        ? {
-            name: 'container',
-            label: t('Container'),
-            type: 'select',
-            options: containers,
-            required: true,
-            showSearch: true,
-            allowClear: true,
-            placeholder: t('Select a Swift container in this project'),
-            tip: t(
-              'Swift containers in your current project. To back up to a new ' +
-                'container, create it first under Object Storage.'
-            ),
-          }
-        : {
-            name: 'container',
-            label: t('Container / Path'),
-            type: 'input',
-            required: true,
-            tip: t(
-              'For local: absolute path on VM (e.g. /tmp/backups). ' +
-                'For swift: Swift container name (e.g. my-backups).'
-            ),
-            placeholder: t('/tmp/freezer-backups  or  my-swift-container'),
-          },
-
       {
         name: 'schedule_start_date',
         label: t('Schedule Start Date'),
@@ -280,7 +260,6 @@ class Create extends ModalAction {
         showTime: true,
         tip: t('When to stop repeating (optional).'),
       },
-
       {
         name: 'max_retries',
         label: t('Max Retries'),
@@ -291,7 +270,7 @@ class Create extends ModalAction {
     ];
   }
 
-  onSubmit = (values) => {
+  onSubmit = async (values) => {
     const {
       description,
       client_id,
@@ -305,7 +284,6 @@ class Create extends ModalAction {
       lvm_srcvol,
       lvm_volgroup,
       lvm_snapsize,
-      storage,
       container,
       schedule_start_date,
       schedule_interval,
@@ -313,10 +291,18 @@ class Create extends ModalAction {
       max_retries,
     } = values;
 
+    // Auto-create the Swift container if the user typed a new name.
+    const known = (this._allContainers || []).some(
+      (c) => c.value === container
+    );
+    if (!known && container) {
+      await this.containerStore.create({ name: container });
+    }
+
     const freezer_action = {
       action,
       backup_name: (backup_name || '').replace(/ /g, '_'),
-      storage,
+      storage: 'swift',
       container,
       mode,
       log_file: `/var/log/freezer/${(backup_name || 'job').replace(
@@ -328,9 +314,7 @@ class Create extends ModalAction {
     // Keys must use oslo_config dest names (e.g. engine_name, not engine),
     // otherwise freezer's config parser crashes.
     if (path_to_backup) freezer_action.path_to_backup = path_to_backup;
-    if (nova_inst_id) {
-      freezer_action.nova_inst_id = nova_inst_id;
-    }
+    if (nova_inst_id) freezer_action.nova_inst_id = nova_inst_id;
     if (cinder_vol_id) freezer_action.cinder_vol_id = cinder_vol_id;
     if (mysql_conf) freezer_action.mysql_conf = mysql_conf;
     if (lvm_srcvol) {
