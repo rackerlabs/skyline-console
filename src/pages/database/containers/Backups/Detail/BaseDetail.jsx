@@ -16,6 +16,12 @@ import { inject, observer } from 'mobx-react';
 import Base from 'containers/BaseDetail';
 
 export class BaseDetail extends Base {
+  get leftCardsStyle() {
+    return {
+      flex: 1,
+    };
+  }
+
   get leftCards() {
     return [this.baseInfoCard];
   }
@@ -33,6 +39,7 @@ export class BaseDetail extends Base {
       {
         label: t('Backup File Location'),
         dataIndex: 'locationRef',
+        copyable: true,
       },
       {
         label: t('Initial Volume Size'),
@@ -56,6 +63,8 @@ export class BaseDetail extends Base {
 
     return {
       title: t('Base Info'),
+      labelCol: 6,
+      contentCol: 18,
       options,
     };
   }
