@@ -261,6 +261,16 @@ class Create extends ModalAction {
         tip: t('When to stop repeating (optional).'),
       },
       {
+        name: 'remove_older_than',
+        label: t('Remove Older Than (days)'),
+        type: 'input-number',
+        min: 0,
+        step: 1,
+        extra: t(
+          'Backups older than this many days are removed on each run. Decimals are allowed (e.g. 0.5 = 12 hours). Leave blank to keep all backups.'
+        ),
+      },
+      {
         name: 'max_retries',
         label: t('Max Retries'),
         type: 'input-number',
@@ -285,6 +295,7 @@ class Create extends ModalAction {
       lvm_volgroup,
       lvm_snapsize,
       container,
+      remove_older_than,
       schedule_start_date,
       schedule_interval,
       schedule_end_date,
@@ -329,7 +340,23 @@ class Create extends ModalAction {
     // Must be 'engine_name' (oslo dest), not 'engine'.
     if (mode === 'nova') freezer_action.engine_name = 'nova';
 
-    const job_action_entry = { freezer_action, max_retries: max_retries || 0 };
+    const job_actions = [{ freezer_action, max_retries: max_retries || 0 }];
+
+    // freezer prunes only via the 'admin' action, not 'backup'.
+    if (remove_older_than) {
+      const admin_action = {
+        action: 'admin',
+        backup_name: (backup_name || '').replace(/ /g, '_'),
+        storage: 'swift',
+        container,
+        mode,
+        remove_older_than: Number(remove_older_than),
+      };
+      if (nova_inst_id) admin_action.nova_inst_id = nova_inst_id;
+      if (cinder_vol_id) admin_action.cinder_vol_id = cinder_vol_id;
+      if (mode === 'nova') admin_action.engine_name = 'nova';
+      job_actions.push({ freezer_action: admin_action });
+    }
 
     const job_schedule = {};
     if (schedule_start_date) {
@@ -358,7 +385,7 @@ class Create extends ModalAction {
     const body = {
       description,
       client_id,
-      job_actions: [job_action_entry],
+      job_actions,
       job_schedule,
     };
 
