@@ -111,6 +111,10 @@ export class Instances extends Base {
         dataIndex: 'status',
         valueMap: InstanceStatus,
       },
+      {
+        title: t('Operating Status'),
+        dataIndex: 'operating_status',
+      },
     ];
   }
 }

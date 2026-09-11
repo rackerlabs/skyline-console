@@ -19,14 +19,18 @@ import globalTroveInstanceStore from 'stores/trove/instances';
 export class Edit extends ModalAction {
   static id = 'edit-instance';
 
-  static title = t('Edit');
+  static title = t('Rename');
 
-  static buttonText = t('Edit');
+  static buttonText = t('Rename');
 
   static policy = 'instance:update';
 
   static allowed() {
     return Promise.resolve(true);
+  }
+
+  get name() {
+    return t('Rename');
   }
 
   get formItems() {

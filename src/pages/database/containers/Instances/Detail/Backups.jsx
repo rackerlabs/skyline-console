@@ -15,6 +15,19 @@
 import Base from 'containers/List';
 import { inject, observer } from 'mobx-react';
 import { InstanceBackupsStore } from 'stores/trove/instanceBackups';
+import CreateBackup from 'pages/database/containers/Backups/actions/Create';
+
+const actionConfigs = {
+  rowActions: {},
+  batchActions: [],
+  primaryActions: [CreateBackup],
+};
+
+const actionConfigsAdmin = {
+  rowActions: {},
+  batchActions: [],
+  primaryActions: [],
+};
 
 export class Backups extends Base {
   init() {
@@ -27,6 +40,10 @@ export class Backups extends Base {
 
   get policy() {
     return 'instance:backups';
+  }
+
+  get actionConfigs() {
+    return this.isAdminPage ? actionConfigsAdmin : actionConfigs;
   }
 
   getColumns = () => {
