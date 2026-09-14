@@ -16,6 +16,7 @@ import { action, observable, extendObservable } from 'mobx';
 import { RouterStore } from 'mobx-react-router';
 import { parse } from 'qs';
 import client from 'client';
+import featureStore from 'stores/skyline/features';
 import { getQueryString } from 'utils/index';
 import {
   setLocalStorageItem,
@@ -231,6 +232,7 @@ export class RootStore {
     const [profile, policies] = await Promise.all([
       this.client.profile(),
       this.client.policies.list(),
+      featureStore.fetch(),
     ]);
     await this.updateUser(profile, policies.policies || []);
     return this.getNeutronExtensions();
@@ -358,6 +360,7 @@ export class RootStore {
   }
 
   clearData() {
+    featureStore.clearData();
     // global stores need to be clear data when change auth
     const allGlobalStores = require('./index').default;
     const stores = values(allGlobalStores);

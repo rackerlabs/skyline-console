@@ -14,6 +14,7 @@
 
 import { action } from 'mobx';
 import client from 'client';
+import featureStore from 'stores/skyline/features';
 import Base from '../base';
 
 export class ContainerStore extends Base {
@@ -71,6 +72,7 @@ export class ContainerStore extends Base {
   // (which issues a HEAD to the CDN Swift endpoint). Falls back to a disabled
   // state on error so the UI never gets stuck.
   async fetchCDNInfo(name) {
+    if (!featureStore.isEnabled('storage_swift_cdn')) return {};
     try {
       const result = await this.cdnClient.show(name);
       const data = result.container || result;
@@ -91,7 +93,11 @@ export class ContainerStore extends Base {
   // Enrich the container list with CDN metadata in a single batched backend
   // call rather than letting the frontend issue one HEAD request per row.
   async listDidFetch(items) {
-    if (!items || items.length === 0) {
+    if (
+      !featureStore.isEnabled('storage_swift_cdn') ||
+      !items ||
+      items.length === 0
+    ) {
       return items;
     }
     try {

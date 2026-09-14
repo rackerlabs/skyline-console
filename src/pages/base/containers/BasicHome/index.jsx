@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
+import featureStore from 'stores/skyline/features';
 import { Link } from 'react-router-dom';
 import { Row, Col, Tooltip, Card } from 'antd';
 import {
@@ -86,16 +87,18 @@ export class BasicHome extends Component {
   renderShortcuts() {
     return (
       <Row gutter={[16, 16]} className={styles.shortcuts}>
-        {shortcuts.map((it) => (
-          <Col xs={24} sm={8} key={it.key}>
-            <Link to={it.to} className={styles['shortcut-link']}>
-              <Card className={styles.shortcut} bordered={false} hoverable>
-                <span className={styles['shortcut-icon']}>{it.icon}</span>
-                <span className={styles['shortcut-label']}>{it.label}</span>
-              </Card>
-            </Link>
-          </Col>
-        ))}
+        {shortcuts
+          .filter((it) => featureStore.isPathEnabled(it.to))
+          .map((it) => (
+            <Col xs={24} sm={8} key={it.key}>
+              <Link to={it.to} className={styles['shortcut-link']}>
+                <Card className={styles.shortcut} bordered={false} hoverable>
+                  <span className={styles['shortcut-icon']}>{it.icon}</span>
+                  <span className={styles['shortcut-label']}>{it.label}</span>
+                </Card>
+              </Link>
+            </Col>
+          ))}
       </Row>
     );
   }

@@ -24,6 +24,7 @@ import { toJS } from 'mobx';
 import { isEqual } from 'lodash';
 import { isFolder } from 'resources/swift/container';
 import { getStrFromTimestamp } from 'utils/time';
+import featureStore from 'stores/skyline/features';
 import styles from './index.less';
 import actionConfigs from './actions';
 import CDNUrl from '../CDNUrl';
@@ -435,7 +436,9 @@ export class ContainerObject extends Base {
           <span className={styles['link-title']}>{t('Current Path: ')}</span>
           <span className={styles['path-items']}>{itemLinks}</span>
         </div>
-        {container ? <CDNSection container={container} /> : null}
+        {container && featureStore.isEnabled('storage_swift_cdn') ? (
+          <CDNSection container={container} />
+        ) : null}
       </>
     );
   }

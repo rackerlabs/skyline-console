@@ -2,6 +2,7 @@ import { get } from 'lodash';
 import qs from 'qs';
 import React from 'react';
 import { Link } from 'react-router-dom';
+import featureStore from 'stores/skyline/features';
 
 const routeMap = {};
 
@@ -65,6 +66,9 @@ export const getLinkRender = ({
     return null;
   }
   const path = getPath({ key, params, query });
+  if (!routeMap[key] || !featureStore.isPathEnabled(path.split('?')[0])) {
+    return value;
+  }
   return (
     <Link to={path} {...extra}>
       {value}

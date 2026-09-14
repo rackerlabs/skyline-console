@@ -13,13 +13,14 @@
 // limitations under the License.
 
 import React, { Component, Suspense } from 'react';
-import { Layout, Breadcrumb, Skeleton } from 'antd';
+import { Layout, Breadcrumb, Skeleton, Result } from 'antd';
 import { Link } from 'react-router-dom';
 import { inject, observer } from 'mobx-react';
 import classnames from 'classnames';
 import renderRoutes from 'utils/RouterConfig';
 import NotFound from 'components/Cards/NotFound';
 import PageLoading from 'components/PageLoading';
+import featureStore from 'stores/skyline/features';
 import { getPath } from 'utils/route-map';
 import styles from './index.less';
 
@@ -129,6 +130,9 @@ export class Right extends Component {
   };
 
   renderChildren = (mainBreadcrumbClass, mainTabClass, extraProps) => {
+    if (!featureStore.isPathEnabled(this.props.location.pathname)) {
+      return <Result status="404" title={t('This panel is unavailable.')} />;
+    }
     const { hasError } = this.state;
     if (hasError) {
       return (

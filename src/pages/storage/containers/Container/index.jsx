@@ -21,6 +21,7 @@ import { bytesFilter } from 'utils/index';
 import { allCanChangePolicy } from 'resources/skyline/policy';
 import { getStrFromTimestamp } from 'utils/time';
 import { swiftEndpoint } from 'client/client/constants';
+import featureStore from 'stores/skyline/features';
 import actionConfigs from './actions';
 import CDNUrl from './CDNUrl';
 
@@ -83,18 +84,24 @@ function PopUpContent({ name }) {
           )}
         </Col>
       </Row>
-      <Row>
-        <Col span={8}>{t('CDN')}</Col>
-        <Col span={12}>{data.cdn_enabled ? t('Enabled') : t('Disabled')}</Col>
-      </Row>
-      <Row>
-        <Col span={8}>{t('Public HTTP URL')}</Col>
-        <Col span={12}>{renderUrl(data.public_http_url)}</Col>
-      </Row>
-      <Row>
-        <Col span={8}>{t('Public HTTPS URL')}</Col>
-        <Col span={12}>{renderUrl(data.public_https_url)}</Col>
-      </Row>
+      {featureStore.isEnabled('storage_swift_cdn') && (
+        <>
+          <Row>
+            <Col span={8}>{t('CDN')}</Col>
+            <Col span={12}>
+              {data.cdn_enabled ? t('Enabled') : t('Disabled')}
+            </Col>
+          </Row>
+          <Row>
+            <Col span={8}>{t('Public HTTP URL')}</Col>
+            <Col span={12}>{renderUrl(data.public_http_url)}</Col>
+          </Row>
+          <Row>
+            <Col span={8}>{t('Public HTTPS URL')}</Col>
+            <Col span={12}>{renderUrl(data.public_https_url)}</Col>
+          </Row>
+        </>
+      )}
     </>
   );
   return (
@@ -182,7 +189,11 @@ export class Container extends Base {
         },
       },
     ];
-    return columns;
+    return columns.filter(
+      (column) =>
+        column.dataIndex !== 'cdn_enabled' ||
+        featureStore.isEnabled('storage_swift_cdn')
+    );
   };
 
   get searchFilters() {

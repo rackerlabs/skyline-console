@@ -93,6 +93,9 @@ export class SkylineClient extends Base {
             key: 'profile',
           },
           {
+            key: 'features',
+          },
+          {
             name: 'switchProject',
             method: 'post',
             generate: (projectId, domainId) => {
