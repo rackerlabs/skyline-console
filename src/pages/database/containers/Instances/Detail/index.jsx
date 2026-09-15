@@ -17,8 +17,8 @@ import Base from 'containers/TabDetail';
 import globalInstancesStore from 'stores/trove/instances';
 import { InstanceStatus } from 'resources/trove/database';
 import BaseDetail from './BaseDetail';
-import Users from './Users';
 import Databases from './Databases';
+import Users from './Users';
 import Backups from './Backups';
 import Logs from './Logs';
 import Defaults from './Defaults';
@@ -61,6 +61,10 @@ export class InstancesDetail extends Base {
         valueMap: InstanceStatus,
       },
       {
+        title: t('Operating Status'),
+        dataIndex: 'operating_status',
+      },
+      {
         title: t('Project ID'),
         dataIndex: 'tenant_id',
         hidden: !this.isAdminPage,
@@ -76,14 +80,14 @@ export class InstancesDetail extends Base {
         component: BaseDetail,
       },
       {
-        title: t('Users'),
-        key: 'users',
-        component: Users,
-      },
-      {
         title: t('Databases'),
         key: 'databases',
         component: Databases,
+      },
+      {
+        title: t('Users'),
+        key: 'users',
+        component: Users,
       },
       {
         title: t('Backups'),

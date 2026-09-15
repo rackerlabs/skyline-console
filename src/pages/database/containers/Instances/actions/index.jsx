@@ -28,7 +28,7 @@ const actionConfigs = {
         action: Edit,
       },
       {
-        title: t('Database Instance Status'),
+        title: t('Database Instance Control'),
         actions: [Restart, Stop, Reboot],
       },
       {

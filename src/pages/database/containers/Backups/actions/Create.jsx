@@ -27,6 +27,8 @@ export class Create extends ModalAction {
 
   static title = t('Create Database Backup');
 
+  static buttonText = t('Create Backup');
+
   static get modalSize() {
     return 'middle';
   }
@@ -47,10 +49,30 @@ export class Create extends ModalAction {
     return Promise.resolve(true);
   }
 
+  get isInstanceDetail() {
+    return !!this.containerProps.detail;
+  }
+
+  get defaultValue() {
+    if (!this.isInstanceDetail) {
+      return {};
+    }
+    return {
+      instance: this.item.id,
+    };
+  }
+
   get listInstanceName() {
-    return (globalInstancesStore.list.data || []).map((it) => ({
+    const instances = [...(globalInstancesStore.list.data || [])];
+    if (
+      this.isInstanceDetail &&
+      !instances.some((instance) => instance.id === this.item.id)
+    ) {
+      instances.unshift(this.item);
+    }
+    return instances.map((it) => ({
       value: it.id,
-      label: it.name,
+      label: `${it.name} (${it.id})`,
     }));
   }
 
@@ -72,6 +94,7 @@ export class Create extends ModalAction {
         type: 'select',
         options: this.listInstanceName,
         autoSelectFirst: true,
+        disabled: this.isInstanceDetail,
         required: true,
       },
       {

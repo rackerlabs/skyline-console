@@ -44,6 +44,7 @@ export class StepDetails extends Base {
   get defaultValue() {
     const values = {
       project: this.currentProjectName,
+      locality: 'anti-affinity',
     };
     return values;
   }
@@ -70,16 +71,24 @@ export class StepDetails extends Base {
   }
 
   async getDatastores() {
-    globalInstancesStore.listDatastores();
+    await globalInstancesStore.listDatastores();
   }
 
   get datastoresVersion() {
-    if (!this.state.datastore_type) {
+    const { datastore_type: contextDatastoreType } = this.props.context || {};
+    const datastoreType =
+      this.state.datastore_type ||
+      contextDatastoreType ||
+      this.datastores[0]?.value;
+    if (!datastoreType) {
       return [];
     }
     const current = this.datastores.find(
-      (item) => item.label === this.state.datastore_type
+      (item) => item.value === datastoreType
     );
+    if (!current) {
+      return [];
+    }
     return (current.originData.versions || []).map((it) => ({
       label: it.name,
       value: it.name,
@@ -96,6 +105,13 @@ export class StepDetails extends Base {
     this.updateContext({
       flavor: value,
     });
+  };
+
+  onDatastoreTypeChange = (value) => {
+    this.setState({
+      datastore_type: value,
+    });
+    this.resetFormValue(['datastore_version']);
   };
 
   get formItems() {
@@ -156,9 +172,7 @@ export class StepDetails extends Base {
         type: 'select',
         options: this.datastores,
         autoSelectFirst: true,
-        onChange: () => {
-          this.resetFormValue(['datastore_version']);
-        },
+        onChange: this.onDatastoreTypeChange,
         required: true,
       },
       {
