@@ -18,7 +18,10 @@ export class Create extends ModalAction {
 
   static aliasPolicy = 'qonos:execution_profiles:create';
 
-  static allowed = () => Promise.resolve(true);
+  static allowed(_, containerProps) {
+    const { isAdminPage = false } = containerProps;
+    return Promise.resolve(!isAdminPage);
+  }
 
   init() {
     this.store = globalExecutionProfileStore;
@@ -50,6 +53,18 @@ export class Create extends ModalAction {
     }));
   }
 
+  get trustIdFormItem() {
+    return {
+      name: 'trust_id',
+      label: t('Trust ID'),
+      type: 'select',
+      required: true,
+      options: this.trustOptions,
+      showSearch: true,
+      tip: t('Only trusts whose trustee is the Qonos service user are listed.'),
+    };
+  }
+
   get formItems() {
     return [
       {
@@ -73,17 +88,7 @@ export class Create extends ModalAction {
         disabled: true,
         required: true,
       },
-      {
-        name: 'trust_id',
-        label: t('Trust ID'),
-        type: 'select',
-        required: true,
-        options: this.trustOptions,
-        showSearch: true,
-        tip: t(
-          'Only trusts whose trustee is the Qonos service user are listed.'
-        ),
-      },
+      this.trustIdFormItem,
       {
         name: 'enabled',
         label: t('Enabled'),

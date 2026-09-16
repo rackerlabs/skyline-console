@@ -358,6 +358,61 @@ export const normalizeTrustId = (id) => {
   return raw.replace(/-/g, '');
 };
 
+export const enrichExecutionProfilesWithTrustProject = async (items = []) => {
+  if (!items.length) {
+    return items;
+  }
+  const { TrustStore } = require('stores/keystone/trust');
+  const globalProjectMapStore = require('stores/project').default;
+  const trustStore = new TrustStore();
+  const trustIds = [
+    ...new Set(items.map((item) => item.trust_id).filter(Boolean)),
+  ];
+  const trustProjectByKey = {};
+  await Promise.all(
+    trustIds.map(async (trustId) => {
+      try {
+        const result = await trustStore.client.show(trustId);
+        const trust = result?.trust || result || {};
+        if (!trust.project_id) {
+          return;
+        }
+        trustProjectByKey[normalizeTrustId(trustId)] = trust.project_id;
+        trustProjectByKey[String(trustId).trim()] = trust.project_id;
+      } catch (e) {}
+    })
+  );
+  items.forEach((item) => {
+    const projectId =
+      trustProjectByKey[normalizeTrustId(item.trust_id)] ||
+      trustProjectByKey[String(item.trust_id).trim()];
+    if (projectId) {
+      item.project_id = projectId;
+    }
+  });
+  const projectIds = [
+    ...new Set(items.map((item) => item.project_id).filter(Boolean)),
+  ];
+  if (!projectIds.length) {
+    return items;
+  }
+  try {
+    const results = await Promise.all(
+      projectIds.map((id) => globalProjectMapStore.fetchProjectDetail({ id }))
+    );
+    items.forEach((item) => {
+      if (!item.project_id) {
+        return;
+      }
+      const project = results.find((it) => it.id === item.project_id);
+      item.project_name = project ? project.name || '-' : '-';
+    });
+  } catch (e) {
+    return items;
+  }
+  return items;
+};
+
 export const fetchExecutionProfilesForProject = async (
   profileStore,
   trustorUserId,

@@ -31,8 +31,14 @@ export class Schedule extends Base {
     return t('schedules');
   }
 
+  get adminPageHasProjectFilter() {
+    return true;
+  }
+
   get actionConfigs() {
-    return actionConfigs;
+    const { actionConfigsAdmin, actionConfigs: actionConfigsProject } =
+      actionConfigs;
+    return this.isAdminPage ? actionConfigsAdmin : actionConfigsProject;
   }
 
   get searchFilters() {
@@ -66,6 +72,12 @@ export class Schedule extends Base {
       title: t('ID/Name'),
       dataIndex: 'name',
       routeName: this.getRouteName('qonosScheduleDetail'),
+    },
+    {
+      title: t('Project ID/Name'),
+      dataIndex: 'project_name',
+      isHideable: true,
+      hidden: !this.isAdminPage,
     },
     {
       title: t('Action Type'),

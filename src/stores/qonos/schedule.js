@@ -9,7 +9,7 @@ export class ScheduleStore extends Base {
   }
 
   get needGetProject() {
-    return false;
+    return true;
   }
 
   get paramsFunc() {
@@ -27,7 +27,10 @@ export class ScheduleStore extends Base {
     });
   }
 
-  async listDidFetch(items = []) {
+  async listDidFetch(items = [], allProjects) {
+    if (allProjects) {
+      return items;
+    }
     const globalRootStore = require('stores/root').default;
     const projectId =
       globalRootStore.user?.project?.id || globalRootStore.projectId;

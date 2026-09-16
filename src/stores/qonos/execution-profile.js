@@ -1,6 +1,7 @@
 import { action } from 'mobx';
 import client from 'client';
 import Base from 'stores/base';
+import { enrichExecutionProfilesWithTrustProject } from 'resources/qonos';
 
 export class ExecutionProfileStore extends Base {
   get client() {
@@ -16,6 +17,13 @@ export class ExecutionProfileStore extends Base {
       const { marker, limit, enabled, auth_type } = params;
       return { marker, limit, enabled, auth_type };
     };
+  }
+
+  async listDidFetch(items, allProjects) {
+    if (!allProjects) {
+      return items;
+    }
+    return enrichExecutionProfilesWithTrustProject(items);
   }
 
   @action

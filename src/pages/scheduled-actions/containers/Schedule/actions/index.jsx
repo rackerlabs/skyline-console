@@ -12,7 +12,7 @@ const Create = {
     getScheduleCreatePath(containerProps?.isAdminPage),
   policy: '',
   aliasPolicy: 'qonos:schedules:create',
-  allowed: () => Promise.resolve(true),
+  allowed: (_, containerProps) => Promise.resolve(!containerProps?.isAdminPage),
 };
 
 const actionConfigs = {
@@ -24,4 +24,13 @@ const actionConfigs = {
   primaryActions: [Create],
 };
 
-export default actionConfigs;
+const actionConfigsAdmin = {
+  rowActions: {
+    firstAction: Edit,
+    moreActions: [{ action: ToggleEnabled }, { action: Delete }],
+  },
+  batchActions: [Delete],
+  primaryActions: [],
+};
+
+export default { actionConfigs, actionConfigsAdmin };

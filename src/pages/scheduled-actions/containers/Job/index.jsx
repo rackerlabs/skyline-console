@@ -35,6 +35,10 @@ export class Job extends Base {
     return t('jobs');
   }
 
+  get adminPageHasProjectFilter() {
+    return true;
+  }
+
   get actionConfigs() {
     return actionConfigs;
   }
@@ -67,6 +71,12 @@ export class Job extends Base {
         title: t('ID'),
         dataIndex: 'id',
         routeName: this.getRouteName('qonosJobDetail'),
+      },
+      {
+        title: t('Project ID/Name'),
+        dataIndex: 'project_name',
+        isHideable: true,
+        hidden: !this.isAdminPage,
       },
       {
         title: t('Schedule ID'),

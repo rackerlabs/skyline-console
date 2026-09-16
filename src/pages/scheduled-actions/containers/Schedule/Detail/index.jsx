@@ -27,7 +27,9 @@ export class ScheduleDetail extends Base {
   }
 
   get actionConfigs() {
-    return actionConfigs;
+    const { actionConfigsAdmin, actionConfigs: actionConfigsProject } =
+      actionConfigs;
+    return this.isAdminPage ? actionConfigsAdmin : actionConfigsProject;
   }
 
   renderRetention = (policy) => formatRetentionPolicy(policy);

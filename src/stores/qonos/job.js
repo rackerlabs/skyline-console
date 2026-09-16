@@ -9,7 +9,7 @@ export class JobStore extends Base {
   }
 
   get needGetProject() {
-    return false;
+    return true;
   }
 
   get paramsFunc() {

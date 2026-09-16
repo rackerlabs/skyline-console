@@ -35,28 +35,33 @@ export class ExecutionProfile extends Base {
     return t('execution profiles');
   }
 
-  get fetchDataByAllProjects() {
-    return false;
+  get adminPageHasProjectFilter() {
+    return true;
   }
 
   get actionConfigs() {
-    return actionConfigs;
+    const { actionConfigsAdmin, actionConfigs: actionConfigsProject } =
+      actionConfigs;
+    return this.isAdminPage ? actionConfigsAdmin : actionConfigsProject;
   }
 
-  getData = async ({ silent } = {}) => {
-    silent && (this.list.silent = true);
-    try {
-      await fetchExecutionProfilesForProject(
-        this.store,
-        this.currentUser?.user?.id,
-        this.currentUser?.project?.id || this.currentProjectId
-      );
-    } catch (e) {
-      this.list.data = [];
-    } finally {
-      this.list.silent = false;
+  getData({ silent, ...params } = {}) {
+    if (this.isAdminPage) {
+      return super.getData({ silent, ...params });
     }
-  };
+    silent && (this.list.silent = true);
+    return fetchExecutionProfilesForProject(
+      this.store,
+      this.currentUser?.user?.id,
+      this.currentUser?.project?.id || this.currentProjectId
+    )
+      .catch(() => {
+        this.list.data = [];
+      })
+      .finally(() => {
+        this.list.silent = false;
+      });
+  }
 
   get searchFilters() {
     return [
@@ -89,6 +94,12 @@ export class ExecutionProfile extends Base {
           {getNameRenderWithStyle(value, true)}
         </div>
       ),
+    },
+    {
+      title: t('Project ID/Name'),
+      dataIndex: 'project_name',
+      isHideable: true,
+      hidden: !this.isAdminPage,
     },
     {
       title: t('Auth Type'),

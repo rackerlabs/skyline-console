@@ -1,5 +1,7 @@
+import React from 'react';
 import { inject, observer } from 'mobx-react';
 import { StepAction } from 'containers/Action';
+import NotFound from 'components/Cards/NotFound';
 import globalScheduleStore from 'stores/qonos/schedule';
 import { buildScheduleBody, getScheduleCreatePath } from 'resources/qonos';
 import { withQonosAdvisory } from 'resources/qonos/advisory';
@@ -23,7 +25,10 @@ export class Create extends StepAction {
 
   static aliasPolicy = 'qonos:schedules:create';
 
-  static allowed = () => Promise.resolve(true);
+  static allowed(_, containerProps) {
+    const { isAdminPage = false } = containerProps;
+    return Promise.resolve(!isAdminPage);
+  }
 
   init() {
     this.store = globalScheduleStore;
@@ -62,6 +67,13 @@ export class Create extends StepAction {
   }
 
   onSubmit = (body) => withQonosAdvisory(this.store.create(body));
+
+  render() {
+    if (this.isAdminPage) {
+      return <NotFound title={this.name} link={this.listUrl} goList isAction />;
+    }
+    return super.render();
+  }
 }
 
 export default inject('rootStore')(observer(Create));
