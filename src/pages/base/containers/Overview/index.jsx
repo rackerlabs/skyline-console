@@ -23,6 +23,7 @@ import overviewVolume from 'asset/image/overview-volume.svg';
 import quickStartNetwork from 'asset/image/quick-start-network.svg';
 import { Link } from 'react-router-dom';
 import globalRootStore from 'stores/root';
+import featureStore from 'stores/skyline/features';
 import styles from './style.less';
 import QuotaOverview from './components/QuotaOverview';
 import ProjectInfo from './components/ProjectInfo';
@@ -72,10 +73,14 @@ export class Overview extends Component {
   }
 
   get filterActions() {
-    if (!globalRootStore.checkEndpoint('cinder')) {
-      return actions.filter((it) => it.key !== 'volume');
-    }
-    return actions;
+    return actions.filter(
+      (it) =>
+        (it.key !== 'volume' || globalRootStore.checkEndpoint('cinder')) &&
+        (it.isQuickStart
+          ? featureStore.isEnabled('network_networks') &&
+            featureStore.isEnabled('network_routers')
+          : featureStore.isPathEnabled(it.to))
+    );
   }
 
   get span() {

@@ -1,5 +1,6 @@
 import { ConfirmAction } from 'containers/Action';
 import globalContainerStore from 'stores/swift/container';
+import featureStore from 'stores/skyline/features';
 import { allCanChangePolicy } from 'resources/skyline/policy';
 
 export default class CDN extends ConfirmAction {
@@ -30,7 +31,10 @@ export default class CDN extends ConfirmAction {
 
   policy = allCanChangePolicy;
 
-  allowed = () => Promise.resolve(!this.isAdminPage);
+  allowed = () =>
+    Promise.resolve(
+      !this.isAdminPage && featureStore.isEnabled('storage_swift_cdn')
+    );
 
   onSubmit = () => {
     const { name, id } = this.item;

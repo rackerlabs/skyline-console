@@ -13,6 +13,17 @@ export default [
       { path: `${PATH}/lease`, component: Lease, exact: true },
       { path: `${PATH}/lease/create`, component: LeaseCreate, exact: true },
       { path: `${PATH}/lease/detail/:id`, component: LeaseDetail, exact: true },
+      { path: `${PATH}/lease-admin`, component: Lease, exact: true },
+      {
+        path: `${PATH}/lease-admin/create`,
+        component: LeaseCreate,
+        exact: true,
+      },
+      {
+        path: `${PATH}/lease-admin/detail/:id`,
+        component: LeaseDetail,
+        exact: true,
+      },
       { path: '*', component: E404 },
     ],
   },

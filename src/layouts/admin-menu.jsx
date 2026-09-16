@@ -975,23 +975,23 @@ const renderMenu = (t) => {
       icon: <CalendarOutlined />,
       children: [
         {
-          path: '/reservation/lease',
+          path: '/reservation/lease-admin',
           name: t('Leases'),
           key: 'leaseAdmin',
           level: 1,
           children: [
             {
-              path: '/reservation/lease/create',
+              path: '/reservation/lease-admin/create',
               name: t('Create Lease'),
               key: 'leaseCreateAdmin',
               level: 2,
             },
             {
-              path: /^\/reservation\/lease\/detail\/.[^/]+$/,
+              path: /^\/reservation\/lease-admin\/detail\/.[^/]+$/,
               name: t('Lease Detail'),
               key: 'leaseDetailAdmin',
               level: 2,
-              routePath: '/reservation/lease/detail/:id',
+              routePath: '/reservation/lease-admin/detail/:id',
             },
           ],
         },

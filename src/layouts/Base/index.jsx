@@ -19,7 +19,10 @@ import i18n from 'core/i18n';
 import { isAdminPage, isUserCenterPage } from 'utils/index';
 import { BellOutlined } from '@ant-design/icons';
 import checkItemPolicy from 'resources/skyline/policy';
-import { Layout } from 'antd';
+import { Layout, Result, Button } from 'antd';
+import PageLoading from 'components/PageLoading';
+import featureStore from 'stores/skyline/features';
+import { filterFeatureMenu } from 'utils/features';
 import GlobalHeader from 'components/Layout/GlobalHeader';
 import { setRouteMap, getPath } from 'utils/route-map';
 import { MODE_BASIC } from 'utils/console-mode';
@@ -39,6 +42,7 @@ export class BaseLayout extends Component {
     () => [
       (this.props.rootStore.user || {}).keystone_token,
       this.props.rootStore.consoleMode,
+      featureStore.values,
     ],
     () => {
       setRouteMap(this.menu);
@@ -106,7 +110,7 @@ export class BaseLayout extends Component {
     } else {
       ret = renderMenu(i18n.t);
     }
-    return ret;
+    return filterFeatureMenu(ret, featureStore.values);
   }
 
   get globalNav() {
@@ -275,6 +279,18 @@ export class BaseLayout extends Component {
   );
 
   render() {
+    if (featureStore.error) {
+      return (
+        <Result
+          status="error"
+          title={t('Unable to load console configuration.')}
+          extra={
+            <Button onClick={() => featureStore.fetch()}>{t('Retry')}</Button>
+          }
+        />
+      );
+    }
+    if (!featureStore.ready) return <PageLoading />;
     const { pathname } = this.props.location;
     const currentRoutes = this.getCurrentMenu(pathname);
     return (
