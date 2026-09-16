@@ -170,11 +170,7 @@ export default [
         component: ScheduledActions,
       },
       {
-        path: `/zaqar-admin`,
-        component: ZaqarApp,
-      },
-      {
-        path: `/zaqar`,
+        path: `/messaging`,
         component: ZaqarApp,
       },
       {

@@ -15,6 +15,8 @@ import { ModalAction } from 'containers/Action';
 import globalFreezerJobStore from 'stores/freezer/job';
 import globalFreezerClientStore from 'stores/freezer/client';
 import globalContainerStore from 'stores/swift/container';
+import globalServerStore from 'stores/nova/instance';
+import globalVolumeStore from 'stores/cinder/volume';
 
 class Create extends ModalAction {
   static id = 'create-job';
@@ -31,15 +33,21 @@ class Create extends ModalAction {
     this.store = globalFreezerJobStore;
     this.clientStore = globalFreezerClientStore;
     this.containerStore = globalContainerStore;
+    this.serverStore = globalServerStore;
+    this.volumeStore = globalVolumeStore;
     this.state = {
       ...this.state,
       clients: [],
       containers: [],
+      instances: [],
+      volumes: [],
       selectedMode: 'fs',
       selectedAction: 'backup',
     };
     this.getClients();
     this.getContainers();
+    this.getInstances();
+    this.getVolumes();
   }
 
   async getClients() {
@@ -66,6 +74,32 @@ class Create extends ModalAction {
     }
   }
 
+  async getInstances() {
+    try {
+      await this.serverStore.fetchList();
+      const instances = (this.serverStore.list.data || []).map((s) => ({
+        label: `${s.name} (${s.id})`,
+        value: s.id,
+      }));
+      this.setState({ instances });
+    } catch (e) {
+      this.setState({ instances: [] });
+    }
+  }
+
+  async getVolumes() {
+    try {
+      await this.volumeStore.fetchList();
+      const volumes = (this.volumeStore.list.data || []).map((v) => ({
+        label: `${v.name || v.id} (${v.id})`,
+        value: v.id,
+      }));
+      this.setState({ volumes });
+    } catch (e) {
+      this.setState({ volumes: [] });
+    }
+  }
+
   get name() {
     return t('Create Job');
   }
@@ -88,26 +122,38 @@ class Create extends ModalAction {
   }
 
   get formItems() {
-    const { clients = [], selectedMode, containers = [] } = this.state;
+    const {
+      clients = [],
+      selectedMode,
+      containers = [],
+      instances = [],
+      volumes = [],
+    } = this.state;
 
     const modeFields = [];
     if (selectedMode === 'nova') {
       modeFields.push({
         name: 'nova_inst_id',
-        label: t('Nova Instance UUID'),
-        type: 'input',
-        tip: t(
-          'UUID of the VM to snapshot (not the client VM — the target VM).'
-        ),
-        placeholder: t('e.g. 7ee5959f-0039-4f5f-b953-25ef38b1a88e'),
+        label: t('Nova Instance'),
+        type: 'select',
+        options: instances,
+        required: true,
+        showSearch: true,
+        allowClear: true,
+        placeholder: t('Select the VM to snapshot (the target VM)'),
+        tip: t('The VM to snapshot — not the client VM running the agent.'),
       });
     } else if (selectedMode === 'cinder') {
       modeFields.push({
         name: 'cinder_vol_id',
-        label: t('Cinder Volume UUID'),
-        type: 'input',
-        tip: t('UUID of the Cinder volume to back up.'),
-        placeholder: t('e.g. 2453735e-678a-4b4a-8604-b79b55c2cd21'),
+        label: t('Cinder Volume'),
+        type: 'select',
+        options: volumes,
+        required: true,
+        showSearch: true,
+        allowClear: true,
+        placeholder: t('Select the Cinder volume to back up'),
+        tip: t('The Cinder volume to back up.'),
       });
     } else if (selectedMode === 'mysql') {
       modeFields.push({

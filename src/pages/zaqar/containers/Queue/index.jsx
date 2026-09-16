@@ -52,7 +52,9 @@ export class Queue extends Base {
   }
 
   getColumns() {
-    const basePath = this.isAdminPage ? '/zaqar-admin' : '/zaqar';
+    const basePath = this.isAdminPage
+      ? '/messaging/queues-admin'
+      : '/messaging/queues';
     return [
       {
         title: t('Queue Name'),
@@ -60,9 +62,7 @@ export class Queue extends Base {
         width: 240,
         render: (value) =>
           value ? (
-            <Link to={`${basePath}/queues/${encodeURIComponent(value)}`}>
-              {value}
-            </Link>
+            <Link to={`${basePath}/${encodeURIComponent(value)}`}>{value}</Link>
           ) : (
             '-'
           ),

@@ -951,14 +951,14 @@ const renderMenu = (t) => {
       ],
     },
     {
-      path: '/zaqar-admin',
+      path: '/messaging',
       name: t('Messaging'),
       key: 'zaqarAdmin',
       icon: <MessageOutlined />,
       endpoints: 'zaqar',
       children: [
         {
-          path: '/zaqar-admin/queues',
+          path: '/messaging/queues-admin',
           name: t('Queues'),
           key: 'zaqarQueuesAdmin',
           endpoints: 'zaqar',

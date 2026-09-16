@@ -876,14 +876,14 @@ const renderMenu = (t) => {
       ],
     },
     {
-      path: '/zaqar',
+      path: '/messaging',
       name: t('Messaging'),
       key: 'zaqar',
       icon: <MessageOutlined />,
       endpoints: 'zaqar',
       children: [
         {
-          path: '/zaqar/queues',
+          path: '/messaging/queues',
           name: t('Queues'),
           key: 'zaqarQueues',
           endpoints: 'zaqar',
