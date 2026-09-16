@@ -61,7 +61,10 @@ export class Create extends StepAction {
 
   static title = t('Create Lease');
 
-  static path = '/reservation/lease/create';
+  static path = (_, containerProps) =>
+    containerProps?.isAdminPage
+      ? '/reservation/lease-admin/create'
+      : '/reservation/lease/create';
 
   static policy = [
     'osreservations:leases:create',
