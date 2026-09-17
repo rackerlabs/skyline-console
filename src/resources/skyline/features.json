@@ -1,98 +1,301 @@
 {
   "compute": { "paths": ["/compute"] },
-  "compute_instances": { "parent": "compute", "paths": ["/compute/instance", "/compute/ironic-instance"] },
-  "compute_instance_snapshots": { "parent": "compute", "paths": ["/compute/instance-snapshot"] },
+  "compute_instances": {
+    "parent": "compute",
+    "paths": ["/compute/instance", "/compute/ironic-instance"]
+  },
+  "compute_instance_snapshots": {
+    "parent": "compute",
+    "paths": ["/compute/instance-snapshot"]
+  },
   "compute_flavors": { "parent": "compute", "paths": ["/compute/flavor"] },
-  "compute_server_groups": { "parent": "compute", "paths": ["/compute/server-group"] },
+  "compute_server_groups": {
+    "parent": "compute",
+    "paths": ["/compute/server-group"]
+  },
   "compute_images": { "parent": "compute", "paths": ["/compute/image"] },
   "compute_keypairs": { "parent": "compute", "paths": ["/compute/keypair"] },
-  "compute_hypervisors": { "parent": "compute", "paths": ["/compute/hypervisors"] },
-  "compute_host_aggregates": { "parent": "compute", "paths": ["/compute/aggregates"] },
-  "compute_baremetal_nodes": { "parent": "compute", "paths": ["/compute/baremetal-node"] },
+  "compute_hypervisors": {
+    "parent": "compute",
+    "paths": ["/compute/hypervisors"]
+  },
+  "compute_host_aggregates": {
+    "parent": "compute",
+    "paths": ["/compute/aggregates"]
+  },
+  "compute_baremetal_nodes": {
+    "parent": "compute",
+    "paths": ["/compute/baremetal-node"]
+  },
   "storage": { "paths": ["/storage"] },
   "storage_volumes": { "parent": "storage", "paths": ["/storage/volume"] },
-  "storage_volume_backup": { "parent": "storage", "paths": ["/storage/backup"] },
-  "storage_volume_snapshots": { "parent": "storage", "paths": ["/storage/snapshot"] },
-  "storage_volume_types": { "parent": "storage", "paths": ["/storage/volume-type"] },
+  "storage_volume_backup": {
+    "parent": "storage",
+    "paths": ["/storage/backup"]
+  },
+  "storage_volume_snapshots": {
+    "parent": "storage",
+    "paths": ["/storage/snapshot"]
+  },
+  "storage_volume_types": {
+    "parent": "storage",
+    "paths": ["/storage/volume-type"]
+  },
   "storage_backends": { "parent": "storage", "paths": ["/storage/storage"] },
   "storage_object_storage": { "parent": "storage" },
-  "storage_container_list": { "parent": "storage_object_storage", "paths": ["/storage/container"] },
+  "storage_container_list": {
+    "parent": "storage_object_storage",
+    "paths": ["/storage/container"]
+  },
   "storage_swift_cdn": { "parent": "storage_container_list" },
   "network": { "paths": ["/network"] },
-  "network_networks": { "parent": "network", "paths": ["/network/networks", "/network/network"] },
-  "network_ports": { "parent": "network", "paths": ["/network/port", "/network/instance", "/network/networks/detail/:networkId/port", "/network/networks/detail/:networkId/subnet/:subnetId/port", "/network/router/:routerId/port", "/network/firewall/:firewallId/port"] },
-  "network_qos_policies": { "parent": "network", "paths": ["/network/qos-policy"] },
+  "network_networks": {
+    "parent": "network",
+    "paths": ["/network/networks", "/network/network"]
+  },
+  "network_ports": {
+    "parent": "network",
+    "paths": [
+      "/network/port",
+      "/network/instance",
+      "/network/networks/detail/:networkId/port",
+      "/network/networks/detail/:networkId/subnet/:subnetId/port",
+      "/network/router/:routerId/port",
+      "/network/firewall/:firewallId/port"
+    ]
+  },
+  "network_qos_policies": {
+    "parent": "network",
+    "paths": ["/network/qos-policy"]
+  },
   "network_routers": { "parent": "network", "paths": ["/network/router"] },
-  "network_floating_ips": { "parent": "network", "paths": ["/network/floatingip"] },
+  "network_floating_ips": {
+    "parent": "network",
+    "paths": ["/network/floatingip"]
+  },
   "network_topology": { "parent": "network", "paths": ["/network/topo"] },
-  "network_load_balancers": { "parent": "network", "paths": ["/network/load-balancers"] },
-  "network_vpns": { "parent": "network", "paths": ["/network/vpn", "/network/ipsec-site-connection"] },
-  "network_security_groups": { "parent": "network", "paths": ["/network/security-group"] },
-  "network_firewalls": { "parent": "network", "paths": ["/network/firewall", "/network/firewall-policy", "/network/firewall-rule"] },
-  "network_rbac_policies": { "parent": "network", "paths": ["/network/rbac-policies"] },
+  "network_load_balancers": {
+    "parent": "network",
+    "paths": ["/network/load-balancers"]
+  },
+  "network_vpns": {
+    "parent": "network",
+    "paths": ["/network/vpn", "/network/ipsec-site-connection"]
+  },
+  "network_security_groups": {
+    "parent": "network",
+    "paths": ["/network/security-group"]
+  },
+  "network_firewalls": {
+    "parent": "network",
+    "paths": [
+      "/network/firewall",
+      "/network/firewall-policy",
+      "/network/firewall-rule"
+    ]
+  },
+  "network_rbac_policies": {
+    "parent": "network",
+    "paths": ["/network/rbac-policies"]
+  },
   "network_dns_zones": { "parent": "network", "paths": ["/network/dns/zones"] },
-  "network_dns_reverse": { "parent": "network", "paths": ["/network/dns/reverse"] },
+  "network_dns_reverse": {
+    "parent": "network",
+    "paths": ["/network/dns/reverse"]
+  },
   "shared_file_systems": { "paths": ["/share"] },
-  "shared_file_systems_shares": { "parent": "shared_file_systems", "paths": ["/share/share"] },
-  "shared_file_systems_networks": { "parent": "shared_file_systems", "paths": ["/share/share-network"] },
-  "shared_file_systems_groups": { "parent": "shared_file_systems", "paths": ["/share/share-group"] },
-  "shared_file_systems_types": { "parent": "shared_file_systems", "paths": ["/share/share-type"] },
-  "shared_file_systems_group_types": { "parent": "shared_file_systems", "paths": ["/share/share-group-type"] },
-  "shared_file_systems_servers": { "parent": "shared_file_systems", "paths": ["/share/share-server"] },
-  "shared_file_systems_instances": { "parent": "shared_file_systems", "paths": ["/share/share-instance"] },
-  "shared_file_systems_backends": { "parent": "shared_file_systems", "paths": ["/share/storage"] },
+  "shared_file_systems_shares": {
+    "parent": "shared_file_systems",
+    "paths": ["/share/share"]
+  },
+  "shared_file_systems_networks": {
+    "parent": "shared_file_systems",
+    "paths": ["/share/share-network"]
+  },
+  "shared_file_systems_groups": {
+    "parent": "shared_file_systems",
+    "paths": ["/share/share-group"]
+  },
+  "shared_file_systems_types": {
+    "parent": "shared_file_systems",
+    "paths": ["/share/share-type"]
+  },
+  "shared_file_systems_group_types": {
+    "parent": "shared_file_systems",
+    "paths": ["/share/share-group-type"]
+  },
+  "shared_file_systems_servers": {
+    "parent": "shared_file_systems",
+    "paths": ["/share/share-server"]
+  },
+  "shared_file_systems_instances": {
+    "parent": "shared_file_systems",
+    "paths": ["/share/share-instance"]
+  },
+  "shared_file_systems_backends": {
+    "parent": "shared_file_systems",
+    "paths": ["/share/storage"]
+  },
   "orchestration": { "paths": ["/heat"] },
-  "orchestration_stacks": { "parent": "orchestration", "paths": ["/heat/stack"] },
-  "container": { "paths": ["/container", "/container-service", "/container-infra"] },
-  "container_clusters": { "parent": "container", "paths": ["/container-infra/clusters"] },
-  "container_cluster_templates": { "parent": "container", "paths": ["/container-infra/cluster-template"] },
-  "container_containers": { "parent": "container", "paths": ["/container-service/containers"] },
-  "container_capsules": { "parent": "container", "paths": ["/container-service/capsules"] },
-  "container_hosts": { "parent": "container", "paths": ["/container-service/hosts"] },
-  "container_services": { "parent": "container", "paths": ["/container-service/services"] },
+  "orchestration_stacks": {
+    "parent": "orchestration",
+    "paths": ["/heat/stack"]
+  },
+  "container": {
+    "paths": ["/container", "/container-service", "/container-infra"]
+  },
+  "container_clusters": {
+    "parent": "container",
+    "paths": ["/container-infra/clusters"]
+  },
+  "container_cluster_templates": {
+    "parent": "container",
+    "paths": ["/container-infra/cluster-template"]
+  },
+  "container_containers": {
+    "parent": "container",
+    "paths": ["/container-service/containers"]
+  },
+  "container_capsules": {
+    "parent": "container",
+    "paths": ["/container-service/capsules"]
+  },
+  "container_hosts": {
+    "parent": "container",
+    "paths": ["/container-service/hosts"]
+  },
+  "container_services": {
+    "parent": "container",
+    "paths": ["/container-service/services"]
+  },
   "database": { "paths": ["/database"] },
-  "database_instances": { "parent": "database", "paths": ["/database/instances", "/database/instance"] },
-  "database_backups": { "parent": "database", "paths": ["/database/backups", "/database/backup"] },
-  "database_configurations": { "parent": "database", "paths": ["/database/configurations", "/database/configuration"] },
+  "database_instances": {
+    "parent": "database",
+    "paths": ["/database/instances", "/database/instance"]
+  },
+  "database_backups": {
+    "parent": "database",
+    "paths": ["/database/backups", "/database/backup"]
+  },
+  "database_configurations": {
+    "parent": "database",
+    "paths": ["/database/configurations", "/database/configuration"]
+  },
   "key_manager": { "paths": ["/key-manager"] },
-  "key_manager_secrets": { "parent": "key_manager", "paths": ["/key-manager/secret"] },
-  "key_manager_certificates": { "parent": "key_manager", "paths": ["/key-manager/certificate", "/key-manager/certificate-container", "/key-manager/certificate-secret"] },
-  "messaging": { "paths": ["/zaqar"] },
-  "messaging_queues": { "parent": "messaging", "paths": ["/zaqar/queues"] },
+  "key_manager_secrets": {
+    "parent": "key_manager",
+    "paths": ["/key-manager/secret"]
+  },
+  "key_manager_certificates": {
+    "parent": "key_manager",
+    "paths": [
+      "/key-manager/certificate",
+      "/key-manager/certificate-container",
+      "/key-manager/certificate-secret"
+    ]
+  },
+  "messaging": { "paths": ["/messaging"] },
+  "messaging_queues": { "parent": "messaging", "paths": ["/messaging/queues"] },
   "reservation": { "paths": ["/reservation"] },
-  "reservation_leases": { "parent": "reservation", "paths": ["/reservation/lease"] },
+  "reservation_leases": {
+    "parent": "reservation",
+    "paths": ["/reservation/lease"]
+  },
   "scheduled_actions": { "paths": ["/scheduled-actions"] },
-  "scheduled_actions_trusts": { "parent": "scheduled_actions", "paths": ["/scheduled-actions/trust"] },
-  "scheduled_actions_execution_profiles": { "parent": "scheduled_actions", "paths": ["/scheduled-actions/execution-profile"] },
-  "scheduled_actions_schedules": { "parent": "scheduled_actions", "paths": ["/scheduled-actions/schedule"] },
-  "scheduled_actions_jobs": { "parent": "scheduled_actions", "paths": ["/scheduled-actions/job"] },
+  "scheduled_actions_trusts": {
+    "parent": "scheduled_actions",
+    "paths": ["/scheduled-actions/trust"]
+  },
+  "scheduled_actions_execution_profiles": {
+    "parent": "scheduled_actions",
+    "paths": ["/scheduled-actions/execution-profile"]
+  },
+  "scheduled_actions_schedules": {
+    "parent": "scheduled_actions",
+    "paths": ["/scheduled-actions/schedule"]
+  },
+  "scheduled_actions_jobs": {
+    "parent": "scheduled_actions",
+    "paths": ["/scheduled-actions/job"]
+  },
   "backup_restore": { "paths": ["/backup-restore"] },
-  "backup_restore_jobs": { "parent": "backup_restore", "paths": ["/backup-restore/job"] },
-  "backup_restore_actions": { "parent": "backup_restore", "paths": ["/backup-restore/action"] },
-  "backup_restore_clients": { "parent": "backup_restore", "paths": ["/backup-restore/client"] },
-  "backup_restore_backups": { "parent": "backup_restore", "paths": ["/backup-restore/backup"] },
+  "backup_restore_jobs": {
+    "parent": "backup_restore",
+    "paths": ["/backup-restore/job"]
+  },
+  "backup_restore_actions": {
+    "parent": "backup_restore",
+    "paths": ["/backup-restore/action"]
+  },
+  "backup_restore_clients": {
+    "parent": "backup_restore",
+    "paths": ["/backup-restore/client"]
+  },
+  "backup_restore_backups": {
+    "parent": "backup_restore",
+    "paths": ["/backup-restore/backup"]
+  },
   "identity": { "paths": ["/identity"] },
   "identity_domains": { "parent": "identity", "paths": ["/identity/domain"] },
   "identity_projects": { "parent": "identity", "paths": ["/identity/project"] },
   "identity_users": { "parent": "identity", "paths": ["/identity/user"] },
-  "identity_user_groups": { "parent": "identity", "paths": ["/identity/user-group"] },
+  "identity_user_groups": {
+    "parent": "identity",
+    "paths": ["/identity/user-group"]
+  },
   "identity_roles": { "parent": "identity", "paths": ["/identity/role"] },
   "instance_ha": { "paths": ["/ha"] },
-  "instance_ha_segments": { "parent": "instance_ha", "paths": ["/ha/segments"] },
+  "instance_ha_segments": {
+    "parent": "instance_ha",
+    "paths": ["/ha/segments"]
+  },
   "instance_ha_hosts": { "parent": "instance_ha", "paths": ["/ha/hosts"] },
-  "instance_ha_notifications": { "parent": "instance_ha", "paths": ["/ha/notifications"] },
+  "instance_ha_notifications": {
+    "parent": "instance_ha",
+    "paths": ["/ha/notifications"]
+  },
   "monitoring": { "paths": ["/monitor-center"] },
-  "monitoring_overview": { "parent": "monitoring", "paths": ["/monitor-center/overview"] },
-  "monitoring_physical_nodes": { "parent": "monitoring", "paths": ["/monitor-center/physical-node"] },
-  "monitoring_storage_clusters": { "parent": "monitoring", "paths": ["/monitor-center/storage-cluster"] },
-  "monitoring_openstack_services": { "parent": "monitoring", "paths": ["/monitor-center/openstack-service"] },
-  "monitoring_other_services": { "parent": "monitoring", "paths": ["/monitor-center/other-service"] },
+  "monitoring_overview": {
+    "parent": "monitoring",
+    "paths": ["/monitor-center/overview"]
+  },
+  "monitoring_physical_nodes": {
+    "parent": "monitoring",
+    "paths": ["/monitor-center/physical-node"]
+  },
+  "monitoring_storage_clusters": {
+    "parent": "monitoring",
+    "paths": ["/monitor-center/storage-cluster"]
+  },
+  "monitoring_openstack_services": {
+    "parent": "monitoring",
+    "paths": ["/monitor-center/openstack-service"]
+  },
+  "monitoring_other_services": {
+    "parent": "monitoring",
+    "paths": ["/monitor-center/other-service"]
+  },
   "configuration": { "paths": ["/configuration"] },
-  "configuration_system_info": { "parent": "configuration", "paths": ["/configuration/info", "/configuration/neutron"] },
-  "configuration_settings": { "parent": "configuration", "paths": ["/configuration/setting"] },
-  "configuration_metadata": { "parent": "configuration", "paths": ["/configuration/metadata"] },
+  "configuration_system_info": {
+    "parent": "configuration",
+    "paths": ["/configuration/info", "/configuration/neutron"]
+  },
+  "configuration_settings": {
+    "parent": "configuration",
+    "paths": ["/configuration/setting"]
+  },
+  "configuration_metadata": {
+    "parent": "configuration",
+    "paths": ["/configuration/metadata"]
+  },
   "system_maintenance": { "paths": ["/maintenance-notifications"] },
-  "system_maintenance_banners": { "parent": "system_maintenance", "paths": ["/maintenance-notifications/banners"] },
+  "system_maintenance_banners": {
+    "parent": "system_maintenance",
+    "paths": ["/maintenance-notifications/banners"]
+  },
   "management": { "paths": ["/management"] },
-  "management_recycle_bin": { "parent": "management", "paths": ["/management/recycle-bin"] }
+  "management_recycle_bin": {
+    "parent": "management",
+    "paths": ["/management/recycle-bin"]
+  }
 }

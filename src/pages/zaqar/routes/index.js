@@ -17,20 +17,17 @@ import QueueDetail from '../containers/Queue/Detail';
 
 export default [
   {
-    path: '/zaqar-admin',
+    path: '/messaging',
     component: BaseLayout,
     routes: [
-      { path: '/zaqar-admin/queues', component: Queue, exact: true },
-      { path: '/zaqar-admin/queues/:id', component: QueueDetail, exact: true },
-      { path: '*', component: E404 },
-    ],
-  },
-  {
-    path: '/zaqar',
-    component: BaseLayout,
-    routes: [
-      { path: '/zaqar/queues', component: Queue, exact: true },
-      { path: '/zaqar/queues/:id', component: QueueDetail, exact: true },
+      { path: '/messaging/queues-admin', component: Queue, exact: true },
+      {
+        path: '/messaging/queues-admin/:id',
+        component: QueueDetail,
+        exact: true,
+      },
+      { path: '/messaging/queues', component: Queue, exact: true },
+      { path: '/messaging/queues/:id', component: QueueDetail, exact: true },
       { path: '*', component: E404 },
     ],
   },
