@@ -2,9 +2,6 @@ import React, { useState } from 'react';
 import { Tooltip, message } from 'antd';
 import { CopyOutlined, CheckOutlined } from '@ant-design/icons';
 
-// Render a CDN public URL. The URL is kept intact and allowed to wrap across
-// lines (clamped to two lines) instead of being cut to a single "…", so users
-// can read most of it while keeping the link clickable and a copy affordance.
 export default function CDNUrl({ url, maxWidth = 220 }) {
   const [copied, setCopied] = useState(false);
 
@@ -44,10 +41,7 @@ export default function CDNUrl({ url, maxWidth = 220 }) {
       }}
     >
       <Tooltip title={url}>
-        <a
-          href={url}
-          target="_blank"
-          rel="noreferrer"
+        <span
           style={{
             display: '-webkit-box',
             WebkitLineClamp: 2,
@@ -58,7 +52,7 @@ export default function CDNUrl({ url, maxWidth = 220 }) {
           }}
         >
           {url}
-        </a>
+        </span>
       </Tooltip>
       <Tooltip title={copied ? t('Copied') : t('Copy')}>
         {copied ? (
