@@ -63,8 +63,16 @@ export class ClustersStore extends Base {
     });
   }
 
-  async upgrade({ id }, body) {
-    return this.client.upgrade(id, body);
+  @action
+  async upgrade({ id }, newbody) {
+    const body = {
+      max_batch_size: 1,
+      ...newbody,
+    };
+    // Cluster upgrade is only exposed from container-infra microversion 1.8.
+    return this.client.upgrade(id, body, null, {
+      headers: { 'OpenStack-API-Version': 'container-infra latest' },
+    });
   }
 
   async listDidFetch(items, _, filters) {
