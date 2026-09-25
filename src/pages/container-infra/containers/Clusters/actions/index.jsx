@@ -11,12 +11,13 @@
 // limitations under the License.
 import Delete from './Delete';
 import Resize from './Resize';
+import Upgrade from './Upgrade';
 import Create from './StepCreate';
 
 const actionConfigs = {
   rowActions: {
     firstAction: Delete,
-    moreActions: [{ action: Resize }],
+    moreActions: [{ action: Resize }, { action: Upgrade }],
   },
   batchActions: [Delete],
   primaryActions: [Create],
