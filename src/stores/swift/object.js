@@ -77,7 +77,11 @@ export class ObjectStore extends Base {
         prefix,
         ...rest
       } = params;
-      const realPath = prefix || (folder || search ? `${folder}${search}` : '');
+      const folderPath = folder || '';
+      const searchPath = search || '';
+      const realPath =
+        prefix ||
+        (folderPath || searchPath ? `${folderPath}${searchPath}` : '');
       const newParams = {
         format: 'json',
         delimiter: '/',
@@ -91,11 +95,19 @@ export class ObjectStore extends Base {
     };
   }
 
+  normalizeFolderPrefix = (folder) => {
+    if (!folder || typeof folder !== 'string') {
+      return '';
+    }
+    return folder.endsWith('/') ? folder : `${folder}/`;
+  };
+
   getShortName = (item, folder) => {
     const { name, subdir } = item;
     const lName = subdir || name;
-    folder = decodeURIComponent(folder);
-    return lName.substring((folder || '').length) || lName;
+    const folderPath =
+      typeof folder === 'string' && folder ? decodeURIComponent(folder) : '';
+    return lName.substring(folderPath.length) || lName;
   };
 
   isFolder = (item) => item.subdir || item.name.slice(-1) === '/';
@@ -307,9 +319,10 @@ export class ObjectStore extends Base {
     }
     let realFolder = folder;
     if (!folder) {
+      const { name, folder: currentFolder, prefix } = this.container || {};
       realFolder = {
-        container: this.container.name,
-        name: this.container.folder,
+        container: name,
+        name: prefix || currentFolder || '',
       };
     }
     if (this.isCopy) {
@@ -321,11 +334,12 @@ export class ObjectStore extends Base {
   @action
   async pasteObjects(folder) {
     const { container: toContainer, name } = folder;
+    const destPrefix = this.normalizeFolderPrefix(name);
     const { container: fromContainer } = this.copiedFiles[0];
     await Promise.all(
       this.copiedFiles.map((it) => {
         const { shortName, name: fromName } = it;
-        const toName = `${name}${shortName}`;
+        const toName = `${destPrefix}${shortName}`;
         return this.containerClient.copy(
           fromContainer,
           fromName,
@@ -334,22 +348,21 @@ export class ObjectStore extends Base {
         );
       })
     );
-    return Promise.resolve();
   }
 
   @action
   async moveObjects(folder) {
+    const filesToDelete = [...this.copiedFiles];
+    const { container: originContainer } = filesToDelete[0];
     await this.pasteObjects(folder);
-    const { container: originContainer } = this.copiedFiles[0];
     await Promise.all(
-      this.copiedFiles.map((it) => {
+      filesToDelete.map((it) => {
         const { name: fileName } = it;
         return this.client.delete(originContainer, fileName);
       })
     );
     this.copiedFiles = [];
     this.hasCopy = false;
-    return Promise.resolve();
   }
 
   @action

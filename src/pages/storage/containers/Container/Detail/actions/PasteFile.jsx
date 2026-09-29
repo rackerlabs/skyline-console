@@ -101,11 +101,14 @@ export default class PasteFile extends ConfirmAction {
   };
 
   allowedCheckFunc = (item) => {
-    if (!item) {
-      const { hasCopy } = globalObjectStore;
-      return hasCopy && this.checkFolder();
+    const { hasCopy } = globalObjectStore;
+    if (!hasCopy) {
+      return false;
     }
-    return isFolder(item) && item.hasCopy && this.checkFolder(item);
+    if (!item) {
+      return this.checkFolder();
+    }
+    return isFolder(item) && this.checkFolder(item);
   };
 
   checkFolder = (item) => {
