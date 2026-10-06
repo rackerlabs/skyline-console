@@ -15,6 +15,7 @@
 import { action } from 'mobx';
 import client from 'client';
 import featureStore from 'stores/skyline/features';
+import { fetchFreezerContainers } from 'stores/freezer/swift-containers';
 import Base from '../base';
 
 export class ContainerStore extends Base {
@@ -90,9 +91,23 @@ export class ContainerStore extends Base {
     }
   }
 
+  async listDidFetch(items) {
+    if (!items || !items.length) {
+      return items;
+    }
+    const [freezerContainers, enrichedItems] = await Promise.all([
+      fetchFreezerContainers(),
+      this.fetchCDNList(items),
+    ]);
+    return enrichedItems.map((item) => ({
+      ...item,
+      isFreezerContainer: freezerContainers.has(item.name),
+    }));
+  }
+
   // Enrich the container list with CDN metadata in a single batched backend
   // call rather than letting the frontend issue one HEAD request per row.
-  async listDidFetch(items) {
+  async fetchCDNList(items) {
     if (
       !featureStore.isEnabled('storage_swift_cdn') ||
       !items ||

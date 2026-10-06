@@ -12,10 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import React from 'react';
+import { Alert } from 'antd';
 import { ConfirmAction } from 'containers/Action';
 import globalObjectStore, { ObjectStore } from 'stores/swift/object';
 import { allCanChangePolicy } from 'resources/skyline/policy';
-import { isFile } from 'resources/swift/container';
+import { isFile, getSwiftStorageWarnings } from 'resources/swift/container';
+import warningStyles from 'components/SwiftStorageWarning/index.less';
 
 export default class Delete extends ConfirmAction {
   get id() {
@@ -52,6 +55,36 @@ export default class Delete extends ConfirmAction {
   getItemName = (item) => item.shortName;
 
   policy = allCanChangePolicy;
+
+  confirmContext = (data) => {
+    const message = t('Are you sure to {action} (instance: {name})?', {
+      action: this.actionNameDisplay || this.title,
+      name: this.getName(data),
+    });
+    const items = Array.isArray(data) ? data : [data];
+    const warnings = [
+      ...new Set(
+        items.flatMap((item) => getSwiftStorageWarnings(item.container, item))
+      ),
+    ];
+    if (!warnings.length) {
+      return message;
+    }
+    return (
+      <div>
+        <p>{this.unescape(message)}</p>
+        {warnings.map((warning) => (
+          <Alert
+            key={warning}
+            className={warningStyles['delete-warning']}
+            type="warning"
+            showIcon
+            message={warning}
+          />
+        ))}
+      </div>
+    );
+  };
 
   onSubmit = async (data) => {
     if (isFile(data)) {

@@ -16,6 +16,7 @@ import React, { useEffect, useState } from 'react';
 import { observer, inject } from 'mobx-react';
 import { Popover, Col, Row, Skeleton, Button, message } from 'antd';
 import Base from 'containers/List';
+import SwiftStorageWarning from 'components/SwiftStorageWarning';
 import globalObjectStore, { ObjectStore } from 'stores/swift/object';
 import { ContainerStore } from 'stores/swift/container';
 import { bytesFilter } from 'utils/index';
@@ -405,7 +406,28 @@ export class ContainerObject extends Base {
     const folders = folderPath.split('/').filter((it) => !!it);
     const containerLink = {
       path: this.getRoutePath('containerDetail', { id: container }),
-      link: this.getLinkRender('containerDetail', container, { id: container }),
+      link: (
+        <span
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            maxWidth: '100%',
+          }}
+        >
+          <span style={{ minWidth: 0, overflowWrap: 'anywhere' }}>
+            {this.getLinkRender('containerDetail', container, {
+              id: container,
+            })}
+          </span>
+          <SwiftStorageWarning
+            container={container}
+            isFreezerContainer={
+              this.store.container?.name === container &&
+              this.store.container?.isFreezerContainer
+            }
+          />
+        </span>
+      ),
     };
     const items = [containerLink];
     const folderLinks = folders.map((it, index) => {
