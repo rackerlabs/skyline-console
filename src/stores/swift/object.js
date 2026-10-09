@@ -16,6 +16,7 @@ import { action, observable } from 'mobx';
 import client from 'client';
 import { swiftEndpoint } from 'client/client/constants';
 import globalRootStore from 'stores/root';
+import { fetchFreezerContainers } from 'stores/freezer/swift-containers';
 import Base from '../base';
 
 export class ObjectStore extends Base {
@@ -56,13 +57,26 @@ export class ObjectStore extends Base {
   async listFetchByClient(params, originParams) {
     const { folder, container, prefix } = originParams;
     const { path } = params;
-    const result = await this.client.list(container, params);
+    // Dependency flags are per-container, so look them up only when the
+    // container changes; folder navigation reuses the previous result.
+    const previous = this.container;
+    const reuseFlags =
+      !!previous &&
+      previous.name === container &&
+      'isFreezerContainer' in previous;
+    const [result, freezerContainers] = await Promise.all([
+      this.client.list(container, params),
+      reuseFlags ? null : fetchFreezerContainers(),
+    ]);
     this.container = {
       name: container,
       folder: folder ? decodeURIComponent(folder) : folder,
       path,
       prefix,
       hasCopy: this.copiedFiles.length > 0,
+      isFreezerContainer: reuseFlags
+        ? previous.isFreezerContainer
+        : freezerContainers.has(container),
     };
     return result;
   }
@@ -187,7 +201,8 @@ export class ObjectStore extends Base {
 
   @action
   updateData = (items, isPublic = false) => {
-    const { name, path, folder, prefix, hasCopy } = this.container || {};
+    const { name, path, folder, prefix, hasCopy, isFreezerContainer } =
+      this.container || {};
     return items
       .filter((it) => {
         if (!prefix) return true;
@@ -206,6 +221,7 @@ export class ObjectStore extends Base {
         return {
           ...it,
           container: name,
+          isFreezerContainer,
           path,
           folder,
           type: itemType,

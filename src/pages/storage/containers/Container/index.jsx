@@ -16,6 +16,7 @@ import React, { useEffect, useState } from 'react';
 import { observer, inject } from 'mobx-react';
 import { Popover, Col, Row, Skeleton } from 'antd';
 import Base from 'containers/List';
+import SwiftStorageWarning from 'components/SwiftStorageWarning';
 import globalContainerStore, { ContainerStore } from 'stores/swift/container';
 import { bytesFilter } from 'utils/index';
 import { allCanChangePolicy } from 'resources/skyline/policy';
@@ -153,10 +154,19 @@ export class Container extends Base {
       {
         title: t('Name'),
         dataIndex: 'name',
-        render: (name, record) =>
-          this.getLinkRender('containerDetail', name || record.id, {
-            id: record.id,
-          }),
+        render: (name, record) => (
+          <span style={{ display: 'flex', alignItems: 'center' }}>
+            <span style={{ minWidth: 0, overflowWrap: 'anywhere' }}>
+              {this.getLinkRender('containerDetail', name || record.id, {
+                id: record.id,
+              })}
+            </span>
+            <SwiftStorageWarning
+              container={name || record.id}
+              isFreezerContainer={record.isFreezerContainer}
+            />
+          </span>
+        ),
       },
       {
         title: t('Size'),
