@@ -139,11 +139,23 @@ export const isOwner = (item) => {
 export const isSnapshot = (item) => {
   // bfv vm has bdm; non-bfv has instance_uuid, image_type is added by frontend
   const { block_device_mapping: bdm = '[]', image_type, instance_uuid } = item;
-  return (
-    image_type === 'snapshot' ||
-    get(JSON.parse(bdm)[0] || {}, 'source_type') === 'snapshot' ||
-    instance_uuid
-  );
+  if (image_type === 'snapshot' || instance_uuid) {
+    return true;
+  }
+  let mappings = [];
+  try {
+    mappings = JSON.parse(bdm || '[]') || [];
+  } catch (e) {
+    return false;
+  }
+  if (!Array.isArray(mappings)) {
+    return false;
+  }
+  const boot = mappings.find((it) => it && it.boot_index === 0);
+  if (get(boot, 'source_type') === 'snapshot') {
+    return true;
+  }
+  return mappings.some((it) => get(it, 'source_type') === 'snapshot');
 };
 
 export const canImageCreateInstance = (item) =>
