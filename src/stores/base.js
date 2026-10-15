@@ -420,11 +420,9 @@ export default class BaseStore {
   @action
   updateMarker(data, page, result, allData, params) {
     const marker = this.parseMarker(data, result, allData, params);
-    if (page === 1) {
-      this.list.markers = [marker];
-    } else {
-      this.list.markers[page - 1] = marker;
-    }
+    const markers = this.list.markers.slice(0, page - 1);
+    markers[page - 1] = marker;
+    this.list.markers = markers;
   }
 
   getMarker(page) {
@@ -455,6 +453,9 @@ export default class BaseStore {
     ...filters
   } = {}) {
     this.list.isLoading = true;
+    if (page > 1 && this.list.markers.length < page - 1) {
+      page = 1;
+    }
     // todo: no page, no limit, fetch all
     const { tab, all_projects, ...rest } = filters;
     const params = { limit, ...rest, current: page };

@@ -291,7 +291,9 @@ export default class BaseList extends React.Component {
     const searchHeight = searchMenuHeight
       ? tableSearchHeight - searchMenuHeight + 10
       : tableSearchHeight;
-    const topTotal = navHeight + breadcrumbHeight + searchHeight + padding;
+    const headerHeight =
+      parseInt(window.globalCSS?.headerHeight, 10) || navHeight;
+    const topTotal = headerHeight + breadcrumbHeight + searchHeight + padding;
     if (this.hasSubTab) {
       return topTotal + tabHeight * 2 + 20;
     }
@@ -310,11 +312,15 @@ export default class BaseList extends React.Component {
     const tableHeaderHeight = tableHeader
       ? tableHeader.offsetHeight
       : defaultTableHeaderHeight;
+    const tableFooter = document.getElementsByClassName('ant-table-footer')[0];
+    const tableFooterHeight = tableFooter
+      ? tableFooter.offsetHeight
+      : footerHeight;
     const newHeight =
       height -
       this.tableTopHeight -
       this.hintHeight -
-      footerHeight -
+      tableFooterHeight -
       tableHeaderHeight;
     return newHeight > 0 ? newHeight : 1;
   }

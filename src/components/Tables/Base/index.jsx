@@ -140,6 +140,7 @@ export class BaseTable extends React.Component {
 
     this.sortKey = props.defaultSortKey;
     this.sortOrder = props.defaultSortOrder;
+    this.tableRef = React.createRef();
     this.suggestions = props.columns
       .filter((column) => column.search && column.dataIndex)
       .map((column) => ({
@@ -278,6 +279,9 @@ export class BaseTable extends React.Component {
   handlePageChange = (current, pageSize) => {
     const { filters } = this.state;
     const { onFetch, defaultSortKey, defaultSortOrder } = this.props;
+    this.tableRef.current
+      ?.querySelector('.ant-table-body')
+      ?.scrollTo({ top: 0 });
     onFetch &&
       onFetch({
         limit: pageSize,
@@ -1010,7 +1014,7 @@ export class BaseTable extends React.Component {
     }
     const tableProps = Object.keys(scroll).length ? { scroll } : {};
     return (
-      <div>
+      <div ref={this.tableRef}>
         {header}
         <Table
           className={classnames(styles.table, 'sl-table', className)}

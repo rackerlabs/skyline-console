@@ -750,8 +750,8 @@ export class Topology extends React.Component {
     }
   }
 
-  initTopo() {
-    this.initNetwork();
+  async initTopo() {
+    await this.initNetwork();
     this.initAll();
   }
 

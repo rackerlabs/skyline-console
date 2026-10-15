@@ -37,10 +37,11 @@ export class Upgrade extends ModalAction {
 
   static policy = 'cluster:upgrade';
 
-  // Only a healthy cluster may be upgraded.
+  // Only a healthy cluster in a *_COMPLETE state may be upgraded.
   static allowed(item) {
     return Promise.resolve(
-      get(item, 'health_status') === CLUSTER_UPGRADE_HEALTH_STATUS
+      get(item, 'status', '').includes('COMPLETE') &&
+        get(item, 'health_status') === CLUSTER_UPGRADE_HEALTH_STATUS
     );
   }
 
