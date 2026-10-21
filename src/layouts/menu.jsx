@@ -30,6 +30,7 @@ import {
   ScheduleOutlined,
   MessageOutlined,
   CloudServerOutlined,
+  AccountBookOutlined,
 } from '@ant-design/icons';
 
 const renderMenu = (t) => {
@@ -1019,6 +1020,29 @@ const renderMenu = (t) => {
           path: '/backup-restore/backup',
           name: t('Backups'),
           key: 'freezerBackup',
+          level: 1,
+          children: [],
+        },
+      ],
+    },
+    {
+      path: '/cloudkitty',
+      name: t('Rating'),
+      key: 'cloudkitty',
+      endpoints: 'cloudkitty',
+      icon: <AccountBookOutlined />,
+      children: [
+        {
+          path: '/cloudkitty/summary',
+          name: t('Summary'),
+          key: 'cloudkittySummary',
+          level: 1,
+          children: [],
+        },
+        {
+          path: '/cloudkitty/reporting',
+          name: t('Reporting'),
+          key: 'cloudkittyReporting',
           level: 1,
           children: [],
         },

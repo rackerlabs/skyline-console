@@ -206,14 +206,17 @@ export class Create extends ModalAction {
   onSubmit = async (values) => {
     const { tags, ...projectData } = values;
     projectData.enabled = projectData.enabled.value;
-    
+
     // Create the project first
     const result = await this.projectStore.create(projectData);
-    
+
     // If tags were provided, add them after project creation
     if (tags && tags.length > 0 && result?.project?.id) {
       try {
-        await globalTagStore.update({ project_id: result.project.id }, { tags });
+        await globalTagStore.update(
+          { project_id: result.project.id },
+          { tags }
+        );
       } catch (error) {
         // Don't fail the entire operation if tag update fails
         Notify.warn(
@@ -222,7 +225,7 @@ export class Create extends ModalAction {
         );
       }
     }
-    
+
     return result;
   };
 }

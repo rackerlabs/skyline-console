@@ -34,6 +34,7 @@ import blazar from './blazar';
 import qonos from './qonos';
 import zaqar from './zaqar';
 import freezer from './freezer';
+import cloudkitty from './cloudkitty';
 
 const client = {
   skyline,
@@ -58,6 +59,7 @@ const client = {
   qonos,
   zaqar,
   freezer,
+  cloudkitty,
 };
 
 window.client = client;

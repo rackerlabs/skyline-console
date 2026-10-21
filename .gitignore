@@ -26,6 +26,9 @@ doc/source/_static
 # config
 test/e2e/config/local_config.yaml
 
+# Claude Code local settings
+.claude/settings.local.json
+
 # Python
 __pycache__/
 *.py[cod]
