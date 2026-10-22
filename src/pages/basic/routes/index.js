@@ -80,6 +80,9 @@ const BasicNetworkApp = lazy(() =>
 const BackupRestore = lazy(() =>
   import(/* webpackChunkName: "backup-restore" */ 'pages/backup-restore/App')
 );
+const CloudKitty = lazy(() =>
+  import(/* webpackChunkName: "cloudkitty" */ 'pages/cloudkitty/App')
+);
 const PATH = '/';
 
 export default [
@@ -176,6 +179,14 @@ export default [
       {
         path: `/backup-restore`,
         component: BackupRestore,
+      },
+      {
+        path: `/cloudkitty-admin`,
+        component: CloudKitty,
+      },
+      {
+        path: `/cloudkitty`,
+        component: CloudKitty,
       },
       { path: '*', component: E404 },
     ],

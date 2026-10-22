@@ -14,6 +14,7 @@
 
 import React from 'react';
 import {
+  AccountBookOutlined,
   DesktopOutlined,
   DatabaseOutlined,
   CreditCardOutlined,
@@ -1211,6 +1212,65 @@ const renderMenu = (t) => {
           name: t('System Maintenance'),
           key: 'maintNotifBannersAdmin',
           level: 1,
+        },
+      ],
+    },
+    {
+      path: '/cloudkitty-admin',
+      name: t('Rating'),
+      key: 'cloudkittyAdmin',
+      endpoints: 'cloudkitty',
+      icon: <AccountBookOutlined />,
+      children: [
+        {
+          path: '/cloudkitty-admin/summary',
+          name: t('Summary'),
+          key: 'cloudkittySummaryAdmin',
+          level: 1,
+          children: [],
+        },
+        {
+          path: '/cloudkitty-admin/reporting',
+          name: t('Reporting'),
+          key: 'cloudkittyReportingAdmin',
+          level: 1,
+          children: [],
+        },
+        {
+          path: '/cloudkitty-admin/modules',
+          name: t('Rating Modules'),
+          key: 'cloudkittyModulesAdmin',
+          level: 1,
+          // Admin-only in CloudKitty (rating:list_modules => role:admin), so
+          // hide from system-reader users rather than letting them hit a 401.
+          policy: 'rating:list_modules',
+          children: [],
+        },
+        {
+          path: '/cloudkitty-admin/hashmap',
+          name: t('HashMap'),
+          key: 'cloudkittyHashmapAdmin',
+          level: 1,
+          // Admin-only in CloudKitty (rating:module_config => role:admin).
+          policy: 'rating:module_config',
+          children: [
+            {
+              path: /^\/cloudkitty-admin\/hashmap\/detail\/.[^/]+$/,
+              name: t('HashMap Service Detail'),
+              key: 'cloudkittyHashmapServiceDetailAdmin',
+              level: 2,
+              routePath: '/cloudkitty-admin/hashmap/detail/:id',
+            },
+          ],
+        },
+        {
+          path: '/cloudkitty-admin/pyscripts',
+          name: t('PyScripts'),
+          key: 'cloudkittyPyScriptsAdmin',
+          level: 1,
+          // Admin-only in CloudKitty (rating:module_config => role:admin).
+          policy: 'rating:module_config',
+          children: [],
         },
       ],
     },

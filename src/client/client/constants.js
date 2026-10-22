@@ -41,6 +41,9 @@ export const endpointVersionMap = {
   zaqar: 'v2',
   qonos: 'v2',
   freezer: 'v2',
+  // Note: cloudkitty is intentionally absent. It serves both v1 and v2 APIs,
+  // so its client prefixes each resource path with the version it needs
+  // rather than pinning a single version here.
 };
 
 export const endpointsDefault = {
@@ -87,6 +90,7 @@ export const blazarBase = () => getOpenstackEndpoint('blazar');
 export const zaqarBase = () => getOpenstackEndpoint('zaqar');
 export const freezerBase = () => getOpenstackEndpoint('freezer');
 export const qonosBase = () => getOpenstackEndpoint('qonos');
+export const cloudkittyBase = () => getOriginEndpoint('cloudkitty');
 
 export const ironicOriginEndpoint = () => getOriginEndpoint('ironic');
 export const vpnEndpoint = () => getOriginEndpoint('neutron_vpn');
@@ -101,6 +105,7 @@ export const blazarEndpoint = () => getOriginEndpoint('blazar');
 export const zaqarEndpoint = () => getOriginEndpoint('zaqar');
 export const qonosEndpoint = () => getOriginEndpoint('qonos');
 export const freezerEndpoint = () => getOriginEndpoint('freezer');
+export const cloudkittyEndpoint = () => getOriginEndpoint('cloudkitty');
 export const firewallEndpoint = () => getOriginEndpoint('neutron_firewall');
 
 export const apiVersionMaps = {

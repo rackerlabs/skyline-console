@@ -94,6 +94,7 @@ export const policyMap = {
   qonos: ['qonos:'],
   zaqar: ['messaging:'],
   freezer: ['freezer:'],
+  cloudkitty: ['rating:', 'summary:'],
 };
 
 export const convertPolicyMap = (map) => {
