@@ -293,6 +293,27 @@
     "parent": "system_maintenance",
     "paths": ["/maintenance-notifications/banners"]
   },
+  "rating": { "paths": ["/cloudkitty"] },
+  "rating_summary": {
+    "parent": "rating",
+    "paths": ["/cloudkitty/summary"]
+  },
+  "rating_reporting": {
+    "parent": "rating",
+    "paths": ["/cloudkitty/reporting"]
+  },
+  "rating_modules": {
+    "parent": "rating",
+    "paths": ["/cloudkitty/modules"]
+  },
+  "rating_hashmap": {
+    "parent": "rating",
+    "paths": ["/cloudkitty/hashmap"]
+  },
+  "rating_pyscripts": {
+    "parent": "rating",
+    "paths": ["/cloudkitty/pyscripts"]
+  },
   "management": { "paths": ["/management"] },
   "management_recycle_bin": {
     "parent": "management",
