@@ -16,6 +16,10 @@ import { inject, observer } from 'mobx-react';
 import { StepAction } from 'containers/Action';
 import globalLbaasStore from 'stores/octavia/loadbalancer';
 import { getInsertHeadersValueFromForm } from 'resources/octavia/lb';
+import {
+  buildL7PolicyPayload,
+  buildL7RulePayload,
+} from 'resources/octavia/l7policy';
 import BaseStep from './BaseStep';
 import ListenerStep from '../../../StepCreateComponents/ListenerStep';
 import PoolStep from '../../../StepCreateComponents/PoolStep';
@@ -132,20 +136,15 @@ export class StepCreate extends StepAction {
         Array.isArray(values.l7policies) &&
         values.l7policies.length > 0
           ? values.l7policies.map((policy) => ({
-              action: policy.action,
-              rules: policy.rules.map((rule) => ({
-                type: rule.type,
-                compare_type: rule.compareType,
-                value: rule.value,
-                key: rule.key || null,
-                invert: rule.invert,
-              })),
-              ...(policy.action === 'REDIRECT_TO_URL' && {
-                redirect_url: policy.redirect_url,
-              }),
-              ...(policy.action === 'REDIRECT_TO_POOL' && {
-                redirect_pool_id: policy.redirect_pool_id,
-              }),
+              // Share the canonical builders so a policy/rule created here is
+              // identical to one created from the post-creation form.
+              ...buildL7PolicyPayload(policy),
+              rules: (policy.rules || []).map((rule) =>
+                buildL7RulePayload({
+                  ...rule,
+                  compare_type: rule.compareType,
+                })
+              ),
             }))
           : undefined,
     };
