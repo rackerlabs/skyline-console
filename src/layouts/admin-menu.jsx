@@ -430,6 +430,14 @@ const renderMenu = (t) => {
               routePath:
                 '/network/load-balancers-admin/:loadBalancerId/listener/:id',
             },
+            {
+              path: /^\/network\/load-balancers-admin\/[^/]+\/listener\/[^/]+\/l7policy\/[^/]+$/,
+              name: t('L7 Policy Detail'),
+              key: 'lbL7PolicyDetailAdmin',
+              level: 2,
+              routePath:
+                '/network/load-balancers-admin/:loadBalancerId/listener/:listenerId/l7policy/:id',
+            },
           ],
         },
         {

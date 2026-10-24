@@ -15,8 +15,177 @@ import React, { useState, useEffect } from 'react';
 import { Form, Row, Col, Select, Input, Checkbox, Button } from 'antd';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import client from 'client';
+import {
+  actionLabels,
+  getL7RuleCompareTypes,
+  isL7RuleKeyRequired,
+  l7PolicyActions,
+  l7RuleTypes,
+  validateL7Policy,
+  validateL7Rule,
+} from 'resources/octavia/l7policy';
 
 const { Option } = Select;
+
+const L7RuleItem = ({ field, policyIndex, remove }) => {
+  const form = Form.useFormInstance();
+  const [ruleType, setRuleType] = useState(
+    () =>
+      form.getFieldValue([
+        'l7policies',
+        policyIndex,
+        'rules',
+        field.name,
+        'type',
+      ]) || 'HOST_NAME'
+  );
+  const compareTypes = getL7RuleCompareTypes(ruleType);
+
+  // Build the current rule (with API field names) so the shared validator can
+  // be applied to a single field, keeping the wizard in sync with Octavia.
+  const rulePath = (sub) => [
+    'l7policies',
+    policyIndex,
+    'rules',
+    field.name,
+    sub,
+  ];
+  const currentRule = (overrides) => ({
+    type: ruleType,
+    compare_type: form.getFieldValue(rulePath('compareType')),
+    value: form.getFieldValue(rulePath('value')),
+    key: form.getFieldValue(rulePath('key')),
+    ...overrides,
+  });
+
+  const handleTypeChange = (type) => {
+    const nextCompareTypes = getL7RuleCompareTypes(type);
+    setRuleType(type);
+    form.setFields([
+      {
+        name: ['l7policies', policyIndex, 'rules', field.name, 'compareType'],
+        value: nextCompareTypes.includes('EQUAL_TO')
+          ? 'EQUAL_TO'
+          : nextCompareTypes[0],
+      },
+      {
+        name: ['l7policies', policyIndex, 'rules', field.name, 'key'],
+        value: undefined,
+      },
+      // Clear the stale value so a HOST_NAME value is not submitted as, e.g.,
+      // a FILE_TYPE (matches the post-creation form's reset behavior).
+      {
+        name: ['l7policies', policyIndex, 'rules', field.name, 'value'],
+        value: undefined,
+      },
+    ]);
+  };
+
+  return (
+    <div
+      style={{
+        marginBottom: 16,
+        padding: 16,
+        border: '1px dashed #ccc',
+        background: '#fafafa',
+      }}
+    >
+      <Row gutter={24}>
+        <Col span={16}>
+          <Form.Item
+            label={t('Type')}
+            name={[field.name, 'type']}
+            rules={[{ required: true, message: t('Type is required') }]}
+          >
+            <Select onChange={handleTypeChange}>
+              {l7RuleTypes.map((type) => (
+                <Option key={type} value={type}>
+                  {type}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+        </Col>
+
+        <Col span={20}>
+          <Form.Item
+            label={t('Compare Type')}
+            name={[field.name, 'compareType']}
+            rules={[{ required: true, message: t('Compare type is required') }]}
+          >
+            <Select>
+              {compareTypes.map((compareType) => (
+                <Option key={compareType} value={compareType}>
+                  {compareType}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+        </Col>
+
+        <Col span={16}>
+          <Form.Item
+            label={t('Value')}
+            name={[field.name, 'value']}
+            rules={[
+              { required: true, message: t('Value is required') },
+              {
+                validator: (_, value) => {
+                  const error = validateL7Rule(currentRule({ value })).value;
+                  return error
+                    ? Promise.reject(new Error(error))
+                    : Promise.resolve();
+                },
+              },
+            ]}
+          >
+            <Input />
+          </Form.Item>
+        </Col>
+
+        <Col span={16}>
+          <Form.Item
+            label={t('Key')}
+            name={[field.name, 'key']}
+            hidden={!isL7RuleKeyRequired(ruleType)}
+            rules={
+              isL7RuleKeyRequired(ruleType)
+                ? [
+                    { required: true, message: t('Key is required') },
+                    {
+                      validator: (_, value) => {
+                        const error = validateL7Rule(
+                          currentRule({ key: value })
+                        ).key;
+                        return error
+                          ? Promise.reject(new Error(error))
+                          : Promise.resolve();
+                      },
+                    },
+                  ]
+                : []
+            }
+          >
+            <Input />
+          </Form.Item>
+        </Col>
+
+        <Col span={24}>
+          <Form.Item name={[field.name, 'invert']} valuePropName="checked">
+            <Checkbox>{t('Invert')}</Checkbox>
+          </Form.Item>
+        </Col>
+
+        <Col span={24}>
+          <MinusCircleOutlined
+            onClick={() => remove(field.name)}
+            style={{ color: '#ff4d4f', fontSize: 18 }}
+          />
+        </Col>
+      </Row>
+    </div>
+  );
+};
 
 const L7PolicyItem = ({ field }) => {
   const [action, setAction] = useState(null);
@@ -62,17 +231,19 @@ const L7PolicyItem = ({ field }) => {
       <Row gutter={16}>
         <Col span={24}>
           <Form.Item
-            label="Action"
+            label={t('Action')}
             name={[field.name, 'action']}
-            rules={[{ required: true, message: 'Action is required' }]}
+            rules={[{ required: true, message: t('Action is required') }]}
           >
             <Select
-              placeholder="Select Action"
+              placeholder={t('Select Action')}
               onChange={(val) => setAction(val)}
             >
-              <Option value="REDIRECT_TO_URL">REDIRECT_TO_URL</Option>
-              <Option value="REJECT">REJECT</Option>
-              <Option value="REDIRECT_TO_POOL">REDIRECT_TO_POOL</Option>
+              {l7PolicyActions.map((policyAction) => (
+                <Option key={policyAction} value={policyAction}>
+                  {actionLabels[policyAction] || policyAction}
+                </Option>
+              ))}
             </Select>
           </Form.Item>
         </Col>
@@ -82,11 +253,22 @@ const L7PolicyItem = ({ field }) => {
         <Row>
           <Col span={24}>
             <Form.Item
-              label="Redirect URL"
+              label={t('Redirect URL')}
               name={[field.name, 'redirect_url']}
               rules={[
-                { required: true, message: 'Redirect URL is required' },
-                { type: 'url', message: 'Enter a valid URL' },
+                { required: true, message: t('Redirect URL is required') },
+                {
+                  validator: (_, value) => {
+                    if (!value) return Promise.resolve();
+                    const error = validateL7Policy({
+                      action: 'REDIRECT_TO_URL',
+                      redirect_url: value,
+                    }).redirect_url;
+                    return error
+                      ? Promise.reject(new Error(error))
+                      : Promise.resolve();
+                  },
+                },
               ]}
             >
               <Input placeholder="https://example.com" />
@@ -99,11 +281,11 @@ const L7PolicyItem = ({ field }) => {
         <Row>
           <Col span={24}>
             <Form.Item
-              label="Redirect Pool ID"
+              label={t('Redirect Pool ID')}
               name={[field.name, 'redirect_pool_id']}
-              rules={[{ required: true, message: 'Pool ID is required' }]}
+              rules={[{ required: true, message: t('Pool ID is required') }]}
             >
-              <Select placeholder="Select Pool">
+              <Select placeholder={t('Select Pool')}>
                 {pools.map((pool) => (
                   <Option key={pool.id} value={pool.id}>
                     {pool.id}
@@ -119,83 +301,12 @@ const L7PolicyItem = ({ field }) => {
         {(ruleFields, { add, remove }) => (
           <>
             {ruleFields.map((ruleField) => (
-              <div
+              <L7RuleItem
                 key={ruleField.key}
-                style={{
-                  marginBottom: 16,
-                  padding: 16,
-                  border: '1px dashed #ccc',
-                  background: '#fafafa',
-                }}
-              >
-                <Row gutter={24}>
-                  <Col span={16}>
-                    <Form.Item
-                      label="Type"
-                      name={[ruleField.name, 'type']}
-                      rules={[{ required: true, message: 'Type is required' }]}
-                    >
-                      <Select>
-                        <Option value="HOST_NAME">HOST_NAME</Option>
-                      </Select>
-                    </Form.Item>
-                  </Col>
-
-                  <Col span={20}>
-                    <Form.Item
-                      label="Compare Type"
-                      name={[ruleField.name, 'compareType']}
-                      rules={[
-                        { required: true, message: 'Compare type is required' },
-                      ]}
-                    >
-                      <Select>
-                        <Option value="EQUAL_TO">EQUAL_TO</Option>
-                        <Option value="CONTAINS">CONTAINS</Option>
-                        <Option value="STARTS_WITH">STARTS_WITH</Option>
-                        <Option value="ENDS_WITH">ENDS_WITH</Option>
-                        <Option value="REGEX">REGEX</Option>
-                      </Select>
-                    </Form.Item>
-                  </Col>
-
-                  <Col span={16}>
-                    <Form.Item
-                      label="Value"
-                      name={[ruleField.name, 'value']}
-                      rules={[{ required: true, message: 'Value is required' }]}
-                    >
-                      <Input />
-                    </Form.Item>
-                  </Col>
-
-                  <Col span={16}>
-                    <Form.Item
-                      label="Key (Optional)"
-                      name={[ruleField.name, 'key']}
-                    >
-                      <Input />
-                    </Form.Item>
-                  </Col>
-
-                  <Col span={2}>
-                    <Form.Item
-                      label="Invert"
-                      name={[ruleField.name, 'invert']}
-                      valuePropName="checked"
-                    >
-                      <Checkbox />
-                    </Form.Item>
-                  </Col>
-
-                  <Col span={24}>
-                    <MinusCircleOutlined
-                      onClick={() => remove(ruleField.name)}
-                      style={{ color: '#ff4d4f', fontSize: 18 }}
-                    />
-                  </Col>
-                </Row>
-              </div>
+                field={ruleField}
+                policyIndex={field.name}
+                remove={remove}
+              />
             ))}
 
             <Form.Item>
@@ -204,7 +315,7 @@ const L7PolicyItem = ({ field }) => {
                 onClick={() => add()}
                 icon={<PlusOutlined />}
               >
-                Add Rule
+                {t('Add Rule')}
               </Button>
             </Form.Item>
           </>

@@ -108,7 +108,13 @@ export class OctaviaClient extends Base {
       {
         name: 'l7policies',
         key: 'lbaas/l7policies',
-        responseKey: 'l7ypolicy',
+        responseKey: 'l7policy',
+        subResources: [
+          {
+            key: 'rules',
+            responseKey: 'rule',
+          },
+        ],
       },
       {
         name: 'providers',

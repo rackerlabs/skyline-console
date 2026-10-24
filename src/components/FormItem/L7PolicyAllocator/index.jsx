@@ -14,6 +14,7 @@
 import React from 'react';
 import { Form, Button, Row, Col } from 'antd';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import { validateL7Policy } from 'resources/octavia/l7policy';
 import L7PolicyItem from './L7PolicyItem';
 
 const L7PolicyAllocator = ({ formItemProps }) => {
@@ -21,13 +22,13 @@ const L7PolicyAllocator = ({ formItemProps }) => {
 
   return (
     <div style={{ padding: 20 }}>
-      <Form.Item label="Layer 7 Policies">
+      <Form.Item label={t('Layer 7 Policies')}>
         <Form.List name={name}>
           {(fields, { add, remove }) => (
             <>
               {fields.length === 0 && (
                 <div style={{ marginBottom: 12, color: '#888' }}>
-                  No policies configured.
+                  {t('No policies configured.')}
                 </div>
               )}
 
@@ -41,37 +42,17 @@ const L7PolicyAllocator = ({ formItemProps }) => {
                           validator: async (_, value) => {
                             if (!value?.action) {
                               return Promise.reject(
-                                new Error('Action is required')
+                                new Error(t('Action is required'))
                               );
                             }
-
-                            if (
-                              (value.action === 'REDIRECT_TO_URL' &&
-                                !value.redirect_url) ||
-                              (value.action === 'REDIRECT_TO_POOL' &&
-                                !value.redirect_pool_id)
-                            ) {
-                              return Promise.reject(
-                                new Error(
-                                  value.action === 'REDIRECT_TO_URL'
-                                    ? 'Redirect URL is required'
-                                    : 'Redirect Pool ID is required'
-                                )
-                              );
-                            }
-
-                            if (
-                              ['REDIRECT_TO_POOL', 'REDIRECT_TO_URL'].includes(
-                                value.action
-                              ) &&
-                              (!value.rules || value.rules.length === 0)
-                            ) {
-                              return Promise.reject(
-                                new Error('At least one rule is required')
-                              );
-                            }
-
-                            return Promise.resolve();
+                            // Use the shared, authoritative policy validator so
+                            // the wizard and the post-creation form agree.
+                            const [firstError] = Object.values(
+                              validateL7Policy(value)
+                            );
+                            return firstError
+                              ? Promise.reject(new Error(firstError))
+                              : Promise.resolve();
                           },
                         },
                       ]}
@@ -99,7 +80,7 @@ const L7PolicyAllocator = ({ formItemProps }) => {
                 block
                 style={{ marginTop: 16 }}
               >
-                Add Policy
+                {t('Add Policy')}
               </Button>
             </>
           )}
