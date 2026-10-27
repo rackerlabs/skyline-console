@@ -14,6 +14,7 @@
 
 import Base from 'containers/BaseDetail';
 import { inject, observer } from 'mobx-react';
+import { isEmpty, isObject } from 'lodash';
 
 export class Values extends Base {
   get leftCards() {
@@ -21,15 +22,23 @@ export class Values extends Base {
   }
 
   get baseInfoCard() {
-    const options = [
-      {
-        label: t('Values'),
-        dataIndex: 'values',
-      },
-    ];
+    const values = this.detailData?.values || {};
+    const options = !isEmpty(values)
+      ? Object.entries(values).map(([key, val]) => ({
+          label: key,
+          dataIndex: 'values',
+          render: () => (isObject(val) ? JSON.stringify(val) : val),
+        }))
+      : [
+          {
+            label: t('Values'),
+            dataIndex: 'values',
+            render: () => '-',
+          },
+        ];
 
     return {
-      title: t('Defaults'),
+      title: t('Values'),
       options,
     };
   }

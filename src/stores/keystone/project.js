@@ -360,7 +360,10 @@ export class ProjectStore extends Base {
     };
     const renameTroveQuota = troveQuota.reduce((pre, cur) => {
       const key = `trove_${cur.resource}`;
-      pre[key] = cur;
+      pre[key] = {
+        ...cur,
+        limit: cur.limit !== undefined ? cur.limit : cur.hard_limit,
+      };
       return pre;
     }, {});
     const quota = {
@@ -728,7 +731,10 @@ export class ProjectStore extends Base {
       projectId || this.currentProjectId
     );
     const quotasObject = quotas.reduce((pre, cur) => {
-      pre[cur.resource] = cur;
+      pre[cur.resource] = {
+        ...cur,
+        limit: cur.limit !== undefined ? cur.limit : cur.hard_limit,
+      };
       return pre;
     }, {});
     const troveQuota = this.updateQuotaData(quotasObject);

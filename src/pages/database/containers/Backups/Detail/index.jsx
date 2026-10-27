@@ -15,6 +15,7 @@
 import { inject, observer } from 'mobx-react';
 import Base from 'containers/TabDetail';
 import { BackupsStore } from 'stores/trove/backups';
+import actions from '../actions';
 import BaseDetail from './BaseDetail';
 
 export class BackupsDetail extends Base {
@@ -32,6 +33,10 @@ export class BackupsDetail extends Base {
 
   get policy() {
     return 'backup:show';
+  }
+
+  get actionConfigs() {
+    return actions.actionConfigs;
   }
 
   get detailInfos() {

@@ -15,6 +15,7 @@
 import { inject, observer } from 'mobx-react';
 import Base from 'containers/TabDetail';
 import globalConfigurationsStore from 'stores/trove/configurations';
+import actions from '../actions';
 import BaseDetail from './BaseDetail';
 import Values from './Values';
 import Instances from './Instances';
@@ -34,6 +35,10 @@ export class ConfigurationsDetail extends Base {
 
   get policy() {
     return 'configuration:show';
+  }
+
+  get actionConfigs() {
+    return actions.actionConfigs;
   }
 
   get detailInfos() {

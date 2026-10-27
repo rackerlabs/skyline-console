@@ -813,7 +813,7 @@ const renderMenu = (t) => {
           level: 1,
           children: [
             {
-              path: /^\/database\/backup\/detail\/.[^/]+$/,
+              path: /^\/database\/backups\/detail\/.[^/]+$/,
               name: t('Backup Detail'),
               key: 'databaseBackupDetail',
               level: 2,
@@ -828,7 +828,7 @@ const renderMenu = (t) => {
           level: 1,
           children: [
             {
-              path: /^\/database\/configuration\/detail\/.[^/]+$/,
+              path: /^\/database\/configurations\/detail\/.[^/]+$/,
               name: t('Configuration Detail'),
               key: 'configurationsDetail',
               level: 2,

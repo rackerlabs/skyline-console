@@ -109,9 +109,15 @@ export class ManageQuota extends ModalAction {
   checkMin = (rule, value) => {
     const { quota } = this.projectStore;
     const { field } = rule;
-    const { used } = quota[field];
+    const { used = 0 } = quota[field] || {};
     const intNum = /^-?\d+$/;
-    if ((value < used && value !== -1) || !intNum.test(value)) {
+    if (
+      value === null ||
+      value === undefined ||
+      value === '' ||
+      (value < used && value !== -1) ||
+      !intNum.test(value)
+    ) {
       return Promise.reject(
         t(
           'Invalid: Quota value(s) cannot be less than the current usage value(s): { used } used.',

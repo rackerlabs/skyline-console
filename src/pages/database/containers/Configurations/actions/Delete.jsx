@@ -28,6 +28,10 @@ export default class Delete extends ConfirmAction {
     return t('Delete Configuration');
   }
 
+  get buttonText() {
+    return t('Delete');
+  }
+
   get isDanger() {
     return true;
   }

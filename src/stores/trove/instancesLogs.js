@@ -21,7 +21,7 @@ export class InstancesLogStore extends Base {
   }
 
   get responseKey() {
-    return 'logs';
+    return 'log';
   }
 
   get isSubResource() {
