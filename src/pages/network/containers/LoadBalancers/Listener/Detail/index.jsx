@@ -18,6 +18,7 @@ import { provisioningStatusCodes } from 'resources/octavia/lb';
 import Base from 'containers/TabDetail';
 import BaseDetail from './BaseDetail';
 import Members from './Member';
+import L7Policies from './L7Policy';
 import { actionConfigs, adminActions } from '../Actions';
 
 export class ListenerDetail extends Base {
@@ -93,6 +94,11 @@ export class ListenerDetail extends Base {
         title: t('Members'),
         key: 'members',
         component: Members,
+      },
+      {
+        title: t('L7 Policies'),
+        key: 'l7policies',
+        component: L7Policies,
       },
     ];
     return tabs;

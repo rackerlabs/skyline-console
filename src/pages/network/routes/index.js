@@ -33,6 +33,7 @@ import LoadBalancers from '../containers/LoadBalancers/LoadBalancerInstance';
 import StepCreateLoadBalancer from '../containers/LoadBalancers/LoadBalancerInstance/actions/StepCreate';
 import LoadBalancerDetail from '../containers/LoadBalancers/LoadBalancerInstance/Detail';
 import ListenerDetail from '../containers/LoadBalancers/Listener/Detail';
+import L7PolicyDetail from '../containers/LoadBalancers/Listener/Detail/L7Policy/Detail';
 import VPN from '../containers/VPN';
 import IPsecSiteConnectionDetail from '../containers/VPN/IPsecSiteConnection/Detail';
 import SecurityGroups from '../containers/SecurityGroup';
@@ -214,6 +215,17 @@ export default [
       {
         path: `${PATH}/load-balancers-admin/:loadBalancerId/listener/:id`,
         component: ListenerDetail,
+        exact: true,
+      },
+
+      {
+        path: `${PATH}/load-balancers/:loadBalancerId/listener/:listenerId/l7policy/:id`,
+        component: L7PolicyDetail,
+        exact: true,
+      },
+      {
+        path: `${PATH}/load-balancers-admin/:loadBalancerId/listener/:listenerId/l7policy/:id`,
+        component: L7PolicyDetail,
         exact: true,
       },
 
