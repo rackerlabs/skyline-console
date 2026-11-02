@@ -22,8 +22,19 @@ import {
   createFetchPrometheusClient,
 } from 'components/PrometheusChart/utils';
 import { Chart, Line, Tooltip } from 'bizcharts';
+import { shortHostLabel } from '../Tops';
 
 const STEP = 15;
+
+const uniqueHosts = (points = []) => {
+  const hosts = new Set();
+  points.forEach((p) => {
+    if (p.device) {
+      hosts.add(p.device);
+    }
+  });
+  return [...hosts].sort();
+};
 
 const Index = function () {
   const fetchData = createFetchPrometheusClient({
@@ -39,12 +50,13 @@ const Index = function () {
       });
       return ret;
     },
+    deviceKey: 'instance',
     modifyKeys: ['cpu', 'memory'],
   });
 
   const [isLoading, setIsLoading] = useState(true);
-  const [cpuCount, setCpuCount] = useState(0);
-  const [memCount, setMemCount] = useState(0);
+  const [cpuHosts, setCpuHosts] = useState([]);
+  const [memHosts, setMemHosts] = useState([]);
   const [weekData, setWeekData] = useState(build7DaysData());
 
   const fetchDataByDate = async (date) => {
@@ -54,46 +66,43 @@ const Index = function () {
       interval: STEP,
       currentRange: [start, end],
     });
-    const [cpuData, memoryData] = dataHandler(result).retData;
-    const newCpuCount = cpuData.reduce(
-      (pre, cur, idx) =>
-        idx > 0 && cur.x - cpuData[idx - 1].x > STEP ? pre + 1 : pre,
-      0
-    );
-    const newMemoryCount = memoryData.reduce(
-      (pre, cur, idx) =>
-        idx > 0 && cur.x - memoryData[idx - 1].x > STEP ? pre + 1 : pre,
-      0
-    );
-    const total = newCpuCount + newMemoryCount;
+    const [cpuData = [], memoryData = []] = dataHandler(result).retData || [];
+    const cpuHostList = uniqueHosts(cpuData);
+    const memHostList = uniqueHosts(memoryData);
     return {
       date,
-      total,
-      cpuTotal: newCpuCount,
-      memTotal: newMemoryCount,
+      total: cpuHostList.length + memHostList.length,
+      cpuTotal: cpuHostList.length,
+      memTotal: memHostList.length,
+      cpuHosts: cpuHostList,
+      memHosts: memHostList,
     };
   };
 
   const fetchWeekData = async () => {
     setIsLoading(true);
-    const reqs = weekData.map((it) => {
-      const { fullDate } = it;
-      return fetchDataByDate(fullDate);
-    });
+    const base = build7DaysData();
+    const reqs = base.map((it) => fetchDataByDate(it.fullDate));
     try {
       const results = await Promise.all(reqs);
-      results.forEach((r, index) => {
-        const { total, cpuTotal, memTotal } = r;
-        if (index === results.length - 1) {
-          setCpuCount(cpuTotal);
-          setMemCount(memTotal);
-        }
-        weekData[index].count = total;
+      const nextWeek = base.map((day, index) => {
+        const r = results[index];
+        return {
+          ...day,
+          count: r.total,
+          cpuHosts: r.cpuHosts,
+          memHosts: r.memHosts,
+        };
       });
+      const today = results[results.length - 1] || {};
+      setCpuHosts(today.cpuHosts || []);
+      setMemHosts(today.memHosts || []);
+      setWeekData(nextWeek);
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.log(e);
+      setWeekData(base);
     }
-    setWeekData([...weekData]);
     setIsLoading(false);
   };
 
@@ -105,26 +114,39 @@ const Index = function () {
     <Spin />
   ) : (
     <Row gutter={[16, 16]}>
-      <Col flex="1 1">
+      <Col span={12}>
         <div className={styles.card}>
           <Row style={{ height: '100%' }}>
             <Col span={12} className={styles['alert-card-line']}>
-              <div className={styles.number}>{cpuCount}</div>
-              <div>{t('Today CPU usage > 80% alert')}</div>
+              <div className={styles.number}>{cpuHosts.length}</div>
+              <div>{t('Today hosts with CPU usage > 80%')}</div>
+              <HostList hosts={cpuHosts} />
             </Col>
             <Col span={12} className={styles['alert-card-line']}>
-              <div className={styles.number}>{memCount}</div>
-              <div>{t('Today Memory usage > 80% alert')}</div>
+              <div className={styles.number}>{memHosts.length}</div>
+              <div>{t('Today hosts with Memory usage > 80%')}</div>
+              <HostList hosts={memHosts} />
             </Col>
           </Row>
         </div>
       </Col>
-      <Col flex="0 1 440px">
+      <Col span={12}>
         <AlertChart data={weekData} />
       </Col>
     </Row>
   );
 };
+
+function HostList({ hosts = [] }) {
+  if (!hosts.length) {
+    return <div className={styles['alert-host-list']}>{t('None')}</div>;
+  }
+  return (
+    <div className={styles['alert-host-list']} title={hosts.join('\n')}>
+      {hosts.map((h) => shortHostLabel(h)).join(', ')}
+    </div>
+  );
+}
 
 function build7DaysData() {
   const today = moment().startOf('day');
@@ -134,6 +156,8 @@ function build7DaysData() {
       fullDate: today.clone().subtract(index, 'day').format('YYYY-MM-DD'),
       date: today.clone().subtract(index, 'day').format('MM-DD'),
       count: 0,
+      cpuHosts: [],
+      memHosts: [],
     });
   }
   return ret;
@@ -143,8 +167,8 @@ function AlertChart({ data }) {
   return (
     <div className={styles.card}>
       <Row justify="space-between">
-        <span>{t('Last week alarm trend')}</span>
-        <span>{t('time / 24h')}</span>
+        <span>{t('Last week hosts over 80% (CPU + Memory)')}</span>
+        <span>{t('hosts / day')}</span>
       </Row>
       <Row
         justify="center"
@@ -165,12 +189,37 @@ function Charts({ data }) {
       data={data}
       scale={{
         count: {
+          min: 0,
           nice: true,
+          tickInterval: 1,
         },
       }}
     >
-      <Line position="date*count" />
-      <Tooltip showCrosshairs lock />
+      <Line
+        position="date*count"
+        color={globalCSS.warnDarkColor || globalCSS.warnColor || '#FA8C16'}
+      />
+      <Tooltip showCrosshairs lock>
+        {(title, items) => {
+          const point = (items && items[0] && items[0].data) || {};
+          const cpu = (point.cpuHosts || []).map(shortHostLabel);
+          const mem = (point.memHosts || []).map(shortHostLabel);
+          return (
+            <div style={{ padding: 8, fontSize: 12, lineHeight: 1.5 }}>
+              <div>
+                <strong>{title}</strong>
+                {`: ${point.count || 0} ${t('hosts')}`}
+              </div>
+              <div>
+                {t('CPU')}: {cpu.length ? cpu.join(', ') : t('None')}
+              </div>
+              <div>
+                {t('Memory')}: {mem.length ? mem.join(', ') : t('None')}
+              </div>
+            </div>
+          );
+        }}
+      </Tooltip>
     </Chart>
   );
 }

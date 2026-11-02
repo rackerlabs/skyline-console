@@ -55,15 +55,17 @@ export const topCardList = [
     createFetchParams: {
       metricKey: 'physicalNode.systemRunningTime',
     },
-    renderContent: (value) => (
-      <div className={styles['top-content']}>
-        {formatUsedTime(
-          (moment().unix() -
-            parseInt(get(value.data[0], 'y', moment().unix()), 10)) *
-            1000
-        )}
-      </div>
-    ),
+    renderContent: (value) => {
+      const boot = get(value.data[0], 'y');
+      if (!boot) {
+        return <div className={styles['top-content']}>-</div>;
+      }
+      return (
+        <div className={styles['top-content']}>
+          {formatUsedTime((moment().unix() - parseInt(boot, 10)) * 1000)}
+        </div>
+      );
+    },
   },
   {
     title: t('File System Used Space'),
@@ -74,18 +76,19 @@ export const topCardList = [
     handleDataParams: {
       formatDataFn: (...rest) => {
         const [data, typeKey, deviceKey] = rest;
-        const [avail, size] = data;
-        const { data: { result } = { result: [] } } = avail;
+        const [avail, size] = data || [];
+        const { data: { result } = { result: [] } } = avail || {};
         const temp = [];
-        result.forEach((item, index) => {
+        (result || []).forEach((item, index) => {
           const availValue = parseFloat(get(item, 'value[1]', 0));
           const total = parseFloat(
             get(size, `data.result[${index}].value[1]`, 0)
           );
           const used = total - availValue;
+          const device = get(item, `metric.${deviceKey}`, '');
+          const mountpoint = get(item, `metric.${typeKey}`, '');
           temp.push({
-            mountpoint:
-              get(item, `metric.${deviceKey}`) + get(item, `metric.${typeKey}`),
+            mountpoint: [device, mountpoint].filter(Boolean).join(' '),
             avail: availValue,
             total,
             used,
@@ -107,27 +110,24 @@ export const topCardList = [
           const percentage = computePercentage(item.used, item.total);
           const percentageColor =
             percentage > 80 ? globalCSS.warnDarkColor : globalCSS.normalColor;
+          const total = parseInt(item.total, 10) || 0;
+          const used = parseInt(item.used, 10) || 0;
+          const percent =
+            total > 0 ? Number(((used / total) * 100).toFixed(3)) : 0;
           return (
             <div
-              key={item.mountpoint}
+              key={item.mountpoint || index}
               style={{ marginTop: index > 0 ? 16 : 0 }}
             >
               <div>
                 <div style={{ float: 'left' }}>{item.mountpoint}</div>
                 <div style={{ float: 'right' }}>
-                  {`${formatSize(parseInt(item.used, 10))} / ${formatSize(
-                    parseInt(item.total, 10)
-                  )}`}
+                  {`${formatSize(used)} / ${formatSize(total)}`}
                 </div>
               </div>
               <Progress
                 style={{ width: '90%' }}
-                percent={Number(
-                  (
-                    (parseInt(item.used, 10) / parseInt(item.total, 10)) *
-                    100
-                  ).toFixed(3)
-                )}
+                percent={percent}
                 strokeColor={percentageColor}
               />
             </div>

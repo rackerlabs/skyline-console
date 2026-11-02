@@ -78,13 +78,30 @@ export function getRequestUrl(url, params, finalFormatFunc, baseParams) {
 export function addParams(query, params) {
   let addStr = '';
   Object.keys(params).forEach((key) => {
-    if (isArray(params[key])) {
-      addStr += `${key}=~"${params[key].join('|')}",`;
+    const value = params[key];
+    if (value === undefined || value === null || value === '') {
+      return;
+    }
+    if (isArray(value)) {
+      if (value.length === 0) {
+        return;
+      }
+      addStr += `${key}=~"${value.join('|')}",`;
     } else {
-      addStr += `${key}="${params[key]}",`;
+      addStr += `${key}="${value}",`;
     }
   });
-  return `${query}{${addStr.substring(0, addStr.length - 1)}}`;
+  if (!addStr) {
+    return query;
+  }
+  addStr = addStr.substring(0, addStr.length - 1);
+  const selectorMatch = query.match(/^([^{]+)\{([^}]*)\}(.*)$/);
+  if (selectorMatch) {
+    const [, metric, existing, rest] = selectorMatch;
+    const merged = existing ? `${existing},${addStr}` : addStr;
+    return `${metric}{${merged}}${rest}`;
+  }
+  return `${query}{${addStr}}`;
 }
 
 // 1 hour ago - now

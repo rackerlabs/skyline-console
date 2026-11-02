@@ -12,6 +12,76 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+function mysqlThreadsOr(kind) {
+  return (url) => {
+    if (url.includes('mysql_instance_endpoint')) {
+      const labels = (url.match(/\{([^}]*)\}/) || [])[1] || '';
+      const merged = labels ? `${labels},kind="${kind}"` : `kind="${kind}"`;
+      return `mysql_threads{${merged}}`;
+    }
+    return `(${url}) or (mysql_threads{kind="${kind}"})`;
+  };
+}
+
+function mysqlCommandsOr(url) {
+  if (url.includes('mysql_instance_endpoint')) {
+    return url.replace(
+      'mysql_global_status_commands_total',
+      'mysql_commands_total'
+    );
+  }
+  const cmd = (url.match(/command="([^"]+)"/) || [])[1];
+  const otel = cmd
+    ? `mysql_commands_total{command="${cmd}"}`
+    : 'mysql_commands_total';
+  return `(${url}) or (${otel})`;
+}
+
+function mysqlMetricOr(classicName, otelName) {
+  return (url) =>
+    url.includes('mysql_instance_endpoint')
+      ? url.replace(classicName, otelName)
+      : `(${url}) or (${otelName})`;
+}
+
+function rabbitLabelSelector(url) {
+  return (url.match(/\{([^}]*)\}/) || [])[1] || '';
+}
+
+function rabbitStatusOr(url) {
+  if (url.includes('rabbitmq_node_name')) {
+    const sel = rabbitLabelSelector(url);
+    return `max by (rabbitmq_node_name) (rabbitmq_node_mem_used{${sel}}) * 0 + 1`;
+  }
+  return `(${url}) or (max by (rabbitmq_node_name) (rabbitmq_node_mem_used) * 0 + 1)`;
+}
+
+function rabbitQueuesOr(url) {
+  if (url.includes('rabbitmq_node_name')) {
+    const sel = rabbitLabelSelector(url);
+    return `count(count by (rabbitmq_queue_name) (rabbitmq_message_current{${sel}}))`;
+  }
+  return `(${url}) or (count(count by (rabbitmq_queue_name) (rabbitmq_message_current)))`;
+}
+
+function rabbitConsumersOr(url) {
+  if (url.includes('rabbitmq_node_name')) {
+    const sel = rabbitLabelSelector(url);
+    return `sum(rabbitmq_consumer_count{${sel}})`;
+  }
+  return `(${url}) or (sum(rabbitmq_consumer_count))`;
+}
+
+function rabbitPublishedOr(otelMetric) {
+  return (url) => {
+    if (url.includes('rabbitmq_node_name')) {
+      const sel = rabbitLabelSelector(url);
+      return `sum(irate(${otelMetric}{${sel}}[20m]))`;
+    }
+    return `sum(irate(${url}[20m])) or sum(irate(${otelMetric}[20m]))`;
+  };
+}
+
 const metricDict = {
   monitorOverview: {
     alertInfo: {
@@ -22,7 +92,6 @@ const metricDict = {
       baseParams: [
         {
           mode: 'idle',
-          node: '',
         },
         {},
       ],
@@ -47,10 +116,9 @@ const metricDict = {
     },
     computeNodeStatus: {
       url: ['openstack_nova_agent_state'],
-      baseParams: [
-        {
-          service: 'nova-compute',
-        },
+      finalFormatFunc: [
+        (url) =>
+          `(${url}{exported_service="nova-compute"} or ${url}{service="nova-compute"})`,
       ],
     },
     topHostCPUUsage: {
@@ -84,8 +152,10 @@ const metricDict = {
         'node_network_transmit_bytes_total',
       ],
       finalFormatFunc: [
-        (url) => `topk(5, avg(irate(${url}[5m])) by (instance))`,
-        (url) => `topk(5, avg(irate(${url}[5m])) by (instance))`,
+        (url) =>
+          `topk(5, (sum by (instance) (irate(${url}{device=~"bond.+"}[5m])) or sum by (instance) (irate(${url}{device=~"^(eth|ens|enp|eno|em).+"}[5m])) unless on (instance) sum by (instance) (irate(${url}{device=~"bond.+"}[5m]))))`,
+        (url) =>
+          `topk(5, (sum by (instance) (irate(${url}{device=~"bond.+"}[5m])) or sum by (instance) (irate(${url}{device=~"^(eth|ens|enp|eno|em).+"}[5m])) unless on (instance) sum by (instance) (irate(${url}{device=~"bond.+"}[5m]))))`,
       ],
     },
     cephHealthStatus: {
@@ -96,16 +166,19 @@ const metricDict = {
     },
     cephStorageAllocate: {
       url: [
-        'os_cinder_volume_pools_free_capacity_gb',
-        'os_cinder_volume_pools_total_capacity_gb',
+        'openstack_cinder_pool_capacity_free_gb',
+        'openstack_cinder_pool_capacity_total_gb',
       ],
-      finalFormatFunc: [(url) => `sum(${url})`, (url) => `sum(${url})`],
+      finalFormatFunc: [
+        (url) => `sum(${url}) or sum(os_cinder_volume_pools_free_capacity_gb)`,
+        (url) => `sum(${url}) or sum(os_cinder_volume_pools_total_capacity_gb)`,
+      ],
     },
     cephStorageClusterIOPS: {
-      url: ['ceph_osd_op_r', 'ceph_osd_op_w'],
+      url: ['ceph_osd_op_r_total', 'ceph_osd_op_w_total'],
       finalFormatFunc: [
-        (url) => `sum(irate(${url}[5m]))`,
-        (url) => `sum(irate(${url}[5m]))`,
+        (url) => `sum(irate(${url}[5m])) or sum(irate(ceph_osd_op_r[5m]))`,
+        (url) => `sum(irate(${url}[5m])) or sum(irate(ceph_osd_op_w[5m]))`,
       ],
     },
   },
@@ -253,17 +326,19 @@ const metricDict = {
       finalFormatFunc: [(url) => `avg(${url})`, (url) => `avg(${url})`],
     },
     clusterIOPS: {
-      url: ['ceph_osd_op_r', 'ceph_osd_op_w'],
+      url: ['ceph_osd_op_r_total', 'ceph_osd_op_w_total'],
       finalFormatFunc: [
-        (url) => `sum(irate(${url}[5m]))`,
-        (url) => `sum(irate(${url}[5m]))`,
+        (url) => `sum(irate(${url}[5m])) or sum(irate(ceph_osd_op_r[5m]))`,
+        (url) => `sum(irate(${url}[5m])) or sum(irate(ceph_osd_op_w[5m]))`,
       ],
     },
     clusterBandwidth: {
-      url: ['ceph_osd_op_rw_in_bytes', 'ceph_osd_op_rw_out_bytes'],
+      url: ['ceph_osd_op_w_in_bytes_total', 'ceph_osd_op_r_out_bytes_total'],
       finalFormatFunc: [
-        (url) => `sum(irate(${url}[5m]))`,
-        (url) => `sum(irate(${url}[5m]))`,
+        (url) =>
+          `sum(irate(${url}[5m])) or sum(irate(ceph_osd_op_rw_in_bytes_total[5m])) or sum(irate(ceph_osd_op_rw_in_bytes[5m]))`,
+        (url) =>
+          `sum(irate(${url}[5m])) or sum(irate(ceph_osd_op_rw_out_bytes_total[5m])) or sum(irate(ceph_osd_op_rw_out_bytes[5m]))`,
       ],
     },
     tabs: {
@@ -343,13 +418,24 @@ const metricDict = {
     },
     otherService: {
       url: ['mysql_up', 'rabbitmq_identity_info', 'memcached_up'],
+      finalFormatFunc: [
+        (url) =>
+          `(${url}) or (max by (mysql_instance_endpoint) (mysql_commands_total) * 0 + 1)`,
+        (url) =>
+          `(${url}) or (max by (rabbitmq_node_name) (rabbitmq_node_mem_used) * 0 + 1)`,
+        (url) =>
+          `(${url}{job!~"monitoring/.*"}) or (max by (pod, namespace, memcached_server, memcached_endpoint) (memcached_bytes{namespace="openstack"}) * 0 + 1)`,
+      ],
     },
     otherServiceMinOverTime: {
       url: ['mysql_up', 'rabbitmq_identity_info', 'memcached_up'],
       finalFormatFunc: [
-        (url) => `min_over_time(${url}[24h]) == 0`,
-        (url) => `min_over_time(${url}[24h]) == 0`,
-        (url) => `min_over_time(${url}[24h]) == 0`,
+        (url) =>
+          `min_over_time(((${url}) or (max by (mysql_instance_endpoint) (mysql_commands_total) * 0 + 1))[24h:5m]) == 0`,
+        (url) =>
+          `min_over_time(((${url}) or (max by (rabbitmq_node_name) (rabbitmq_node_mem_used) * 0 + 1))[24h:5m]) == 0`,
+        (url) =>
+          `min_over_time(((${url}{job!~"monitoring/.*"}) or (max by (pod, namespace, memcached_server, memcached_endpoint) (memcached_bytes{namespace="openstack"}) * 0 + 1))[24h:5m]) == 0`,
       ],
     },
     // heatMinOverTime: {
@@ -363,18 +449,33 @@ const metricDict = {
   mysqlService: {
     runningTime: {
       url: ['mysql_global_status_uptime'],
+      finalFormatFunc: [
+        mysqlMetricOr(
+          'mysql_global_status_uptime',
+          'mysql_uptime_seconds_total'
+        ),
+      ],
     },
     connectedThreads: {
       url: ['mysql_global_status_threads_connected'],
+      finalFormatFunc: [mysqlThreadsOr('connected')],
     },
     runningThreads: {
       url: ['mysql_global_status_threads_running'],
+      finalFormatFunc: [mysqlThreadsOr('running')],
     },
     slowQuery: {
       url: ['mysql_global_status_slow_queries'],
+      finalFormatFunc: [
+        mysqlMetricOr(
+          'mysql_global_status_slow_queries',
+          'mysql_query_slow_count_total'
+        ),
+      ],
     },
     threadsActivityTrends_connected: {
       url: ['mysql_global_status_threads_connected'],
+      finalFormatFunc: [mysqlThreadsOr('connected')],
     },
     mysqlActions: {
       url: [
@@ -387,9 +488,16 @@ const metricDict = {
         { command: 'insert' },
         { command: 'update' },
       ],
+      finalFormatFunc: [mysqlCommandsOr, mysqlCommandsOr, mysqlCommandsOr],
     },
     slowQueryChart: {
       url: ['mysql_global_status_slow_queries'],
+      finalFormatFunc: [
+        mysqlMetricOr(
+          'mysql_global_status_slow_queries',
+          'mysql_query_slow_count_total'
+        ),
+      ],
     },
   },
   memcacheService: {
@@ -417,30 +525,30 @@ const metricDict = {
   rabbitMQService: {
     serviceStatus: {
       url: ['rabbitmq_identity_info'],
+      finalFormatFunc: [rabbitStatusOr],
     },
     totalConnections: {
       url: ['rabbitmq_connections_opened_total'],
     },
     totalQueues: {
       url: ['rabbitmq_queues_created_total'],
+      finalFormatFunc: [rabbitQueuesOr],
     },
     totalExchanges: {
       url: ['erlang_mnesia_tablewise_size'],
     },
     totalConsumers: {
       url: ['rabbitmq_queue_consumers'],
+      finalFormatFunc: [rabbitConsumersOr],
     },
     publishedOut: {
       url: ['rabbitmq_channel_messages_published_total'],
-      finalFormatFunc: [(url) => `sum(irate(${url}[20m]))`],
+      finalFormatFunc: [rabbitPublishedOr('rabbitmq_message_published_total')],
     },
     publishedIn: {
       url: ['rabbitmq_channel_messages_confirmed_total'],
-      finalFormatFunc: [(url) => `sum(irate(${url}[20m]))`],
+      finalFormatFunc: [rabbitPublishedOr('rabbitmq_message_delivered_total')],
     },
-    // totalMessage: {
-    //   url: ['rabbitmq_overview_messages'],
-    // },
     channel: {
       url: ['rabbitmq_channels'],
     },

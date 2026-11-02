@@ -38,6 +38,23 @@ const ChartCard = (props) => {
 
     const { data } = contextValue;
 
+    if (!Array.isArray(data) || data.length === 0) {
+      return (
+        <div
+          style={{
+            height,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'rgba(0, 0, 0, 0.45)',
+            fontSize: 14,
+          }}
+        >
+          {t('No data')}
+        </div>
+      );
+    }
+
     scale.x = merge(
       {},
       scale.x || {},

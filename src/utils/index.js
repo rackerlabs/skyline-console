@@ -235,12 +235,17 @@ export const getOptionsWithNoSet = (options) => {
 };
 
 export const computePercentage = function (used, total, digits = 2) {
-  if (used === 0) {
+  const usedNum = parseFloat(used);
+  const totalNum = parseFloat(total);
+  if (
+    !usedNum ||
+    !totalNum ||
+    Number.isNaN(usedNum) ||
+    Number.isNaN(totalNum)
+  ) {
     return 0;
   }
-  return parseFloat(
-    ((parseFloat(used) / parseFloat(total)) * 100).toFixed(digits)
-  );
+  return parseFloat(((usedNum / totalNum) * 100).toFixed(digits));
 };
 
 export const groupArray = (arr, subGroupLength) => {

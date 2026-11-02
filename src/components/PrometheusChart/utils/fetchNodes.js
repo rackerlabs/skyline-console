@@ -16,23 +16,19 @@ import { fetchPrometheus } from 'components/PrometheusChart/utils/utils';
 import { get } from 'lodash';
 import isEqual from 'react-fast-compare';
 
-export const defaultGetNodes = async () => {
-  const ret = await fetchPrometheus(
-    get(METRICDICT, 'physicalNode.systemLoad.url[0]'),
-    'current'
-  );
-  const {
-    data: { result: results = [] },
-  } = ret;
-  if (results.length === 0) {
-    return [
-      {
-        metric: {
-          instance: '',
-        },
-      },
-    ];
+async function fetchNodeResults(metricPath) {
+  try {
+    const ret = await fetchPrometheus(get(METRICDICT, metricPath), 'current');
+    return get(ret, 'data.result', []) || [];
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.log(e);
+    return [];
   }
+}
+
+export const defaultGetNodes = async () => {
+  const results = await fetchNodeResults('physicalNode.systemLoad.url[0]');
   return results.map((result) => ({
     metric: {
       instance: result.metric.instance,
@@ -41,22 +37,9 @@ export const defaultGetNodes = async () => {
 };
 
 export const getMemcacheNodes = async () => {
-  const ret = await fetchPrometheus(
-    get(METRICDICT, 'memcacheService.currentConnections.url[0]'),
-    'current'
+  const results = await fetchNodeResults(
+    'memcacheService.currentConnections.url[0]'
   );
-  const {
-    data: { result: results = [] },
-  } = ret;
-  if (results.length === 0) {
-    return [
-      {
-        metric: {
-          instance: '',
-        },
-      },
-    ];
-  }
   return results.map((result) => ({
     metric: {
       instance: result.metric.instance,
@@ -65,29 +48,25 @@ export const getMemcacheNodes = async () => {
 };
 
 export const getRabbitMQNodes = async () => {
-  const response = await fetchPrometheus(
-    get(METRICDICT, 'rabbitMQService.serviceStatus.url[0]'),
-    'current'
-  );
-
-  const {
-    data: { result: results = [] },
-  } = response;
-  if (results.length === 0) {
-    return [
-      {
-        metric: {
-          instance: '',
-        },
-      },
-    ];
+  let results = [];
+  try {
+    const ret = await fetchPrometheus(
+      '(rabbitmq_identity_info) or (max by (rabbitmq_node_name) (rabbitmq_node_mem_used) * 0 + 1)',
+      'current'
+    );
+    results = get(ret, 'data.result', []) || [];
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.log(e);
+    results = [];
   }
   const ret = [];
   results.forEach((result) => {
+    const nodeName = result.metric.rabbitmq_node_name;
     const item = {
-      metric: {
-        instance: result.metric.instance,
-      },
+      metric: nodeName
+        ? { rabbitmq_node_name: nodeName }
+        : { instance: result.metric.instance },
     };
     if (!ret.find((i) => isEqual(i, item))) {
       ret.push(item);
@@ -97,25 +76,29 @@ export const getRabbitMQNodes = async () => {
 };
 
 export const getMysqlNodes = async () => {
-  const ret = await fetchPrometheus(
-    get(METRICDICT, 'mysqlService.runningTime.url[0]'),
-    'current'
-  );
-  const {
-    data: { result: results = [] },
-  } = ret;
-  if (results.length === 0) {
-    return [
-      {
-        metric: {
-          instance: '',
-        },
-      },
-    ];
+  let results = [];
+  try {
+    const ret = await fetchPrometheus(
+      '(mysql_global_status_uptime) or (mysql_uptime_seconds_total)',
+      'current'
+    );
+    results = get(ret, 'data.result', []) || [];
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.log(e);
+    results = [];
   }
-  return results.map((result) => ({
-    metric: {
-      instance: result.metric.instance,
-    },
-  }));
+  const ret = [];
+  results.forEach((result) => {
+    const endpoint = result.metric.mysql_instance_endpoint;
+    const item = {
+      metric: endpoint
+        ? { mysql_instance_endpoint: endpoint }
+        : { instance: result.metric.instance },
+    };
+    if (!ret.find((i) => isEqual(i, item))) {
+      ret.push(item);
+    }
+  });
+  return ret;
 };

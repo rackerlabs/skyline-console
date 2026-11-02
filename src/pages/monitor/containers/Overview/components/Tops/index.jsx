@@ -15,8 +15,11 @@
 import React from 'react';
 import { Col, Progress, Row, Tabs } from 'antd';
 import { get } from 'lodash';
-import { Chart, Interval } from 'bizcharts';
+import { Axis, Chart, Interval, Tooltip } from 'bizcharts';
 import styles from '../../index.less';
+
+export const shortHostLabel = (instance = '') =>
+  String(instance).split(':')[0].split('.')[0] || instance;
 
 export const renderTopProgress = ({ data }) => {
   return (
@@ -55,21 +58,53 @@ export const renderTopColumnExtra = ({ modifyKeys, filterChartData }) => {
   );
 };
 
-export const renderTopColumnChart = ({ data, modifyKeys }) => {
+export const renderTopColumnChart = ({ data, modifyKeys, yFormatter }) => {
+  const points = data || [];
+  const types = [...new Set(points.map((d) => d.type))];
+  const chartData =
+    types.length <= 1 ? points : points.filter((d) => d.type === modifyKeys[0]);
   return (
     <Chart
       autoFit
-      data={
-        data.length <= 5 ? data : data.filter((d) => d.type === modifyKeys[0])
-      }
-      height={198}
+      data={chartData}
+      height={240}
+      padding={[16, 16, 48, 64]}
       scale={{
+        x: {
+          type: 'cat',
+          tickCount: chartData.length || 5,
+        },
         y: {
           nice: true,
+          formatter: yFormatter,
         },
       }}
     >
-      <Interval position="x*y" size={20} />
+      <Axis
+        name="x"
+        label={{
+          autoRotate: false,
+          autoHide: false,
+          rotate: 0,
+          style: {
+            fontSize: 10,
+            textAlign: 'center',
+          },
+        }}
+      />
+      <Axis
+        name="y"
+        label={{
+          autoHide: false,
+          autoEllipsis: false,
+          style: {
+            fontSize: 10,
+            textAlign: 'end',
+          },
+        }}
+      />
+      <Tooltip />
+      <Interval position="x*y" size={18} />
     </Chart>
   );
 };

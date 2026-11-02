@@ -14,26 +14,33 @@
 
 import React from 'react';
 import { Col, Collapse, List, Tooltip } from 'antd';
-import { CheckCircleTwoTone, InfoCircleTwoTone } from '@ant-design/icons';
+import { CheckCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import styles from './index.less';
 
 const { Panel } = Collapse;
 
-const statusToIcon = {
-  up: (
-    <CheckCircleTwoTone
-      style={{ fontSize: 24, marginLeft: 36 }}
-      twoToneColor="#52C41A"
-    />
-  ),
-  // <WarningTwoTone style={{ fontSize: 24, marginLeft: 36 }} twoToneColor="#FAAD14" />,
-  down: (
-    <InfoCircleTwoTone
-      style={{ fontSize: 24, marginLeft: 36 }}
-      twoToneColor={globalCSS.errorColor}
-    />
-  ),
-};
+function renderStatus(state) {
+  const isDisabled = state === 'disabled';
+  const isDown = state === 'down';
+  const color = isDisabled
+    ? globalCSS.warnDarkColor || '#FA8C16'
+    : isDown
+    ? globalCSS.errorColor
+    : '#22754a';
+  const title = isDisabled ? t('Disabled') : isDown ? t('Down') : t('Up');
+  const style = { fontSize: 24, marginLeft: 36, color };
+  return (
+    <Tooltip title={title}>
+      <span>
+        {isDown || isDisabled ? (
+          <InfoCircleOutlined style={style} />
+        ) : (
+          <CheckCircleOutlined style={style} />
+        )}
+      </span>
+    </Tooltip>
+  );
+}
 
 const Services = (props) => {
   const { serviceMap } = props;
@@ -51,7 +58,7 @@ const Services = (props) => {
             loading={item.isLoading}
             renderItem={(it) => (
               <List.Item className={styles.item}>
-                <Col className={styles.title} span={6}>
+                <Col className={styles.title} span={5}>
                   {it.engine_id ? (
                     <Tooltip title={it.engine_id}>
                       <span>{it.serviceName}</span>
@@ -60,21 +67,19 @@ const Services = (props) => {
                     it.serviceName
                   )}
                 </Col>
-                <Col className={styles.title} span={6}>
+                <Col className={styles.title} span={9}>
                   <div>{it.hostname || it.host}</div>
                   {it.instance && (
                     <div className={styles.instance}>{it.instance}</div>
                   )}
                 </Col>
-                <Col className={styles.status} span={6}>
+                <Col className={styles.status} span={5}>
                   <span>{t('Current Status')}</span>
-                  {statusToIcon[it.state]}
+                  {renderStatus(it.state)}
                 </Col>
-                <Col className={styles.status} span={6}>
+                <Col className={styles.status} span={5}>
                   <span>{t('Last 24H Status')} </span>
-                  {it[`${it.serviceName}24`]
-                    ? statusToIcon[it[`${it.serviceName}24`]]
-                    : statusToIcon.up}
+                  {renderStatus(it[`${it.serviceName}24`] || 'up')}
                 </Col>
               </List.Item>
             )}

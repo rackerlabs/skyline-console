@@ -73,14 +73,14 @@ const RenderTabs = ({ fetchPrometheusFunc }) => {
     );
 
     function handler(ret, index, primaryKey) {
-      ret.data.result.forEach((item) => {
-        const { metric, value } = item;
+      get(ret, 'data.result', []).forEach((item) => {
+        const { metric = {}, value } = item;
         const itemIndex = newData.findIndex(
           (p) => p[primaryKey] === metric[primaryKey]
         );
-        // Special handling of expressions that do not have metric.__name__
-        // Usage is the third query expression of details, so it is determined that index===3. The other two tabs are processed together
-        // console.log(metric.__name__);
+        if (itemIndex < 0 || !value) {
+          return;
+        }
         if (index === 3) {
           newData[itemIndex].usage = parseFloat(
             parseFloat(value[1]).toFixed(2)
@@ -97,7 +97,7 @@ const RenderTabs = ({ fetchPrometheusFunc }) => {
           ].indexOf(metric.__name__) > -1
         ) {
           newData[itemIndex][metric.__name__] = parseInt(value[1], 10);
-        } else {
+        } else if (metric.__name__) {
           newData[itemIndex][metric.__name__] = value[1];
         }
       });
@@ -118,15 +118,23 @@ const RenderTabs = ({ fetchPrometheusFunc }) => {
 
   async function getData() {
     setIsLoading(true);
-    const d = await fetchData({
-      currentRange: ctx.range,
-      interval: ctx.interval,
-    });
-    const { retData } = dataHandler(d);
-    const newInitData = await handleInitData(retData);
-    setInitData(newInitData);
-    getListData(newInitData);
-    setIsLoading(false);
+    try {
+      const d = await fetchData({
+        currentRange: ctx.range,
+        interval: ctx.interval,
+      });
+      const { retData } = dataHandler(d);
+      const newInitData = await handleInitData(retData);
+      setInitData(newInitData);
+      getListData(newInitData);
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log(e);
+      setInitData([]);
+      setListData([]);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -206,20 +214,20 @@ const poolsColumns = [
     isHideable: true,
   },
   {
-    title: t('Object Count '),
+    title: t('Object Count'),
     dataIndex: 'ceph_pool_objects',
     isHideable: true,
   },
   {
     title: t('Max Avail'),
     dataIndex: 'ceph_pool_max_avail',
-    render: (text) => formatSize(text),
+    render: (text) => formatSize(text || 0),
     isHideable: true,
   },
   {
     title: t('Usage'),
     dataIndex: 'usage',
-    render: (text) => `${text}%`,
+    render: (text) => `${text || 0}%`,
     isHideable: true,
   },
 ];
@@ -258,13 +266,13 @@ const osdsColumns = [
   {
     title: t('Total Capacity'),
     dataIndex: 'ceph_osd_stat_bytes',
-    render: (text) => formatSize(text),
+    render: (text) => formatSize(text || 0),
     isHideable: true,
   },
   {
     title: t('Usage'),
     dataIndex: 'usage',
-    render: (text) => `${parseFloat(text).toFixed(2)}%`,
+    render: (text) => `${parseFloat(text || 0).toFixed(2)}%`,
     isHideable: true,
   },
 ];

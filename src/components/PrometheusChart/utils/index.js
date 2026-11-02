@@ -1,6 +1,7 @@
 import { get, clone, isArray } from 'lodash';
 import DataSet from '@antv/data-set';
 import { baseReturnFunc, fetchPrometheus, getRequestUrl } from './utils';
+import { handleResponses } from './dataHandler';
 
 export function createFetchPrometheusClient(createParams, fetchPrometheusFunc) {
   const { requestType, metricKey, convertUrl } = createParams;
@@ -8,6 +9,9 @@ export function createFetchPrometheusClient(createParams, fetchPrometheusFunc) {
   const queryParams = get(METRICDICT, metricKey);
 
   return async function ({ params = {}, currentRange, interval }) {
+    if (!queryParams?.url) {
+      return [];
+    }
     const promises = queryParams.url.map((u, idx) => {
       // get aggregate data in order
       const finalFormatFunc =
@@ -29,8 +33,13 @@ export function createFetchPrometheusClient(createParams, fetchPrometheusFunc) {
   };
 }
 
-export function createDataHandler(params) {
-  const { formatDataFn, typeKey, deviceKey, modifyKeys } = params;
+export function createDataHandler(params = {}) {
+  const {
+    formatDataFn = handleResponses,
+    typeKey,
+    deviceKey,
+    modifyKeys,
+  } = params;
 
   return (data) => {
     const formattedData = formatDataFn(data, typeKey, deviceKey, modifyKeys);

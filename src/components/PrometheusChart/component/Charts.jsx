@@ -22,6 +22,21 @@ import BaseCard from '../BaseCard';
 import ChartCard from '../ChartCard';
 import BaseContentContext from './context';
 
+function applyNodeFilter(params, node) {
+  if (!node?.metric) {
+    return;
+  }
+  if (node.metric.hostname) {
+    params.hostname = node.metric.hostname;
+  } else if (node.metric.mysql_instance_endpoint) {
+    params.mysql_instance_endpoint = node.metric.mysql_instance_endpoint;
+  } else if (node.metric.rabbitmq_node_name) {
+    params.rabbitmq_node_name = node.metric.rabbitmq_node_name;
+  } else if (node.metric.instance) {
+    params.instance = node.metric.instance;
+  }
+}
+
 const Charts = (props) => {
   const {
     baseTopCardProps,
@@ -56,12 +71,10 @@ const Charts = (props) => {
           const newFetchDataParams = {
             currentRange: ctx.range,
             interval: ctx.interval,
-            params,
+            params: { ...params },
           };
-          if (ctx.node?.metric.hostname) {
-            newFetchDataParams.params.hostname = ctx.node?.metric.hostname;
-          } else if (ctx.node?.metric.instance) {
-            newFetchDataParams.params.instance = ctx.node?.metric.instance;
+          if (!config.ignoreNodeFilter) {
+            applyNodeFilter(newFetchDataParams.params, ctx.node);
           }
           return (
             <Col {...colProps}>
@@ -97,12 +110,10 @@ const Charts = (props) => {
           const newFetchDataParams = {
             currentRange: ctx.range,
             interval: ctx.interval,
-            params,
+            params: { ...params },
           };
-          if (ctx.node?.metric.hostname) {
-            newFetchDataParams.params.hostname = ctx.node?.metric.hostname;
-          } else if (ctx.node?.metric.instance) {
-            newFetchDataParams.params.instance = ctx.node?.metric.instance;
+          if (!config.ignoreNodeFilter) {
+            applyNodeFilter(newFetchDataParams.params, ctx.node);
           }
           return (
             <Col {...colProps}>
@@ -134,9 +145,11 @@ Charts.defaultProps = {
     handleDataParams: {
       formatDataFn: handleResponses,
     },
-    renderContent: ({ data }) => (
-      <div className={styles['top-content']}>{get(data, '[0].y', 0)}</div>
-    ),
+    renderContent: ({ data }) => {
+      const y = get(data, '[0].y');
+      const hasData = Array.isArray(data) && data.length > 0 && y != null;
+      return <div className={styles['top-content']}>{hasData ? y : '-'}</div>;
+    },
   },
   baseChartProps: {
     span: 12,

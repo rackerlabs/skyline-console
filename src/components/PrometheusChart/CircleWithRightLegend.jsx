@@ -25,6 +25,7 @@ import {
 } from 'bizcharts';
 import React from 'react';
 import PropTypes from 'prop-types';
+import { Empty } from 'antd';
 
 export default class CircleChart extends React.Component {
   static propTypes = {
@@ -41,8 +42,30 @@ export default class CircleChart extends React.Component {
   };
 
   render() {
-    const { data, legendFontSize, legendOffsetX, middleFontSize } = this.props;
-    const sliceNumber = 0.01; // Customize Other's graph by adding two lines
+    const {
+      data = [],
+      legendFontSize,
+      legendOffsetX,
+      middleFontSize,
+    } = this.props;
+    const total = data.reduce((a, b) => a + (Number(b.value) || 0), 0);
+    if (!total) {
+      return (
+        <div
+          style={{
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+        </div>
+      );
+    }
+
+    const sliceNumber = 0.01;
+    const chartData = data.filter((d) => Number(d.value) > 0);
 
     registerShape('interval', 'sliceShape', {
       draw(cfg, container) {
@@ -64,19 +87,40 @@ export default class CircleChart extends React.Component {
       },
     });
     return (
-      <Chart data={data} autoFit padding="auto" appendPadding={[0, 20, 0, 0]}>
+      <Chart
+        data={chartData}
+        autoFit
+        padding="auto"
+        appendPadding={[0, 20, 0, 0]}
+      >
         <Coordinate type="theta" radius={0.8} innerRadius={0.75} />
         <Axis visible={false} />
         <Tooltip showTitle={false} />
         <Interval
           adjust="stack"
           position="value"
-          color="type"
+          color={[
+            'type',
+            (type) => {
+              if (type === 'up' || type === 'clean') {
+                return globalCSS.normalColor || '#52C41A';
+              }
+              if (type === 'disabled') {
+                return (
+                  globalCSS.warnDarkColor || globalCSS.warnColor || '#FA8C16'
+                );
+              }
+              if (type === 'down' || type === 'others') {
+                return globalCSS.errorColor || '#F5222D';
+              }
+              return globalCSS.primaryColor || '#1890FF';
+            },
+          ]}
           shape="sliceShape"
         />
         <Annotation.Text
           position={['50%', '50%']}
-          content={data.reduce((a, b) => a + b.value, 0)}
+          content={total}
           style={{
             lineHeight: 240,
             fontSize: middleFontSize,
@@ -90,6 +134,24 @@ export default class CircleChart extends React.Component {
           itemName={{
             style: {
               fontSize: legendFontSize,
+            },
+            formatter: (text) => {
+              if (text === 'clean') {
+                return t('Clean (healthy)');
+              }
+              if (text === 'others') {
+                return t('Other states');
+              }
+              if (text === 'up') {
+                return t('Up');
+              }
+              if (text === 'down') {
+                return t('Down');
+              }
+              if (text === 'disabled') {
+                return t('Disabled');
+              }
+              return text;
             },
           }}
         />

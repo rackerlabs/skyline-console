@@ -36,15 +36,23 @@ export function handleResponses(
 }
 
 export function handleResponse(response, typeKey, deviceKey, modifyType) {
-  const { data } = response;
   const ret = [];
-  data.result.forEach((result) => {
+  const results = get(response, 'data.result', []);
+  if (!Array.isArray(results)) {
+    return ret;
+  }
+  results.forEach((result) => {
     // values for range type & value for current type
-    const values =
-      result.values || result.value.some(Array.isArray)
-        ? result.value
-        : [result.value] || [];
+    let values = [];
+    if (result.values) {
+      values = result.values;
+    } else if (Array.isArray(result.value)) {
+      values = result.value.some(Array.isArray) ? result.value : [result.value];
+    }
     values.forEach((value) => {
+      if (!Array.isArray(value) || value.length < 2) {
+        return;
+      }
       const item = {
         ...baseFixToChart(value),
       };

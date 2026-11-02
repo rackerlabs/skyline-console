@@ -61,7 +61,7 @@ export class OpenstackService extends Component {
       },
       {
         key: 'other_service',
-        title: t('Other Service'),
+        title: t('Other Services'),
         ...other_service,
       },
     ];

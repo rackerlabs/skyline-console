@@ -22,11 +22,57 @@ const serviceNameMap = {
   memcached_up: t('Cache Service'),
 };
 
-const indexToServiceName = [
-  t('Database Service'),
-  t('Message Queue Service'),
-  t('Cache Service'),
-];
+function getOtherServiceName(metric = {}) {
+  if (metric.memcached_server) {
+    return metric.memcached_server;
+  }
+  if (metric.rabbitmq_node_name) {
+    const node = String(metric.rabbitmq_node_name).replace(/^rabbit@/, '');
+    return node.split('.')[0] || node;
+  }
+  if (metric.mysql_instance_endpoint) {
+    return 'mariadb';
+  }
+  return (
+    metric.service ||
+    metric.job ||
+    metric.pod ||
+    serviceNameMap[metric.__name__] ||
+    metric.__name__ ||
+    ''
+  );
+}
+
+function getOtherServiceHost(metric = {}) {
+  if (metric.instance) {
+    return metric.instance;
+  }
+  if (metric.memcached_endpoint) {
+    return metric.memcached_endpoint;
+  }
+  if (metric.mysql_instance_endpoint) {
+    return metric.mysql_instance_endpoint;
+  }
+  if (metric.rabbitmq_node_name) {
+    return metric.rabbitmq_node_name;
+  }
+  return metric.pod || '';
+}
+
+function getAgentServiceName(metric = {}) {
+  return metric.exported_service || metric.service || '';
+}
+
+function getAgentState(adminState = '') {
+  const state = String(adminState || '').toLowerCase();
+  if (state === 'disabled') {
+    return 'disabled';
+  }
+  if (state === 'enabled' || state === 'up') {
+    return 'up';
+  }
+  return 'down';
+}
 
 export class OpenstackServiceStore extends MonitorBase {
   // @observable
@@ -85,30 +131,29 @@ export class OpenstackServiceStore extends MonitorBase {
         data: { result: currentStateResult },
       } = currentState;
       currentStateResult.forEach((service) => {
-        const {
-          metric: {
-            service: serviceName = '',
-            adminState = '',
-            hostname = '',
-          } = {},
-        } = service;
+        const { metric = {} } = service;
+        const { adminState = '', hostname = '' } = metric;
+        const serviceName = getAgentServiceName(metric);
         tmp.push({
           hostname,
           serviceName,
-          state: adminState === 'enabled' ? 'up' : 'down',
+          state: getAgentState(adminState),
         });
       });
       const {
         data: { result: last24HResult },
       } = last24State;
       last24HResult.forEach((service) => {
-        const { metric: { service: serviceName = '', hostname = '' } = {} } =
-          service;
+        const { metric = {} } = service;
+        const { hostname = '' } = metric;
+        const serviceName = getAgentServiceName(metric);
         const idx = tmp.findIndex(
           (item) =>
             item.serviceName === serviceName && item.hostname === hostname
         );
-        tmp[idx][`${serviceName}24`] = 'down';
+        if (idx >= 0) {
+          tmp[idx][`${serviceName}24`] = 'disabled';
+        }
       });
       const {
         data: { result: data },
@@ -119,7 +164,7 @@ export class OpenstackServiceStore extends MonitorBase {
           // hard code
           serviceName: 'nova_libvirt',
           hostname: metric.hostname,
-          state: value[1] === 'enabled' ? 'up' : 'down',
+          state: value?.[1] === '1' || Number(value?.[1]) > 0 ? 'up' : 'down',
         });
       });
       const {
@@ -131,7 +176,9 @@ export class OpenstackServiceStore extends MonitorBase {
           (item) =>
             item.serviceName === 'nova_libvirt' && item.hostname === hostname
         );
-        tmp[idx].nova_libvirt24 = 'down';
+        if (idx >= 0) {
+          tmp[idx].nova_libvirt24 = 'down';
+        }
       });
     } finally {
       set(this.nova_service, {
@@ -156,30 +203,29 @@ export class OpenstackServiceStore extends MonitorBase {
         data: { result: currentStateResult },
       } = currentState;
       currentStateResult.forEach((service) => {
-        const {
-          metric: {
-            service: serviceName = '',
-            adminState = '',
-            hostname = '',
-          } = {},
-        } = service;
+        const { metric = {} } = service;
+        const { adminState = '', hostname = '' } = metric;
+        const serviceName = getAgentServiceName(metric);
         tmp.push({
           serviceName,
           hostname,
-          state: adminState,
+          state: getAgentState(adminState),
         });
       });
       const {
         data: { result: last24HResult },
       } = last24State;
       last24HResult.forEach((service) => {
-        const { metric: { service: serviceName = '', hostname = '' } = {} } =
-          service;
+        const { metric = {} } = service;
+        const { hostname = '' } = metric;
+        const serviceName = getAgentServiceName(metric);
         const idx = tmp.findIndex(
           (item) =>
             item.serviceName === serviceName && item.hostname === hostname
         );
-        tmp[idx][`${serviceName}24`] = 'down';
+        if (idx >= 0) {
+          tmp[idx][`${serviceName}24`] = 'down';
+        }
       });
     } finally {
       set(this.network_service, {
@@ -204,30 +250,29 @@ export class OpenstackServiceStore extends MonitorBase {
         data: { result: currentStateResult },
       } = currentState;
       currentStateResult.forEach((service) => {
-        const {
-          metric: {
-            service: serviceName = '',
-            adminState = '',
-            hostname = '',
-          } = {},
-        } = service;
+        const { metric = {} } = service;
+        const { adminState = '', hostname = '' } = metric;
+        const serviceName = getAgentServiceName(metric);
         tmp.push({
           serviceName,
           hostname,
-          state: adminState === 'enabled' ? 'up' : 'down',
+          state: getAgentState(adminState),
         });
       });
       const {
         data: { result: last24HResult },
       } = last24State;
       last24HResult.forEach((service) => {
-        const { metric: { service: serviceName = '', hostname = '' } = {} } =
-          service;
+        const { metric = {} } = service;
+        const { hostname = '' } = metric;
+        const serviceName = getAgentServiceName(metric);
         const idx = tmp.findIndex(
           (item) =>
             item.serviceName === serviceName && item.hostname === hostname
         );
-        tmp[idx][`${serviceName}24`] = 'down';
+        if (idx >= 0) {
+          tmp[idx][`${serviceName}24`] = 'down';
+        }
       });
     } finally {
       set(this.cinder_service, {
@@ -249,33 +294,38 @@ export class OpenstackServiceStore extends MonitorBase {
         getPromises.call(this, 'openstackService.otherService')
       );
       results.forEach((result) => {
-        const {
-          data: { result: data },
-        } = result;
+        const data = result?.data?.result || [];
         data.forEach((d) => {
-          const { metric, value } = d;
+          const { metric = {}, value } = d;
+          const serviceName = getOtherServiceName(metric);
+          const hostname = getOtherServiceHost(metric);
           tmp.push({
-            serviceName: serviceNameMap[metric.__name__],
-            hostname: metric.instance,
-            state: value[1] === '1' ? 'up' : 'down',
+            serviceName,
+            hostname,
+            state:
+              value?.[1] === '1' || Number(value?.[1]) === 1 ? 'up' : 'down',
           });
         });
       });
       results = await Promise.all(
         getPromises.call(this, 'openstackService.otherServiceMinOverTime')
       );
-      results.forEach((result, index) => {
-        const {
-          data: { result: last24HResult },
-        } = result;
+      results.forEach((result) => {
+        const last24HResult = result?.data?.result || [];
         last24HResult.forEach((service) => {
-          const { metric: { instance = '' } = {} } = service;
-          const idx = tmp.findIndex(
+          const { metric = {} } = service;
+          const hostname = getOtherServiceHost(metric);
+          const serviceName = getOtherServiceName(metric);
+          let idx = tmp.findIndex(
             (item) =>
-              item.serviceName === indexToServiceName[index] &&
-              item.hostname === instance
+              item.serviceName === serviceName && item.hostname === hostname
           );
-          tmp[idx][`${indexToServiceName[index]}24`] = 'down';
+          if (idx < 0) {
+            idx = tmp.findIndex((item) => item.hostname === hostname);
+          }
+          if (idx >= 0) {
+            tmp[idx][`${tmp[idx].serviceName}24`] = 'down';
+          }
         });
       });
       // const [heatResponse, heat24Response] = await Promise.all(

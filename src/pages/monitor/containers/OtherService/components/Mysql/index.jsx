@@ -28,12 +28,14 @@ const topCardList = [
     createFetchParams: {
       metricKey: 'mysqlService.runningTime',
     },
-    renderContent: ({ data }) => (
-      <div className={styles['top-content']}>
-        {/* convert to milliseconds */}
-        {formatUsedTime(get(data, '[0].y', 0) * 1000)}
-      </div>
-    ),
+    renderContent: ({ data }) => {
+      const seconds = get(data, '[0].y');
+      return (
+        <div className={styles['top-content']}>
+          {seconds ? formatUsedTime(seconds * 1000) : '-'}
+        </div>
+      );
+    },
   },
   {
     title: t('Connected Threads'),

@@ -14,17 +14,21 @@ const useNodeSelect = (defaultNode) => {
   };
 
   const Nodes = () => {
-    if (!nodes.length) {
+    if (!nodes.length || !node?.metric) {
       return null;
     }
     const key = getKey();
+    const current = get(node, `metric.${key}`);
+    if (!current) {
+      return null;
+    }
     return (
       <div style={{ marginBottom: 16 }}>
         <span style={{ color: 'black', fontSize: 14, fontWeight: 400 }}>
           Node:{' '}
         </span>
         <Select
-          value={node.metric[key]}
+          value={current}
           onChange={handleNodeChange}
           style={{ minWidth: 150 }}
         >
@@ -41,12 +45,16 @@ const useNodeSelect = (defaultNode) => {
   return [node, Nodes, setNode, setNodes];
 
   function getKey() {
-    const hostname = get(node, 'metric.hostname', false);
-    let key = 'instance';
-    if (hostname) {
-      key = 'hostname';
+    if (get(node, 'metric.hostname')) {
+      return 'hostname';
     }
-    return key;
+    if (get(node, 'metric.mysql_instance_endpoint')) {
+      return 'mysql_instance_endpoint';
+    }
+    if (get(node, 'metric.rabbitmq_node_name')) {
+      return 'rabbitmq_node_name';
+    }
+    return 'instance';
   }
 };
 

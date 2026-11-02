@@ -56,25 +56,30 @@ const BaseCard = (props) => {
   useEffect(() => {
     (async () => {
       setIsLoading(true);
-      const data = await fetchData(fetchDataParams);
-      const {
-        retData: handledData,
-        device: newDevice,
-        devices: newDevices,
-      } = dataHandler(data);
-      // save base response
-      setInitData(handledData);
+      try {
+        const data = await fetchData(fetchDataParams);
+        const {
+          retData: handledData,
+          device: newDevice,
+          devices: newDevices,
+        } = dataHandler(data);
+        setInitData(handledData);
 
-      // save device information
-      setDevice(newDevice);
-      setDevices(newDevices);
+        setDevice(newDevice);
+        setDevices(newDevices);
 
-      // refresh component
-      const newChartData = getChartData(handledData, newDevice, newDevices);
-      setChartData(newChartData);
-
-      // setLoading
-      setIsLoading(false);
+        const newChartData = getChartData(handledData, newDevice, newDevices);
+        setChartData(newChartData);
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.log(e);
+        setInitData([]);
+        setChartData([]);
+        setDevice('');
+        setDevices([]);
+      } finally {
+        setIsLoading(false);
+      }
     })();
   }, []);
 

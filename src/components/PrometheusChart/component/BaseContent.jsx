@@ -49,24 +49,34 @@ const BaseContent = (props) => {
 
   const [isLoading, setIsLoading] = useState(true);
 
-  const [isFetchingNodes, setIsFetchingNodes] = useState(true);
+  const [isFetchingNodes, setIsFetchingNodes] = useState(!!renderNodeSelect);
 
   const handleRefresh = async (refresh = false) => {
     setIsLoading(true);
     if (renderNodeSelect) {
       setIsFetchingNodes(true);
-      const ret = await fetchNodesFunc();
-      setNodes(ret);
-      if (!node || refresh) {
-        setNode(ret[0]);
+      try {
+        const ret = (await fetchNodesFunc()) || [];
+        setNodes(ret);
+        if ((!node || refresh) && ret.length) {
+          setNode(ret[0]);
+        } else if (!ret.length) {
+          setNode(undefined);
+        }
+        if (refresh && groupIndex !== 4) {
+          setRange(getRange(groupIndex));
+        }
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.log(e);
+        setNodes([]);
+        setNode(undefined);
+      } finally {
+        setIsFetchingNodes(false);
+        setIsLoading(false);
       }
-      // refresh data by force(not in the selected )
-      if (refresh && groupIndex !== 4) {
-        setRange(getRange(groupIndex));
-      }
-      setIsFetchingNodes(false);
-      setIsLoading(false);
     } else {
+      setIsFetchingNodes(false);
       setTimeout(() => {
         setIsLoading(false);
       }, 300);
@@ -111,17 +121,14 @@ const BaseContent = (props) => {
             <Intervals />
           </div>
         )}
-        {renderNodeSelect && (isFetchingNodes ? <Spin /> : <Nodes />)}
-        {(renderNodeSelect && isFetchingNodes) ||
-        (isLoading &&
-          chartConfig?.chartCardList?.length !== 0 &&
-          chartConfig?.topCardList?.length !== 0) ? null : (
-          <Charts {...chartConfig} />
-        )}
+        {renderNodeSelect && !isFetchingNodes && <Nodes />}
         {(renderNodeSelect && isFetchingNodes) || isLoading ? (
           <Spin />
         ) : (
-          children
+          <>
+            <Charts {...chartConfig} />
+            {children}
+          </>
         )}
       </BaseContentContext.Provider>
     </div>

@@ -25,6 +25,7 @@ import styles from 'components/PrometheusChart/component/styles.less';
 const topCardList = [
   {
     title: t('Server Status'),
+    ignoreNodeFilter: true,
     createFetchParams: {
       metricKey: 'rabbitMQService.serviceStatus',
     },
@@ -42,11 +43,13 @@ const topCardList = [
       },
     },
     renderContent: ({ data }) => {
+      const up = get(data, 'up', 0);
+      const down = get(data, 'down', 0);
       return (
         <div className={styles['top-content']}>
           <Row style={{ width: '100%', textAlign: 'center' }}>
-            <Col span={12}>{data.up + t('Up')}</Col>
-            <Col span={12}>{data.down + t('Down')}</Col>
+            <Col span={12}>{`${up} ${t('Up')}`}</Col>
+            <Col span={12}>{`${down} ${t('Down')}`}</Col>
           </Row>
         </div>
       );

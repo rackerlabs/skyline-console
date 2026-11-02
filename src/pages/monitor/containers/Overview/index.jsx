@@ -59,7 +59,7 @@ const Index = () => {
               handleDataParams: {
                 formatDataFn: handleResponses,
               },
-              visibleHeight: 200,
+              visibleHeight: 280,
               renderContent: (store) => (
                 <div className={styles['top-content']}>{store.data}</div>
               ),

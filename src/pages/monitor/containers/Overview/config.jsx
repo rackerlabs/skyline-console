@@ -5,7 +5,9 @@ import { computePercentage } from 'src/utils';
 import {
   cephStatusColorMap,
   cephStatusMap,
+  getSuitableUnit,
   getSuitableValue,
+  getValueByUnit,
 } from 'resources/prometheus/monitoring';
 import CircleChart from 'components/PrometheusChart/CircleWithRightLegend';
 import { handleResponses } from 'components/PrometheusChart/utils/dataHandler';
@@ -15,6 +17,7 @@ import {
   renderTopColumnChart,
   renderTopColumnExtra,
   renderTopProgress,
+  shortHostLabel,
 } from './components/Tops';
 import styles from './index.less';
 
@@ -162,19 +165,21 @@ export const physicalNodeRightTopCardList = [
     handleDataParams: {
       formatDataFn: (responses) => {
         const status = [
-          {
-            type: 'up',
-            value: 0,
-          },
-          {
-            type: 'down',
-            value: 0,
-          },
+          { type: 'up', value: 0 },
+          { type: 'disabled', value: 0 },
+          { type: 'down', value: 0 },
         ];
         const result = get(responses[0], 'data.result', []);
         result.forEach((r) => {
-          const idx = r.metric.adminState === 'enabled' ? 0 : 1;
-          status[idx].value += parseInt(r.value[1], 10);
+          const adminState = String(r.metric?.adminState || '').toLowerCase();
+          const count = parseInt(r.value[1], 10) || 0;
+          if (adminState === 'enabled' || adminState === 'up') {
+            status[0].value += count;
+          } else if (adminState === 'disabled') {
+            status[1].value += count;
+          } else {
+            status[2].value += count;
+          }
         });
         return status;
       },
@@ -203,6 +208,7 @@ export const topCardList = [
   {
     title: t('Host Disk Average IOPS'),
     span: 12,
+    visibleHeight: 280,
     createFetchParams: {
       metricKey: 'monitorOverview.topHostDiskIOPS',
     },
@@ -211,8 +217,10 @@ export const topCardList = [
         const data = [];
         reps.forEach((ret, resIdx) => {
           (ret.data.result || []).forEach((d) => {
+            const instance = d.metric.instance || '';
             data.push({
-              x: d.metric.instance,
+              x: shortHostLabel(instance),
+              host: instance,
               y: parseFloat(get(d, 'value[1]', 0)),
               type: mk[resIdx],
             });
@@ -239,6 +247,7 @@ export const topCardList = [
   {
     title: t('Host Average Network IO'),
     span: 12,
+    visibleHeight: 280,
     createFetchParams: {
       metricKey: 'monitorOverview.topHostInterface',
     },
@@ -247,8 +256,10 @@ export const topCardList = [
         const data = [];
         reps.forEach((ret, resIdx) => {
           (ret.data.result || []).forEach((d) => {
+            const instance = d.metric.instance || '';
             data.push({
-              x: d.metric.instance,
+              x: shortHostLabel(instance),
+              host: instance,
               y: parseFloat(get(d, 'value[1]', 0)),
               type: mk[resIdx],
             });
@@ -260,15 +271,11 @@ export const topCardList = [
     },
     extra: renderTopColumnExtra,
     renderContent: (p) => {
-      const Cmp = renderTopColumnChart(p);
-      return React.cloneElement(Cmp, {
-        ...Cmp.props,
-        scale: {
-          y: {
-            nice: true,
-            formatter: (d) => getSuitableValue(d, 'traffic', 0),
-          },
-        },
+      const maxY = Math.max(0, ...(p.data || []).map((d) => Number(d.y) || 0));
+      const unit = getSuitableUnit(maxY, 'traffic') || 'B/s';
+      return renderTopColumnChart({
+        ...p,
+        yFormatter: (d) => `${getValueByUnit(d, unit)} ${unit}`,
       });
     },
   },
@@ -282,18 +289,18 @@ export const storageLeftCardList = [
       metricKey: 'monitorOverview.cephHealthStatus',
     },
     renderContent: (store) => {
-      const data = get(store.data, 'y', 0);
+      const status = Number(get(store.data, '[0].y', get(store.data, 'y', 0)));
       return (
         <div
           className={styles['top-content']}
           style={{
             fontSize: 28,
             fontWeight: 600,
-            color: cephStatusColorMap[data],
+            color: cephStatusColorMap[status],
             height: 65,
           }}
         >
-          {cephStatusMap[data]}
+          {cephStatusMap[status]}
         </div>
       );
     },

@@ -39,7 +39,7 @@ const StorageCluster = () => {
         metricKey: 'storageCluster.cephHealthStatus',
       },
       renderContent: ({ data }) => {
-        const d = get(data, 'y', 0);
+        const d = Number(get(data, '[0].y', get(data, 'y', 0)));
         return (
           <div
             className={styles['top-content']}
@@ -55,7 +55,7 @@ const StorageCluster = () => {
       },
     },
     {
-      title: 'Monitors',
+      title: t('Monitors'),
       span: 9,
       createFetchParams: {
         metricKey: 'storageCluster.cephMonitorStatus',
@@ -74,8 +74,8 @@ const StorageCluster = () => {
             },
           ];
           data.forEach((i) => {
-            const newVal = status[i.y].value + 1;
-            status[i.y].value = newVal;
+            const idx = Number(i.y) === 1 ? 1 : 0;
+            status[idx].value += 1;
           });
           return status;
         },
@@ -148,7 +148,7 @@ const StorageCluster = () => {
               {t('Down')}
             </Col>
             <Col span={8} style={{ fontSize: 14, opacity: 0.8 }}>
-              {t('In Cluster')}
+              {t('In')}
             </Col>
             <Col span={8} style={{ fontSize: 18 }}>
               {data.inUp}
@@ -157,7 +157,7 @@ const StorageCluster = () => {
               {data.inDown}
             </Col>
             <Col span={8} style={{ fontSize: 14, opacity: 0.8 }}>
-              {t('Out Cluster')}
+              {t('Out')}
             </Col>
             <Col span={8} style={{ fontSize: 18 }}>
               {data.outUp}
