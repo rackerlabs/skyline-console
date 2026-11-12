@@ -48,7 +48,15 @@ export class SwiftClient extends Base {
           },
           {
             key: 'create',
-            generate: (name) => {
+            generate: (name, headers) => {
+              if (headers && Object.keys(headers).length) {
+                return this.request.put(
+                  this.getEncodeUrl(name),
+                  undefined,
+                  undefined,
+                  { headers }
+                );
+              }
               return this.request.put(this.getEncodeUrl(name));
             },
           },

@@ -190,6 +190,16 @@ function PopUpContent({ item }) {
           {getStrFromTimestamp(data.timestamp)}
         </Col>
       </Row>
+      {data.versionId && (
+        <Row className={styles['popup-row']}>
+          <Col {...labelColProps} className={styles['popup-label']}>
+            {t('Version ID')}
+          </Col>
+          <Col {...valueColProps} className={styles['popup-value']}>
+            {data.versionId}
+          </Col>
+        </Row>
+      )}
       <Row className={styles['popup-row']}>
         <Col {...labelColProps} className={styles['popup-label']}>
           {t('Size')}
