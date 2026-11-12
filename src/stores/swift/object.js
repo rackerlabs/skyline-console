@@ -164,6 +164,13 @@ export class ObjectStore extends Base {
       etag: headers.etag,
       size: headers['content-length'],
       originFileName: headers['x-object-meta-orig-filename'],
+      // Only sent by Swift's object_versioning middleware on versioned
+      // containers; "null" marks an object written while versioning was off.
+      versionId:
+        headers['x-object-version-id'] &&
+        headers['x-object-version-id'] !== 'null'
+          ? headers['x-object-version-id']
+          : null,
     };
     return data;
   }
@@ -244,9 +251,13 @@ export class ObjectStore extends Base {
 
   @action
   async createFile(container, data, config = {}) {
-    const { file, dest_folder = '' } = data;
+    const { file, dest_folder = '', skipNameCheck = false } = data;
     const name = `${dest_folder}${file.name}`;
-    await this.checkName(container, name);
+    // Versioned containers keep the previous copy, so an existing name is a
+    // valid upload target there; everywhere else block the overwrite.
+    if (!skipNameCheck) {
+      await this.checkName(container, name);
+    }
 
     const headers = {
       'X-Object-Meta-Orig-Filename': encodeURIComponent(file.name),

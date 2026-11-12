@@ -16,6 +16,7 @@ import Create from './Create';
 import Delete from './Delete';
 import Access from './Access';
 import CDN from './CDN';
+import ManageVersioning from './ManageVersioning';
 
 const actionConfigs = {
   rowActions: {
@@ -23,6 +24,9 @@ const actionConfigs = {
     moreActions: [
       {
         action: CDN,
+      },
+      {
+        action: ManageVersioning,
       },
       {
         action: Delete,

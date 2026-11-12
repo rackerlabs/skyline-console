@@ -18,13 +18,16 @@ import { Popover, Col, Row, Skeleton } from 'antd';
 import Base from 'containers/List';
 import SwiftStorageWarning from 'components/SwiftStorageWarning';
 import globalContainerStore, { ContainerStore } from 'stores/swift/container';
+import globalSwiftInfoStore from 'stores/swift/info';
 import { bytesFilter } from 'utils/index';
 import { allCanChangePolicy } from 'resources/skyline/policy';
+import { isVersionedState } from 'resources/swift/versioning';
 import { getStrFromTimestamp } from 'utils/time';
 import { swiftEndpoint } from 'client/client/constants';
 import featureStore from 'stores/skyline/features';
 import actionConfigs from './actions';
 import CDNUrl from './CDNUrl';
+import VersioningStatus, { renderVersioningTag } from './VersioningStatus';
 
 function renderUrl(url) {
   return <CDNUrl url={url} maxWidth={220} />;
@@ -39,6 +42,10 @@ function PopUpContent({ name }) {
     (async function () {
       setLoading(true);
       const cb = await new ContainerStore().fetchDetail({ name });
+      if (globalSwiftInfoStore.isVersioningSupported && cb && cb.versioning) {
+        // Keep the list column in sync with the fresh HEAD.
+        globalContainerStore.setVersioning(name, cb.versioning);
+      }
       timeout = setTimeout(() => {
         setLoading(false);
         setData(cb);
@@ -48,17 +55,35 @@ function PopUpContent({ name }) {
       clearTimeout(timeout);
     };
   }, []);
+  const showVersioning = globalSwiftInfoStore.isVersioningSupported;
+  const versioningState = (data.versioning || {}).state;
+  const isVersioned = showVersioning && isVersionedState(versioningState);
   const content = loading ? (
     <Skeleton loading={loading} />
   ) : (
     <>
+      {showVersioning && (
+        <Row>
+          <Col span={8}>{t('Versioning')}</Col>
+          <Col span={12}>{renderVersioningTag(versioningState)}</Col>
+        </Row>
+      )}
       <Row>
-        <Col span={8}>{t('Object Count')}</Col>
+        <Col span={8}>
+          {isVersioned ? t('Current objects') : t('Object Count')}
+        </Col>
         <Col span={12}>{data.object_count}</Col>
       </Row>
       <Row>
         <Col span={8}>{t('Size')}</Col>
-        <Col span={12}>{bytesFilter(data.used)}</Col>
+        <Col span={12}>
+          {bytesFilter(data.used)}
+          {isVersioned && (
+            <div style={{ color: 'rgba(0, 0, 0, 0.45)', fontSize: 12 }}>
+              {t('includes stored versions')}
+            </div>
+          )}
+        </Col>
       </Row>
       <Row>
         <Col span={8}>{t('Created At')}</Col>
@@ -115,6 +140,22 @@ function PopUpContent({ name }) {
 export class Container extends Base {
   init() {
     this.store = globalContainerStore;
+    // Cached per region; resolves to false on any error.
+    if (swiftEndpoint()) {
+      globalSwiftInfoStore.fetchInfo();
+    }
+  }
+
+  // Wait for /info (cached after the first call) before rendering rows so
+  // the row actions are evaluated with the known versioning capability.
+  fetchData = async (newParams) => {
+    await globalSwiftInfoStore.fetchInfo();
+    await this.store.fetchList(newParams);
+    this.list.silent = false;
+  };
+
+  get isVersioningSupported() {
+    return globalSwiftInfoStore.isVersioningSupported;
   }
 
   get policy() {
@@ -138,7 +179,8 @@ export class Container extends Base {
   }
 
   get hideCustom() {
-    return true;
+    // The column picker lets users hide the Versioning column (no HEADs).
+    return !this.isVersioningSupported;
   }
 
   get hideDownload() {
@@ -186,6 +228,14 @@ export class Container extends Base {
         render: (value) => (value ? t('Enabled') : t('Disabled')),
       },
       {
+        title: t('Versioning'),
+        dataIndex: 'versioning',
+        isHideable: true,
+        render: (_, record) => (
+          <VersioningStatus name={record.name || record.id} />
+        ),
+      },
+      {
         title: t('Detail Info'),
         dataIndex: 'detail',
         isHideable: true,
@@ -199,11 +249,15 @@ export class Container extends Base {
         },
       },
     ];
-    return columns.filter(
-      (column) =>
-        column.dataIndex !== 'cdn_enabled' ||
-        featureStore.isEnabled('storage_swift_cdn')
-    );
+    return columns.filter((column) => {
+      if (column.dataIndex === 'cdn_enabled') {
+        return featureStore.isEnabled('storage_swift_cdn');
+      }
+      if (column.dataIndex === 'versioning') {
+        return this.isVersioningSupported;
+      }
+      return true;
+    });
   };
 
   get searchFilters() {
