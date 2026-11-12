@@ -105,12 +105,53 @@ export class ActionButton extends Component {
     this.state = {
       visible: false,
       submitLoading: false,
+      disabledReason: null,
     };
+  }
+
+  componentDidMount() {
+    this.updateDisabledReason();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.item !== this.props.item) {
+      this.updateDisabledReason();
+    }
+  }
+
+  componentWillUnmount() {
+    this.unmounted = true;
   }
 
   get routing() {
     return this.props.rootStore.routing;
   }
+
+  // Optional per-item hook: an action may define a static
+  // `getDisabledReason(item, containerProps)` returning (a promise of) a
+  // string. When it returns a reason, the button is rendered disabled with
+  // that reason as its tooltip instead of being hidden.
+  updateDisabledReason = async () => {
+    const { action, item, isBatch, containerProps } = this.props;
+    if (isBatch || !item || !action || !isFunction(action.getDisabledReason)) {
+      return;
+    }
+    const token = {};
+    this.disabledReasonToken = token;
+    let reason = null;
+    try {
+      reason = await action.getDisabledReason(item, containerProps);
+    } catch (e) {
+      reason = null;
+    }
+    if (this.unmounted || this.disabledReasonToken !== token) {
+      return;
+    }
+    const disabledReason = reason || null;
+    if (disabledReason !== this.state.disabledReason) {
+      this.setState({ disabledReason });
+    }
+  };
 
   onClick = () => {
     const { actionType, onClickAction, action, item, items, isBatch } =
@@ -436,10 +477,14 @@ export class ActionButton extends Component {
   };
 
   onClickModalActionOk = () => {
-    const { containerProps } = this.props;
+    const { containerProps, action } = this.props;
     return this.formRef.current.wrappedInstance.onClickSubmit(
       (success, fail) => {
         this.handleSubmitLoading();
+        // Actions that render the submit error inside the modal keep it open.
+        if (fail && action && action.keepModalOnSubmitError) {
+          return;
+        }
         this.onClickModalActionCancel(true);
         this.onCallback(success, fail);
       },
@@ -599,6 +644,7 @@ export class ActionButton extends Component {
     if (!isAllowed && needHide) {
       return null;
     }
+    const { disabledReason } = this.state;
     const buttonText = name || title;
     let showTip = false;
     if (isFirstAction && buttonText && buttonText.length > maxLength) {
@@ -610,15 +656,16 @@ export class ActionButton extends Component {
         danger={isDanger}
         onClick={this.onClick}
         key={id}
-        disabled={!isAllowed}
+        disabled={!isAllowed || !!disabledReason}
         className={buttonClassName}
         style={style}
       >
         {name || title}
       </Button>
     );
-    const buttonRender = showTip ? (
-      <Tooltip title={buttonText}>{button}</Tooltip>
+    const tipTitle = disabledReason || (showTip ? buttonText : null);
+    const buttonRender = tipTitle ? (
+      <Tooltip title={tipTitle}>{button}</Tooltip>
     ) : (
       button
     );
