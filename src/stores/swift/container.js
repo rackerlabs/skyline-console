@@ -12,13 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { action } from 'mobx';
+import { action, observable } from 'mobx';
 import client from 'client';
 import featureStore from 'stores/skyline/features';
 import { fetchFreezerContainers } from 'stores/freezer/swift-containers';
+import {
+  parseVersioningHeaders,
+  VERSIONING_ENABLED,
+  VERSIONING_SUSPENDED,
+  VERSIONING_UNKNOWN,
+} from 'resources/swift/versioning';
 import Base from '../base';
 
 export class ContainerStore extends Base {
+  versioningMap = observable.map();
+
+  versioningRequests = {};
+
   get client() {
     return client.swift.container;
   }
@@ -64,14 +74,83 @@ export class ContainerStore extends Base {
       timestamp: headers['x-timestamp'],
       is_public: isPublic,
       link,
+      versioning: parseVersioningHeaders(headers),
       ...cdn,
     };
     return data;
   }
 
-  // Read CDN state and public URLs for a single container via the backend
-  // (which issues a HEAD to the CDN Swift endpoint). Falls back to a disabled
-  // state on error so the UI never gets stuck.
+  @action
+  setVersioning(name, info) {
+    this.versioningMap.set(name, info);
+  }
+
+  @action
+  clearVersioning(name) {
+    delete this.versioningRequests[name];
+    this.versioningMap.delete(name);
+  }
+
+  fetchVersioning(name) {
+    if (this.versioningRequests[name]) {
+      return this.versioningRequests[name];
+    }
+    if (this.versioningMap.has(name)) {
+      return Promise.resolve(this.versioningMap.get(name));
+    }
+    const request = this.client.showMetadata(name).then(
+      (result) => {
+        const info = parseVersioningHeaders((result && result.headers) || {});
+        if (this.versioningRequests[name] === request) {
+          this.setVersioning(name, info);
+          delete this.versioningRequests[name];
+        }
+        return info;
+      },
+      () => {
+        const info = {
+          state: VERSIONING_UNKNOWN,
+          legacyLocation: '',
+          syncTo: '',
+        };
+        if (this.versioningRequests[name] === request) {
+          this.setVersioning(name, info);
+          delete this.versioningRequests[name];
+        }
+        return info;
+      }
+    );
+    this.versioningRequests[name] = request;
+    return request;
+  }
+
+  // POST X-Versions-Enabled. The cached state only changes on success.
+  @action
+  updateVersioning = async (name, enabled) => {
+    const headers = {
+      'X-Versions-Enabled': enabled ? 'true' : 'false',
+    };
+    const result = await this.submitting(
+      this.client.updateMetadata(name, headers)
+    );
+    const current = this.versioningMap.get(name) || {
+      legacyLocation: '',
+      syncTo: '',
+    };
+    this.setVersioning(name, {
+      ...current,
+      state: enabled ? VERSIONING_ENABLED : VERSIONING_SUSPENDED,
+    });
+    return result;
+  };
+
+  @action
+  clearData() {
+    super.clearData();
+    this.versioningMap.clear();
+    this.versioningRequests = {};
+  }
+
   async fetchCDNInfo(name) {
     if (!featureStore.isEnabled('storage_swift_cdn')) return {};
     try {
@@ -105,8 +184,6 @@ export class ContainerStore extends Base {
     }));
   }
 
-  // Enrich the container list with CDN metadata in a single batched backend
-  // call rather than letting the frontend issue one HEAD request per row.
   async fetchCDNList(items) {
     if (
       !featureStore.isEnabled('storage_swift_cdn') ||
@@ -158,20 +235,31 @@ export class ContainerStore extends Base {
 
   @action
   async create(data) {
-    const { name, isPublic } = data;
+    const { name, isPublic, versioning } = data;
     await this.checkName(name);
+    // Object versioning is requested on the single container PUT; no header
+    // is sent when the switch is off.
+    const headers = versioning ? { 'X-Versions-Enabled': 'true' } : undefined;
+    this.clearVersioning(name);
     if (!isPublic) {
-      return this.submitting(this.client.create(name));
+      return this.submitting(this.client.create(name, headers));
     }
     this.isSubmitting = true;
-    await this.client.create(name);
+    try {
+      await this.client.create(name, headers);
+    } catch (e) {
+      this.isSubmitting = false;
+      throw e;
+    }
     return this.updatePublic(name, isPublic);
   }
 
   @action
   delete = async ({ id }) => {
     try {
-      return await this.submitting(this.client.delete(id));
+      const result = await this.submitting(this.client.delete(id));
+      this.clearVersioning(id);
+      return result;
     } catch (error) {
       if (error?.response?.status === 409) {
         const message = t(

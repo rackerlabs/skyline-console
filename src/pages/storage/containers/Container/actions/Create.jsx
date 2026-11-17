@@ -15,7 +15,10 @@
 import { inject, observer } from 'mobx-react';
 import { ModalAction } from 'containers/Action';
 import globalContainerStore from 'stores/swift/container';
+import globalSwiftInfoStore from 'stores/swift/info';
 import { allCanChangePolicy } from 'resources/skyline/policy';
+import { getSwiftErrorBody } from 'resources/swift/versioning';
+import { getSwiftErrorFormItem } from './SwiftError';
 
 export class Create extends ModalAction {
   static id = 'create';
@@ -24,13 +27,28 @@ export class Create extends ModalAction {
 
   static policy = allCanChangePolicy;
 
+  static keepModalOnSubmitError = true;
+
   static allowed = (_, containerProps) => {
     const { isAdminPage } = containerProps;
     return Promise.resolve(!isAdminPage);
   };
 
+  init() {
+    this.state = {
+      ...this.state,
+      swiftError: null,
+    };
+    this.hasInlineError = false;
+    globalSwiftInfoStore.fetchInfo();
+  }
+
   get name() {
     return t('Create Container');
+  }
+
+  get showNotice() {
+    return !this.hasInlineError;
   }
 
   get tips() {
@@ -40,6 +58,7 @@ export class Create extends ModalAction {
   }
 
   get formItems() {
+    const { swiftError } = this.state;
     return [
       {
         name: 'name',
@@ -57,11 +76,31 @@ export class Create extends ModalAction {
           'A public container will allow anyone to use the objects in your container through a public URL.'
         ),
       },
+      {
+        name: 'versioning',
+        label: t('Object Versioning'),
+        type: 'switch',
+        display: globalSwiftInfoStore.isVersioningSupported,
+      },
+      getSwiftErrorFormItem(swiftError),
     ];
   }
 
   onSubmit = async (value) => {
-    return globalContainerStore.create(value);
+    const { versioning, ...rest } = value;
+    const data = {
+      ...rest,
+      versioning: globalSwiftInfoStore.isVersioningSupported && !!versioning,
+    };
+    this.hasInlineError = false;
+    this.setState({ swiftError: null });
+    try {
+      return await globalContainerStore.create(data);
+    } catch (error) {
+      this.hasInlineError = true;
+      this.setState({ swiftError: getSwiftErrorBody(error) });
+      throw error;
+    }
   };
 }
 

@@ -12,10 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import React from 'react';
+import { Alert } from 'antd';
 import { inject, observer } from 'mobx-react';
 import { ModalAction } from 'containers/Action';
 import globalObjectStore, { ObjectStore } from 'stores/swift/object';
+import globalContainerStore from 'stores/swift/container';
+import globalSwiftInfoStore from 'stores/swift/info';
 import { allCanChangePolicy } from 'resources/skyline/policy';
+import { VERSIONING_ENABLED } from 'resources/swift/versioning';
 
 export class UploadFile extends ModalAction {
   static id = 'upload-file';
@@ -27,6 +32,40 @@ export class UploadFile extends ModalAction {
   init() {
     this.store = new ObjectStore();
     this.maxSize = 5;
+    this.state = {
+      ...this.state,
+      versioningEnabled: false,
+    };
+    this.loadVersioning();
+  }
+
+  get containerName() {
+    return (globalObjectStore.container || {}).name;
+  }
+
+  // Whether the target container currently has object versioning Enabled.
+  // Only asks Swift when /info advertises object_versioning.
+  async isVersioningEnabled(refresh = false) {
+    const name = this.containerName;
+    if (!name) {
+      return false;
+    }
+    const supported = await globalSwiftInfoStore.fetchInfo();
+    if (!supported) {
+      return false;
+    }
+    if (refresh) {
+      globalContainerStore.clearVersioning(name);
+    }
+    const info = await globalContainerStore.fetchVersioning(name);
+    return !!info && info.state === VERSIONING_ENABLED;
+  }
+
+  async loadVersioning() {
+    const versioningEnabled = await this.isVersioningEnabled();
+    if (versioningEnabled !== this.state.versioningEnabled) {
+      this.setState({ versioningEnabled });
+    }
   }
 
   static allowed = (_, containerProps) => {
@@ -76,6 +115,20 @@ export class UploadFile extends ModalAction {
     const destFolder = prefix || folder || '';
     return [
       {
+        type: 'label',
+        display: this.state.versioningEnabled,
+        wrapperCol: { xs: { span: 24 }, sm: { span: 22 } },
+        component: (
+          <Alert
+            type="info"
+            showIcon
+            message={t(
+              'Versioning is enabled on this container. If an object with the same name exists, a new version will be created.'
+            )}
+          />
+        ),
+      },
+      {
         name: 'container',
         label: t('Container Name'),
         type: 'label',
@@ -99,7 +152,8 @@ export class UploadFile extends ModalAction {
   onSubmit = async (values) => {
     const { container, ...rest } = values;
     const config = this.getUploadRequestConf();
-    return this.store.createFile(container, rest, config);
+    const skipNameCheck = await this.isVersioningEnabled(true);
+    return this.store.createFile(container, { ...rest, skipNameCheck }, config);
   };
 }
 

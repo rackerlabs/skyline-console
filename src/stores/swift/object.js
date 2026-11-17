@@ -164,6 +164,11 @@ export class ObjectStore extends Base {
       etag: headers.etag,
       size: headers['content-length'],
       originFileName: headers['x-object-meta-orig-filename'],
+      versionId:
+        headers['x-object-version-id'] &&
+        headers['x-object-version-id'] !== 'null'
+          ? headers['x-object-version-id']
+          : null,
     };
     return data;
   }
@@ -244,9 +249,11 @@ export class ObjectStore extends Base {
 
   @action
   async createFile(container, data, config = {}) {
-    const { file, dest_folder = '' } = data;
+    const { file, dest_folder = '', skipNameCheck = false } = data;
     const name = `${dest_folder}${file.name}`;
-    await this.checkName(container, name);
+    if (!skipNameCheck) {
+      await this.checkName(container, name);
+    }
 
     const headers = {
       'X-Object-Meta-Orig-Filename': encodeURIComponent(file.name),
