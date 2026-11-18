@@ -1,3 +1,21 @@
+.object-name {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  align-items: center;
+  max-width: 100%;
+
+  :global(.ant-tag) {
+    margin-right: 0;
+    border-radius: 4px;
+  }
+}
+
+.object-name-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .link-header {
   display: flex;
   flex-wrap: wrap;

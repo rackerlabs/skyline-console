@@ -17,6 +17,7 @@ import client from 'client';
 import { swiftEndpoint } from 'client/client/constants';
 import globalRootStore from 'stores/root';
 import { fetchFreezerContainers } from 'stores/freezer/swift-containers';
+import { parseVersioningHeaders } from 'resources/swift/versioning';
 import Base from '../base';
 
 export class ObjectStore extends Base {
@@ -131,11 +132,9 @@ export class ObjectStore extends Base {
   };
 
   async listDidFetch(items) {
-    if (items.length === 0) {
-      return items;
-    }
     const { name: containerName } = this.container || {};
     let isPublic = false;
+    let versioning = null;
 
     if (containerName) {
       try {
@@ -143,9 +142,14 @@ export class ObjectStore extends Base {
           containerName
         );
         isPublic = !!headers['x-container-read'];
+        versioning = parseVersioningHeaders(headers);
       } catch (e) {
         isPublic = false;
       }
+    }
+
+    if (containerName && this.container?.name === containerName) {
+      this.container = { ...this.container, versioning };
     }
 
     return this.updateData(items, isPublic);
