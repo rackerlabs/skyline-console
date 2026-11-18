@@ -131,19 +131,6 @@ export class Image extends Base {
         sorter: false,
       },
       {
-        title: t('Description'),
-        dataIndex: 'description',
-        isHideable: true,
-        sorter: false,
-      },
-      {
-        title: t('Use Type'),
-        dataIndex: 'usage_type',
-        isHideable: true,
-        valueMap: imageUsage,
-        sorter: false,
-      },
-      {
         title: t('Container Format'),
         dataIndex: 'container_format',
         valueMap: imageContainerFormats,
@@ -166,6 +153,13 @@ export class Image extends Base {
         title: t('Visibility'),
         dataIndex: 'visibility',
         valueMap: imageVisibility,
+        sorter: false,
+      },
+      {
+        title: t('Use Type'),
+        dataIndex: 'usage_type',
+        isHideable: true,
+        valueMap: imageUsage,
         sorter: false,
       },
       {
