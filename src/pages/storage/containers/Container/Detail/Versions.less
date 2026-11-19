@@ -1,0 +1,165 @@
+@import '~styles/variables';
+
+.version-count {
+  margin-left: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.versions-drawer {
+  overflow: hidden;
+
+  :global {
+    .ant-drawer-content-wrapper {
+      max-width: 100%;
+      box-shadow: -8px 0 24px rgba(0, 0, 0, 8%);
+    }
+
+    .ant-drawer-content {
+      border-left: 1px solid @light-color03;
+    }
+
+    .ant-drawer-header {
+      padding: 18px 24px;
+    }
+
+    .ant-drawer-body {
+      padding: 20px 24px;
+      background-color: @light-color01;
+      overscroll-behavior: contain;
+    }
+
+    .ant-drawer-title {
+      min-width: 0;
+    }
+
+    .ant-drawer-footer {
+      padding: 12px 24px;
+    }
+  }
+}
+
+.drawer-title {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.drawer-icon {
+  padding: 10px;
+  color: @primary-color;
+  font-size: 20px;
+  background-color: @light-color02;
+  border-radius: 10px;
+}
+
+.drawer-title-text {
+  min-width: 0;
+}
+
+.drawer-file-name {
+  margin-top: 4px;
+  color: @color-text-body;
+  font-weight: 400;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.versions-summary {
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  background-color: white;
+  border: 1px solid @light-color03;
+  border-radius: 8px;
+}
+
+.object-path {
+  margin-bottom: 4px;
+  color: @color-text-title;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.versions-error {
+  margin-bottom: 16px;
+}
+
+.versions-table {
+  overflow: hidden;
+  background-color: white;
+  border: 1px solid @light-color03;
+  border-radius: 8px;
+
+  :global {
+    .ant-table-thead > tr > th {
+      padding: 12px;
+      color: @color-text-body;
+      background-color: @light-color02;
+    }
+
+    .ant-table-tbody > tr > td {
+      padding: 14px 12px;
+    }
+  }
+}
+
+.version-current > td {
+  background-color: #f0f6ff;
+}
+
+.version-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+
+  :global(.ant-tag) {
+    margin-right: 0;
+    border-radius: 4px;
+  }
+}
+
+.version-date {
+  white-space: nowrap;
+}
+
+.version-id {
+  font-size: 12px;
+  font-family: Consolas, Monaco, monospace;
+  overflow-wrap: anywhere;
+}
+
+.version-details {
+  margin: 4px 0;
+  background-color: white;
+
+  :global {
+    .ant-descriptions-item-label {
+      width: 180px;
+      color: @color-text-body;
+    }
+
+    .ant-descriptions-item-content {
+      overflow-wrap: anywhere;
+    }
+  }
+}
+
+.drawer-footer {
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .versions-drawer {
+    :global {
+      .ant-drawer-header,
+      .ant-drawer-body,
+      .ant-drawer-footer {
+        padding: 12px;
+      }
+    }
+  }
+
+  .versions-summary {
+    padding: 12px;
+  }
+}

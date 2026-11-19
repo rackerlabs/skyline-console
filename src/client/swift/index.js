@@ -41,6 +41,31 @@ export class SwiftClient extends Base {
         key: '',
         extendOperations: [
           {
+            key: 'listObjectVersions',
+            generate: (container, name, params = {}) =>
+              this.request.get(`${this.getEncodeUrl(container)}?versions`, {
+                ...params,
+                format: 'json',
+                prefix: name,
+              }),
+          },
+          {
+            key: 'downloadObjectVersion',
+            generate: (container, name, versionId) =>
+              this.request.get(
+                this.getEncodeUrl(`${container}/${name}`),
+                { 'version-id': String(versionId) },
+                { responseType: 'blob' }
+              ),
+          },
+          {
+            key: 'showObjectVersionMetadata',
+            generate: (container, name, versionId) =>
+              this.request.head(this.getEncodeUrl(`${container}/${name}`), {
+                'version-id': String(versionId),
+              }),
+          },
+          {
             key: 'url',
             generate: (name) => {
               return this.getUrl(name);

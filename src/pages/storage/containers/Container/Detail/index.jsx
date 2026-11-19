@@ -14,21 +14,24 @@
 
 import React, { useEffect, useState } from 'react';
 import { observer, inject } from 'mobx-react';
-import { Popover, Col, Row, Skeleton, Button, message } from 'antd';
+import { Popover, Col, Row, Skeleton, Button, Tag, message } from 'antd';
 import Base from 'containers/List';
 import SwiftStorageWarning from 'components/SwiftStorageWarning';
 import globalObjectStore, { ObjectStore } from 'stores/swift/object';
 import { ContainerStore } from 'stores/swift/container';
+import globalSwiftInfoStore from 'stores/swift/info';
 import { bytesFilter } from 'utils/index';
 import { allCanReadPolicy } from 'resources/skyline/policy';
 import { toJS } from 'mobx';
 import { isEqual } from 'lodash';
 import { isFolder } from 'resources/swift/container';
+import { isVersionedState } from 'resources/swift/versioning';
 import { getStrFromTimestamp } from 'utils/time';
 import featureStore from 'stores/skyline/features';
 import styles from './index.less';
 import actionConfigs from './actions';
 import CDNUrl from '../CDNUrl';
+import Versions from './Versions';
 
 function renderCDNUrl(url) {
   return <CDNUrl url={url} maxWidth={360} />;
@@ -230,6 +233,7 @@ function PopUpContent({ item }) {
 export class ContainerObject extends Base {
   init() {
     this.store = globalObjectStore;
+    globalSwiftInfoStore.fetchInfo();
   }
 
   get policy() {
@@ -318,54 +322,77 @@ export class ContainerObject extends Base {
     };
   };
 
-  getColumns = () => [
-    {
-      title: t('Name'),
-      dataIndex: 'shortName',
-      render: (name, record) => {
-        const { type, container } = record;
-        if (type === 'folder') {
-          const folderPath = record.name;
-          return this.getLinkRender('folderDetail', name, {
-            container,
-            folder: folderPath,
-          });
-        }
-        return name;
+  getColumns = () => {
+    const { container: containerName } = this.params;
+    const containerInfo = this.store.container;
+    const showVersions =
+      globalSwiftInfoStore.isVersioningSupported &&
+      containerInfo?.name === containerName &&
+      isVersionedState(containerInfo?.versioning?.state);
+    return [
+      {
+        title: t('Name'),
+        dataIndex: 'shortName',
+        render: (name, record) => {
+          const { type, container } = record;
+          if (type === 'folder') {
+            const folderPath = record.name;
+            return this.getLinkRender('folderDetail', name, {
+              container,
+              folder: folderPath,
+            });
+          }
+          return (
+            <span className={styles['object-name']}>
+              <span className={styles['object-name-text']}>{name}</span>
+              {showVersions && <Tag color="green">{t('Current')}</Tag>}
+            </span>
+          );
+        },
       },
-    },
-    {
-      title: t('Size'),
-      dataIndex: 'bytes',
-      isHideable: true,
-      valueRender: 'formatSize',
-      render: (value, data) => {
-        if (data.type === 'folder') {
-          return '-';
-        }
-        return bytesFilter(value);
+      {
+        title: t('Size'),
+        dataIndex: 'bytes',
+        isHideable: true,
+        valueRender: 'formatSize',
+        render: (value, data) => {
+          if (data.type === 'folder') {
+            return '-';
+          }
+          return bytesFilter(value);
+        },
       },
-    },
-    {
-      title: t('Last Updated'),
-      dataIndex: 'last_modified',
-      isHideable: true,
-      valueRender: 'sinceTime',
-    },
-    {
-      title: t('Detail'),
-      dataIndex: 'detail',
-      isHideable: true,
-      render: (_, data) => {
-        const content = <PopUpContent item={data} />;
-        return (
-          <Popover content={content} destroyTooltipOnHide trigger="click">
-            <span className="link-class">{t('Detail')}</span>
-          </Popover>
-        );
+      {
+        title: t('Last Updated'),
+        dataIndex: 'last_modified',
+        isHideable: true,
+        valueRender: 'sinceTime',
       },
-    },
-  ];
+      {
+        title: t('Detail'),
+        dataIndex: 'detail',
+        isHideable: true,
+        render: (_, data) => {
+          const content = <PopUpContent item={data} />;
+          return (
+            <Popover content={content} destroyTooltipOnHide trigger="click">
+              <span className="link-class">{t('Detail')}</span>
+            </Popover>
+          );
+        },
+      },
+      ...(showVersions
+        ? [
+            {
+              title: t('Versions'),
+              dataIndex: 'versions',
+              width: 210,
+              render: (_, data) => !isFolder(data) && <Versions item={data} />,
+            },
+          ]
+        : []),
+    ];
+  };
 
   get searchFilters() {
     return [
