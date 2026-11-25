@@ -1,3 +1,14 @@
+.show-deleted {
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: 8px;
+  align-items: center;
+  height: 32px;
+  margin: 0;
+  color: rgba(0, 0, 0, 65%);
+  white-space: nowrap;
+}
+
 .object-name {
   display: inline-flex;
   flex-wrap: wrap;
@@ -91,6 +102,7 @@
 
 .cdn-header {
   display: flex;
+  gap: 12px;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 12px;
@@ -102,12 +114,28 @@
   font-size: 14px;
 }
 
-.cdn-row {
-  margin-bottom: 6px;
-  line-height: 1.8;
-  word-break: break-all;
+.cdn-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cdn-field {
+  min-width: 0;
+  line-height: 1.6;
 }
 
 .cdn-label {
   color: rgba(0, 0, 0, 65%);
+  font-size: 12px;
+}
+
+.cdn-value {
+  color: rgba(0, 0, 0, 85%);
+  font-weight: 400;
+  font-size: 12px;
+}
+
+.cdn-url-value {
+  word-break: break-all;
 }

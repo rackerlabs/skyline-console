@@ -66,6 +66,35 @@ export class SwiftClient extends Base {
               }),
           },
           {
+            key: 'restoreObjectVersion',
+            generate: (container, name, versionId) =>
+              this.request.put(
+                this.getEncodeUrl(`${container}/${name}`),
+                '',
+                { 'version-id': String(versionId) },
+                {
+                  headers: {
+                    'Content-Length': '0',
+                    'Content-Type': 'application/octet-stream',
+                  },
+                }
+              ),
+          },
+          {
+            key: 'copyObjectVersion',
+            generate: (container, name, versionId) =>
+              this.request.copy(
+                this.getEncodeUrl(`${container}/${name}`),
+                { 'version-id': String(versionId) },
+                {
+                  headers: {
+                    Destination: this.getEncodeUrl(`${container}/${name}`),
+                  },
+                  returnResponse: true,
+                }
+              ),
+          },
+          {
             key: 'url',
             generate: (name) => {
               return this.getUrl(name);

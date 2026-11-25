@@ -5,23 +5,23 @@ import {
   Button,
   Descriptions,
   Drawer,
+  Dropdown,
+  Menu,
+  Modal,
   Skeleton,
-  Spin,
   Table,
   Tag,
   Typography,
   message,
 } from 'antd';
 import FileSaver from 'file-saver';
-import {
-  DownloadOutlined,
-  ExportOutlined,
-  HistoryOutlined,
-} from '@ant-design/icons';
+import { DownOutlined, HistoryOutlined } from '@ant-design/icons';
 import ObjectVersionStore from 'stores/swift/object-version';
 import {
+  canRestoreVersion,
   getVersionId,
   getVersionKey,
+  isCurrentVersion,
   isDeleteMarker,
 } from 'resources/swift/object-version';
 import { getSwiftErrorBody } from 'resources/swift/versioning';
@@ -87,25 +87,172 @@ export function VersionDetails({ store, row }) {
   );
 }
 
-class VersionsDrawerContent extends React.Component {
-  download = async (row) => {
+const isNotFound = (error) =>
+  !!(error && error.response && error.response.status === 404);
+
+function VersionRowActions({ item, row, store, onVersionGone, onRestored }) {
+  const [largeObject, setLargeObject] = useState(null);
+  const [checkingLargeObject, setCheckingLargeObject] = useState(false);
+  const versionKey = getVersionKey(row);
+  const offerRestore = canRestoreVersion(row);
+
+  useEffect(() => {
+    setLargeObject(null);
+    setCheckingLargeObject(false);
+  }, [versionKey]);
+
+  const handleGoneOrError = (error) => {
+    if ((error && error.isVersionGone) || isNotFound(error)) {
+      onVersionGone();
+      return true;
+    }
+    message.error(getSwiftErrorBody(error));
+    return false;
+  };
+
+  const runAction = async (request, successMessage) => {
     try {
-      const { item, store } = this.props;
+      const result = await request();
+      message.success(
+        typeof successMessage === 'function'
+          ? successMessage(result)
+          : successMessage
+      );
+      await onRestored();
+    } catch (error) {
+      if (!handleGoneOrError(error)) {
+        throw error;
+      }
+    }
+  };
+
+  const confirmAction = (title, content, onOk) => {
+    Modal.confirm({
+      title,
+      content,
+      okText: t('Confirm'),
+      cancelText: t('Cancel'),
+      onOk,
+    });
+  };
+
+  const download = async () => {
+    try {
       const response = await store.download(row);
       FileSaver.saveAs(
         response.data || response,
         item.shortName || item.name.split('/').pop()
       );
     } catch (error) {
-      message.error(getSwiftErrorBody(error));
+      handleGoneOrError(error);
     }
+  };
+
+  const onMenuVisibleChange = async (visible) => {
+    if (!visible || !offerRestore || largeObject !== null) {
+      return;
+    }
+    setCheckingLargeObject(true);
+    try {
+      setLargeObject(await store.isLargeObject(row));
+    } catch (error) {
+      handleGoneOrError(error);
+    } finally {
+      setCheckingLargeObject(false);
+    }
+  };
+
+  if (isDeleteMarker(row)) {
+    return null;
+  }
+
+  // Keep Restore as new visible (disabled) while HEAD runs; hide only for SLO.
+  const showRestoreAsNew = offerRestore && largeObject !== true;
+  const restoreAsNewReady = largeObject === false && !checkingLargeObject;
+
+  return (
+    <Dropdown
+      trigger={['click']}
+      onVisibleChange={onMenuVisibleChange}
+      overlay={
+        <Menu>
+          <Menu.Item key="download" onClick={download}>
+            {t('Download')}
+          </Menu.Item>
+          {offerRestore && (
+            <Menu.Item
+              key="restore"
+              onClick={() =>
+                confirmAction(
+                  t('Restore'),
+                  t(
+                    'Restore this version as the current object without creating a new version?'
+                  ),
+                  () =>
+                    runAction(() => store.restore(row), t('Version restored.'))
+                )
+              }
+            >
+              {t('Restore')}
+            </Menu.Item>
+          )}
+          {showRestoreAsNew && (
+            <Menu.Item
+              key="restore-as-new"
+              disabled={!restoreAsNewReady}
+              onClick={
+                restoreAsNewReady
+                  ? () =>
+                      confirmAction(
+                        t('Restore as new version'),
+                        t(
+                          'Copy this version to create a new current version of the object?'
+                        ),
+                        () =>
+                          runAction(
+                            () => store.restoreAsNewVersion(row),
+                            (versionId) =>
+                              versionId
+                                ? t('Restored as new version {id}', {
+                                    id: versionId,
+                                  })
+                                : t('Restored as new version.')
+                          )
+                      )
+                  : undefined
+              }
+            >
+              {t('Restore as new version')}
+            </Menu.Item>
+          )}
+        </Menu>
+      }
+    >
+      <Button type="link" size="small">
+        {t('Actions')} <DownOutlined />
+      </Button>
+    </Dropdown>
+  );
+}
+
+class VersionsDrawerContent extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { versionGone: false };
+  }
+
+  refreshDrawer = async (versionGone = false) => {
+    this.setState({ versionGone });
+    await this.props.store.reload();
   };
 
   render() {
     const { item, onClose, store } = this.props;
+    const { versionGone } = this.state;
     const versionCount = store.hasMore
       ? t('{count} versions loaded so far', { count: store.rows.length })
       : t('Total versions: {count}', { count: store.rows.length });
+    const versions = store.rows.slice();
     const columns = [
       {
         title: t('Status'),
@@ -113,7 +260,9 @@ class VersionsDrawerContent extends React.Component {
         width: 170,
         render: (_, row) => (
           <div className={styles['version-status']}>
-            {row.is_latest && <Tag color="green">{t('Current')}</Tag>}
+            {isCurrentVersion(row, versions) && (
+              <Tag color="green">{t('Current')}</Tag>
+            )}
             {isDeleteMarker(row) && <Tag color="red">{t('Deleted')}</Tag>}
             {getVersionId(row) === 'null' && <Tag>{t('Pre-versioning')}</Tag>}
           </div>
@@ -149,18 +298,16 @@ class VersionsDrawerContent extends React.Component {
       {
         title: t('Actions'),
         key: 'actions',
-        width: 110,
-        render: (_, row) =>
-          !isDeleteMarker(row) && (
-            <Button
-              type="link"
-              size="small"
-              icon={<DownloadOutlined />}
-              onClick={() => this.download(row)}
-            >
-              {t('Download')}
-            </Button>
-          ),
+        width: 120,
+        render: (_, row) => (
+          <VersionRowActions
+            item={item}
+            row={row}
+            store={store}
+            onVersionGone={() => this.refreshDrawer(true)}
+            onRestored={() => this.refreshDrawer(false)}
+          />
+        ),
       },
     ];
 
@@ -176,7 +323,7 @@ class VersionsDrawerContent extends React.Component {
           <div className={styles['drawer-title']}>
             <HistoryOutlined className={styles['drawer-icon']} />
             <div className={styles['drawer-title-text']}>
-              <div>{t('Versions Drawer')}</div>
+              <div>{t('Versions')}</div>
               <div className={styles['drawer-file-name']}>
                 {item.shortName || item.name}
               </div>
@@ -201,6 +348,14 @@ class VersionsDrawerContent extends React.Component {
           </div>
           <Typography.Text type="secondary">{versionCount}</Typography.Text>
         </div>
+        {versionGone && (
+          <Alert
+            className={styles['versions-error']}
+            type="warning"
+            showIcon
+            message={t('This version no longer exists')}
+          />
+        )}
         {store.error && (
           <Alert
             className={styles['versions-error']}
@@ -215,10 +370,10 @@ class VersionsDrawerContent extends React.Component {
           size="small"
           rowKey={getVersionKey}
           rowClassName={(row) =>
-            row.is_latest ? styles['version-current'] : ''
+            isCurrentVersion(row, versions) ? styles['version-current'] : ''
           }
           columns={columns}
-          dataSource={store.rows.slice()}
+          dataSource={versions}
           loading={store.loading}
           pagination={false}
           scroll={{ x: 820 }}
@@ -236,28 +391,17 @@ class VersionsDrawerContent extends React.Component {
 
 export const VersionsDrawer = observer(VersionsDrawerContent);
 
-const VersionsButton = observer(({ store, onClick }) => {
-  const hasCount = store.rows.length > 0 || !store.hasMore;
-  let count = '-';
-  if (hasCount) {
-    count = `${store.rows.length}${store.hasMore ? '+' : ''}`;
-  } else if (store.loading) {
-    count = <Spin size="small" />;
-  }
-  return (
-    <Button
-      type="primary"
-      ghost
-      size="small"
-      icon={<ExportOutlined />}
-      title={store.error ? t('Unable to load versions.') : t('Versions Drawer')}
-      onClick={onClick}
-    >
-      {t('Versions Drawer')}
-      <span className={styles['version-count']}>({count})</span>
-    </Button>
-  );
-});
+const VersionsButton = observer(({ store, onClick }) => (
+  <button
+    type="button"
+    className={`link-class ${styles['versions-link']}`}
+    title={store.error ? t('Unable to load versions.') : undefined}
+    onClick={onClick}
+  >
+    <HistoryOutlined className={styles['versions-link-icon']} />
+    {t('Versions')}
+  </button>
+));
 
 export default function Versions({ item }) {
   const [visible, setVisible] = useState(false);
@@ -267,8 +411,10 @@ export default function Versions({ item }) {
   );
 
   useEffect(() => {
-    store.loadMore();
-  }, [store]);
+    if (visible && store.rows.length === 0 && store.hasMore && !store.loading) {
+      store.loadMore();
+    }
+  }, [visible, store]);
 
   return (
     <>

@@ -14,20 +14,24 @@
 
 import React, { useEffect, useState } from 'react';
 import { observer, inject } from 'mobx-react';
-import { Popover, Col, Row, Skeleton } from 'antd';
+import { Popover, Col, Row, Skeleton, Tag } from 'antd';
 import Base from 'containers/List';
 import SwiftStorageWarning from 'components/SwiftStorageWarning';
 import globalContainerStore, { ContainerStore } from 'stores/swift/container';
 import globalSwiftInfoStore from 'stores/swift/info';
 import { bytesFilter } from 'utils/index';
 import { allCanChangePolicy } from 'resources/skyline/policy';
-import { isVersionedState } from 'resources/swift/versioning';
+import {
+  getVersioningLabel,
+  isVersionedState,
+  VERSIONING_UNKNOWN,
+} from 'resources/swift/versioning';
 import { getStrFromTimestamp } from 'utils/time';
 import { swiftEndpoint } from 'client/client/constants';
 import featureStore from 'stores/skyline/features';
 import actionConfigs from './actions';
 import CDNUrl from './CDNUrl';
-import VersioningStatus, { renderVersioningTag } from './VersioningStatus';
+import VersioningStatus from './VersioningStatus';
 
 function renderUrl(url) {
   return <CDNUrl url={url} maxWidth={220} />;
@@ -64,7 +68,11 @@ function PopUpContent({ name }) {
       {showVersioning && (
         <Row>
           <Col span={8}>{t('Versioning')}</Col>
-          <Col span={12}>{renderVersioningTag(versioningState)}</Col>
+          <Col span={12}>
+            {!versioningState || versioningState === VERSIONING_UNKNOWN
+              ? '-'
+              : getVersioningLabel(versioningState)}
+          </Col>
         </Row>
       )}
       <Row>
@@ -220,7 +228,12 @@ export class Container extends Base {
         title: t('CDN'),
         dataIndex: 'cdn_enabled',
         isHideable: true,
-        render: (value) => (value ? t('Enabled') : t('Disabled')),
+        render: (value) =>
+          value ? (
+            <Tag color="green">{t('Enabled')}</Tag>
+          ) : (
+            <Tag>{t('Disabled')}</Tag>
+          ),
       },
       {
         title: t('Versioning'),

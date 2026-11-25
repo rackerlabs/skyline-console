@@ -94,19 +94,26 @@
 
 .table-header {
   display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
   justify-content: space-between;
+  margin-bottom: calc(@body-padding - 4px);
 }
 
 .table-header-btns,
 .table-header-action-btns {
   position: relative;
-  display: inline-block;
-  margin-bottom: calc(@body-padding - 4px);
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  align-items: center;
+  margin-bottom: 0;
 
   :global {
     button {
-      margin-right: 10px;
-      margin-bottom: 4px;
+      margin-right: 0;
+      margin-bottom: 0;
     }
 
     .ant-btn[disabled] {
@@ -160,24 +167,32 @@
 
 .table-header-right {
   display: flex;
+  flex-wrap: nowrap;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 0;
+
+  .search-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0;
+  }
+
+  .table-header-btns {
+    margin-left: 0;
+  }
 }
 
 .table-header-btns {
   margin-right: 0;
   margin-left: 10px;
-
-  :global {
-    button:last-child {
-      margin-right: 0;
-    }
-  }
 }
 
 @media (max-width: 1200px) {
   .table-header {
     flex-wrap: wrap;
-    gap: 0 12px;
-    align-items: flex-start;
+    gap: 8px 12px;
+    align-items: center;
   }
 
   .table-header-action-btns,
@@ -202,8 +217,10 @@
 
   .table-header-right {
     flex: 1 1 100%;
-    align-items: flex-start;
-    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    align-items: center;
+    justify-content: flex-end;
     min-width: 0;
   }
 
@@ -251,7 +268,8 @@
 
   .table-header-right {
     flex-wrap: wrap;
-    gap: 10px 0;
+    gap: 8px 12px;
+    align-items: center;
     justify-content: flex-start;
   }
 

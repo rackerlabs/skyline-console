@@ -22,6 +22,7 @@ import CutFile from './CutFile';
 import Edit from './Edit';
 import PasteFile from './PasteFile';
 import Rename from './Rename';
+import RestoreDeleted from './RestoreDeleted';
 
 const actionConfigs = {
   rowActions: {
@@ -52,6 +53,15 @@ const actionConfigs = {
   },
   batchActions: [Delete, CopyFile, CutFile],
   primaryActions: [CreateFolder, UploadFile, PasteFile],
+};
+
+export const deletedActionConfigs = {
+  ...actionConfigs,
+  rowActions: {
+    firstAction: RestoreDeleted,
+    moreActions: [],
+  },
+  batchActions: [],
 };
 
 export default actionConfigs;

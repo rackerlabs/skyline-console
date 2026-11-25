@@ -136,6 +136,9 @@ export class HttpRequest {
             qonosAdvisory
           );
         }
+        if (response.config && response.config.returnResponse) {
+          return response;
+        }
         if (method.toLowerCase() === 'head') {
           return response;
         }

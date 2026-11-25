@@ -1,5 +1,3 @@
-import React from 'react';
-import { Alert } from 'antd';
 import { has } from 'lodash';
 import { inject, observer } from 'mobx-react';
 import { ModalAction } from 'containers/Action';
@@ -96,28 +94,23 @@ export class ManageVersioning extends ModalAction {
     }
   };
 
+  get tips() {
+    const turningOff = this.isCurrentlyEnabled && !this.state.enabledValue;
+    if (!turningOff) {
+      return '';
+    }
+    return t(
+      'Turning versioning off suspends it. Existing versions are kept and still count toward usage.'
+    );
+  }
+
   get formItems() {
-    const { swiftError, enabledValue } = this.state;
-    const turningOff = this.isCurrentlyEnabled && !enabledValue;
+    const { swiftError } = this.state;
     return [
       {
         name: 'enabled',
         label: t('Object Versioning'),
         type: 'switch',
-      },
-      {
-        type: 'label',
-        display: turningOff,
-        wrapperCol: { xs: { span: 24 }, sm: { span: 22 } },
-        component: (
-          <Alert
-            type="warning"
-            showIcon
-            message={t(
-              'Turning versioning off suspends it. Existing versions are kept and still count toward usage.'
-            )}
-          />
-        ),
       },
       getSwiftErrorFormItem(swiftError),
     ];

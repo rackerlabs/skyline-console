@@ -14,7 +14,16 @@
 
 import React, { useEffect, useState } from 'react';
 import { observer, inject } from 'mobx-react';
-import { Popover, Col, Row, Skeleton, Button, Tag, message } from 'antd';
+import {
+  Popover,
+  Col,
+  Row,
+  Skeleton,
+  Button,
+  Tag,
+  message,
+  Switch,
+} from 'antd';
 import Base from 'containers/List';
 import SwiftStorageWarning from 'components/SwiftStorageWarning';
 import globalObjectStore, { ObjectStore } from 'stores/swift/object';
@@ -29,12 +38,12 @@ import { isVersionedState } from 'resources/swift/versioning';
 import { getStrFromTimestamp } from 'utils/time';
 import featureStore from 'stores/skyline/features';
 import styles from './index.less';
-import actionConfigs from './actions';
+import actionConfigs, { deletedActionConfigs } from './actions';
 import CDNUrl from '../CDNUrl';
 import Versions from './Versions';
 
 function renderCDNUrl(url) {
-  return <CDNUrl url={url} maxWidth={360} />;
+  return <CDNUrl url={url} maxWidth="100%" />;
 }
 
 // CDN information section for the container detail page. Reads the CDN state
@@ -109,26 +118,36 @@ function CDNSection({ container }) {
         </Button>
       </div>
       {loading ? (
-        <Skeleton active paragraph={{ rows: 1 }} />
+        <Skeleton active paragraph={{ rows: 1 }} title={false} />
       ) : (
-        <Row className={styles['cdn-row']} gutter={24} align="middle">
-          <Col xs={24} sm={6} md={4}>
-            <span className={styles['cdn-label']}>{t('CDN')}: </span>
-            {enabled ? t('Enabled') : t('Disabled')}
-          </Col>
-          <Col xs={24} sm={9} md={10}>
-            <span className={styles['cdn-label']}>
-              {t('Public HTTP URL')}:{' '}
+        <div className={styles['cdn-body']}>
+          <div className={styles['cdn-field']}>
+            <span className={styles['cdn-label']}>{t('Status')}: </span>
+            <span className={styles['cdn-value']}>
+              {enabled ? t('Enabled') : t('Disabled')}
             </span>
-            {renderCDNUrl(data && data.public_http_url)}
-          </Col>
-          <Col xs={24} sm={9} md={10}>
-            <span className={styles['cdn-label']}>
-              {t('Public HTTPS URL')}:{' '}
-            </span>
-            {renderCDNUrl(data && data.public_https_url)}
-          </Col>
-        </Row>
+          </div>
+          {enabled && (
+            <>
+              <div className={styles['cdn-field']}>
+                <div className={styles['cdn-label']}>
+                  {t('Public HTTP URL')}
+                </div>
+                <div className={styles['cdn-url-value']}>
+                  {renderCDNUrl(data && data.public_http_url)}
+                </div>
+              </div>
+              <div className={styles['cdn-field']}>
+                <div className={styles['cdn-label']}>
+                  {t('Public HTTPS URL')}
+                </div>
+                <div className={styles['cdn-url-value']}>
+                  {renderCDNUrl(data && data.public_https_url)}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
       )}
     </div>
   );
@@ -249,12 +268,49 @@ export class ContainerObject extends Base {
   }
 
   get actionConfigs() {
-    return actionConfigs;
+    return this.store.showDeleted ? deletedActionConfigs : actionConfigs;
   }
 
   get clearListUnmount() {
     return true;
   }
+
+  get isContainerVersioned() {
+    const { container: containerName } = this.params;
+    const containerInfo = this.store.container;
+    return (
+      globalSwiftInfoStore.isVersioningSupported &&
+      containerInfo?.name === containerName &&
+      isVersionedState(containerInfo?.versioning?.state)
+    );
+  }
+
+  get middleComponentInTableHeader() {
+    if (!this.isContainerVersioned) {
+      return null;
+    }
+    return (
+      <div className={styles['show-deleted']}>
+        <span>{t('Show deleted')}</span>
+        <Switch
+          size="small"
+          checked={!!this.store.showDeleted}
+          onChange={this.onShowDeletedChange}
+        />
+      </div>
+    );
+  }
+
+  onShowDeletedChange = (checked) => {
+    this.store.setShowDeleted(checked);
+    this.handleRefresh(true);
+  };
+
+  clearShowDeleted = () => {
+    if (this.store.showDeleted) {
+      this.store.setShowDeleted(false);
+    }
+  };
 
   get hasTab() {
     return true;
@@ -282,7 +338,7 @@ export class ContainerObject extends Base {
   }
 
   getCheckboxProps(record) {
-    if (isFolder(record)) {
+    if (isFolder(record) || record.isDeleted) {
       return {
         disabled: true,
         name: record.shortName,
@@ -292,8 +348,14 @@ export class ContainerObject extends Base {
 
   componentDidUpdate(prevProps) {
     if (!isEqual(this.props.match.params, prevProps.match.params)) {
+      this.clearShowDeleted();
       this.handleRefresh(true);
     }
+  }
+
+  componentWillUnmount() {
+    this.clearShowDeleted();
+    super.componentWillUnmount();
   }
 
   getRequestFolder = (folder) => {
@@ -323,12 +385,7 @@ export class ContainerObject extends Base {
   };
 
   getColumns = () => {
-    const { container: containerName } = this.params;
-    const containerInfo = this.store.container;
-    const showVersions =
-      globalSwiftInfoStore.isVersioningSupported &&
-      containerInfo?.name === containerName &&
-      isVersionedState(containerInfo?.versioning?.state);
+    const showVersions = this.isContainerVersioned;
     return [
       {
         title: t('Name'),
@@ -345,7 +402,11 @@ export class ContainerObject extends Base {
           return (
             <span className={styles['object-name']}>
               <span className={styles['object-name-text']}>{name}</span>
-              {showVersions && <Tag color="green">{t('Current')}</Tag>}
+              {record.isDeleted ? (
+                <Tag color="red">{t('Deleted')}</Tag>
+              ) : (
+                showVersions && <Tag color="green">{t('Current')}</Tag>
+              )}
             </span>
           );
         },
@@ -357,6 +418,9 @@ export class ContainerObject extends Base {
         valueRender: 'formatSize',
         render: (value, data) => {
           if (data.type === 'folder') {
+            return '-';
+          }
+          if (data.isDeleted && !data.canRestore) {
             return '-';
           }
           return bytesFilter(value);
@@ -373,6 +437,9 @@ export class ContainerObject extends Base {
         dataIndex: 'detail',
         isHideable: true,
         render: (_, data) => {
+          if (data.isDeleted) {
+            return '-';
+          }
           const content = <PopUpContent item={data} />;
           return (
             <Popover content={content} destroyTooltipOnHide trigger="click">
@@ -386,7 +453,7 @@ export class ContainerObject extends Base {
             {
               title: t('Versions'),
               dataIndex: 'versions',
-              width: 210,
+              width: 110,
               render: (_, data) => !isFolder(data) && <Versions item={data} />,
             },
           ]

@@ -18,6 +18,7 @@ import { swiftEndpoint } from 'client/client/constants';
 import globalRootStore from 'stores/root';
 import { fetchFreezerContainers } from 'stores/freezer/swift-containers';
 import { parseVersioningHeaders } from 'resources/swift/versioning';
+import { collateDeletedObjects } from 'resources/swift/object-version';
 import Base from '../base';
 
 export class ObjectStore extends Base {
@@ -39,6 +40,9 @@ export class ObjectStore extends Base {
   @observable
   isCopy = true;
 
+  @observable
+  showDeleted = false;
+
   get client() {
     return client.swift.container.object;
   }
@@ -55,6 +59,11 @@ export class ObjectStore extends Base {
     return false;
   }
 
+  @action
+  setShowDeleted = (showDeleted) => {
+    this.showDeleted = !!showDeleted;
+  };
+
   async listFetchByClient(params, originParams) {
     const { folder, container, prefix } = originParams;
     const { path } = params;
@@ -65,8 +74,13 @@ export class ObjectStore extends Base {
       !!previous &&
       previous.name === container &&
       'isFreezerContainer' in previous;
+    const listPromise = this.showDeleted
+      ? this.containerClient.listObjectVersions(container, prefix || '', {
+          delimiter: '/',
+        })
+      : this.client.list(container, params);
     const [result, freezerContainers] = await Promise.all([
-      this.client.list(container, params),
+      listPromise,
       reuseFlags ? null : fetchFreezerContainers(),
     ]);
     this.container = {
@@ -79,6 +93,9 @@ export class ObjectStore extends Base {
         ? previous.isFreezerContainer
         : freezerContainers.has(container),
     };
+    if (this.showDeleted) {
+      return collateDeletedObjects(result || [], prefix || '');
+    }
     return result;
   }
 
@@ -306,6 +323,21 @@ export class ObjectStore extends Base {
   @action
   delete = async ({ container, name }) => {
     return this.submitting(this.client.delete(container, name));
+  };
+
+  @action
+  undelete = async (item) => {
+    const { container, name, restoreVersionId, canRestore } = item || {};
+    if (!canRestore || !restoreVersionId) {
+      return Promise.reject(new Error(t('No recoverable data')));
+    }
+    return this.submitting(
+      this.containerClient.restoreObjectVersion(
+        container,
+        name,
+        restoreVersionId
+      )
+    );
   };
 
   @action

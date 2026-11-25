@@ -1,14 +1,21 @@
 import { action, observable, runInAction } from 'mobx';
 import swiftClient from 'client/swift';
 import {
+  canRestoreVersion,
+  createVersionGoneError,
+  getObjectVersionIdHeader,
   getObjectVersionMetadata,
   getVersionId,
   isDeleteMarker,
+  isLargeObjectHeaders,
   mergeObjectVersions,
 } from 'resources/swift/object-version';
 import { getSwiftErrorBody } from 'resources/swift/versioning';
 
 export const VERSION_PAGE_SIZE = 100;
+
+const isNotFound = (error) =>
+  !!(error && error.response && error.response.status === 404);
 
 export default class ObjectVersionStore {
   @observable rows = [];
@@ -65,14 +72,32 @@ export default class ObjectVersionStore {
     }
   };
 
-  fetchMetadata = async (row) => {
+  @action
+  reload = async () => {
+    runInAction(() => {
+      this.rows = [];
+      this.cursor = null;
+      this.hasMore = true;
+      this.error = '';
+      this.loading = false;
+    });
+    await this.loadMore();
+  };
+
+  headVersion = async (row) => {
     const { headers } = await this.client.showObjectVersionMetadata(
       this.container,
       this.name,
       getVersionId(row)
     );
-    return getObjectVersionMetadata(headers, row.bytes);
+    return headers || {};
   };
+
+  fetchMetadata = async (row) =>
+    getObjectVersionMetadata(await this.headVersion(row), row.bytes);
+
+  isLargeObject = async (row) =>
+    isLargeObjectHeaders(await this.headVersion(row));
 
   download = (row) => {
     if (isDeleteMarker(row)) {
@@ -86,4 +111,37 @@ export default class ObjectVersionStore {
       getVersionId(row)
     );
   };
+
+  runRestoreCall = async (row, request) => {
+    if (!canRestoreVersion(row)) {
+      throw new Error(t('This version cannot be restored.'));
+    }
+    try {
+      return await request();
+    } catch (error) {
+      if (isNotFound(error)) {
+        throw createVersionGoneError();
+      }
+      throw error;
+    }
+  };
+
+  restore = (row) =>
+    this.runRestoreCall(row, () =>
+      this.client.restoreObjectVersion(
+        this.container,
+        this.name,
+        getVersionId(row)
+      )
+    );
+
+  restoreAsNewVersion = (row) =>
+    this.runRestoreCall(row, async () => {
+      const response = await this.client.copyObjectVersion(
+        this.container,
+        this.name,
+        getVersionId(row)
+      );
+      return getObjectVersionIdHeader((response && response.headers) || {});
+    });
 }

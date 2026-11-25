@@ -890,8 +890,8 @@ export class BaseTable extends React.Component {
           {this.renderBatchActions()}
         </div>
         {this.renderTimeFilter()}
-        {this.renderMiddleInHeader()}
         <div className={styles['table-header-right']}>
+          {this.renderMiddleInHeader()}
           {this.renderSearch()}
           <div
             className={classnames(

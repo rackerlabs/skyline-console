@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import React from 'react';
-import { Alert } from 'antd';
 import { inject, observer } from 'mobx-react';
 import { ModalAction } from 'containers/Action';
 import globalObjectStore, { ObjectStore } from 'stores/swift/object';
@@ -85,6 +83,15 @@ export class UploadFile extends ModalAction {
     return true;
   }
 
+  get tips() {
+    if (!this.state.versioningEnabled) {
+      return '';
+    }
+    return t(
+      'Versioning is enabled on this container. If an object with the same name exists, a new version will be created.'
+    );
+  }
+
   get defaultValue() {
     const { name, folder, prefix } = globalObjectStore.container || {};
     const destFolder = prefix || folder || '';
@@ -114,20 +121,6 @@ export class UploadFile extends ModalAction {
     const { folder, prefix } = globalObjectStore.container || {};
     const destFolder = prefix || folder || '';
     return [
-      {
-        type: 'label',
-        display: this.state.versioningEnabled,
-        wrapperCol: { xs: { span: 24 }, sm: { span: 22 } },
-        component: (
-          <Alert
-            type="info"
-            showIcon
-            message={t(
-              'Versioning is enabled on this container. If an object with the same name exists, a new version will be created.'
-            )}
-          />
-        ),
-      },
       {
         name: 'container',
         label: t('Container Name'),
